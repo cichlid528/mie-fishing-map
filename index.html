@@ -19,19 +19,19 @@
     <meta property="og:title" content="三重県釣りMAP｜野池・ダム・川・漁港の釣り場地図">
     <meta property="og:description" content="三重県の野池、川、ダム、漁港、港、マリーナを地図で探せる無料の釣り場マップです。">
     <meta property="og:url" content="https://cichlid528.github.io/mie-fishing-map/">
-    <meta property="og:image" content="https://cichlid528.github.io/mie-fishing-map/icon-fishing-512.png">
-    <meta property="og:image:width" content="512">
-    <meta property="og:image:height" content="512">
+    <meta property="og:image" content="https://cichlid528.github.io/mie-fishing-map/icon-v2-1024.png">
+    <meta property="og:image:width" content="1024">
+    <meta property="og:image:height" content="1024">
     <meta property="og:image:alt" content="三重県釣りMAPのアプリアイコン">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="三重県釣りMAP｜野池・ダム・川・漁港の釣り場地図">
     <meta name="twitter:description" content="三重県の釣り場を地図で探し、GPSや釣果記録を使える無料PWAです。">
-    <meta name="twitter:image" content="https://cichlid528.github.io/mie-fishing-map/icon-fishing-512.png">
+    <meta name="twitter:image" content="https://cichlid528.github.io/mie-fishing-map/icon-v2-1024.png">
     <title>三重県釣りMAP｜野池・ダム・川・漁港の釣り場地図</title>
     <link rel="canonical" href="https://cichlid528.github.io/mie-fishing-map/">
-    <link rel="manifest" href="manifest.json?v=4">
-    <link rel="icon" href="icon-fishing-192.png" sizes="192x192" type="image/png">
-    <link rel="apple-touch-icon" href="icon-fishing-192.png" sizes="192x192">
+    <link rel="manifest" href="manifest.json?v=5">
+    <link rel="icon" href="icon-v2-192.png" sizes="192x192" type="image/png">
+    <link rel="apple-touch-icon" href="icon-v2-180.png" sizes="180x180">
     <link rel="sitemap" type="application/xml" href="sitemap.xml">
     <link
       rel="stylesheet"
@@ -39,7 +39,7 @@
       integrity="sha256-p4NxAoJBhIINfQDP4nD8xQV9qVtAkM5M5OgFHJt0f9I="
       crossorigin=""
     >
-    <link rel="stylesheet" href="style.css?v=14">
+    <link rel="stylesheet" href="style.css?v=15">
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -118,7 +118,7 @@
         <div id="map"></div>
         <button id="mobileListToggle" class="mobile-list-button" type="button" title="場所リスト" aria-label="場所リストを開く" aria-expanded="false">☰</button>
         <div class="map-tools" aria-label="地図操作">
-          <button id="installApp" class="install-button" type="button" aria-label="アプリをインストール">
+          <button id="installApp" class="install-button is-hidden" type="button" aria-label="アプリをインストール">
             <span class="tool-icon" aria-hidden="true">⇩</span>
             <span class="tool-label">インストール</span>
           </button>
@@ -140,11 +140,13 @@
           </button>
         </div>
         <p id="gpsStatus" class="gps-status" role="status" aria-live="polite"></p>
-        <div id="spotCard" class="spot-card" aria-live="polite">
-          <p class="spot-card-type">選択中</p>
-          <h2>左のリストから場所を選択</h2>
-          <p>選んだ場所へ地図が移動します。</p>
-        </div>
+        <aside id="iosInstallHint" class="ios-install-hint" aria-label="iPhoneへの追加方法" aria-hidden="true">
+          <div>
+            <strong>iPhoneに追加</strong>
+            <p>Safariの共有ボタンから「ホーム画面に追加」を選択してください。</p>
+          </div>
+          <button id="closeIosInstallHint" type="button" title="閉じる" aria-label="案内を閉じる">×</button>
+        </aside>
       </section>
     </main>
 
@@ -371,6 +373,6 @@
       integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
       crossorigin=""
     ></script>
-    <script src="app.js?v=14"></script>
+    <script src="app.js?v=15"></script>
   </body>
 </html>
