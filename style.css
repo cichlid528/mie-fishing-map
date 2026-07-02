@@ -567,22 +567,6 @@ h1 {
   line-height: 24px;
 }
 
-.spot-card {
-  position: absolute;
-  right: 18px;
-  bottom: 18px;
-  width: min(360px, calc(100% - 36px));
-  max-height: calc(100% - 86px);
-  overflow: auto;
-  padding: 16px 17px;
-  border: 1px solid rgba(255, 255, 255, 0.75);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: var(--shadow);
-  z-index: 500;
-  backdrop-filter: blur(8px);
-}
-
 .map-tools {
   position: absolute;
   left: 18px;
@@ -671,6 +655,59 @@ h1 {
 .gps-status.is-error {
   color: #ffc2bd;
   border-color: rgba(227, 106, 96, 0.5);
+}
+
+.ios-install-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 82px;
+  z-index: 1060;
+  display: none;
+  grid-template-columns: minmax(0, 1fr) 32px;
+  gap: 10px;
+  align-items: start;
+  width: min(360px, calc(100% - 24px));
+  padding: 11px 10px 11px 13px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: #f5faf7;
+  background: rgba(5, 12, 8, 0.96);
+  box-shadow: var(--shadow);
+  transform: translateX(-50%);
+}
+
+.ios-install-hint.is-visible {
+  display: grid;
+}
+
+.ios-install-hint strong,
+.ios-install-hint p {
+  display: block;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.ios-install-hint strong {
+  font-size: 13px;
+}
+
+.ios-install-hint p {
+  margin-top: 3px;
+  color: #c8d8cf;
+  font-size: 12px;
+}
+
+.ios-install-hint button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  cursor: pointer;
 }
 
 .spot-mode-button {
@@ -945,98 +982,6 @@ h1 {
   background: #e8efeb;
 }
 
-.spot-source {
-  font-size: 11px;
-  color: var(--muted);
-}
-
-.spot-info-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  margin: 10px 0;
-  padding: 9px 0;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-}
-
-.spot-info-item {
-  min-width: 0;
-  padding: 0 9px;
-}
-
-.spot-info-item + .spot-info-item {
-  border-left: 1px solid var(--line);
-}
-
-.spot-info-item span,
-.spot-info-item strong {
-  display: block;
-}
-
-.spot-info-item span {
-  margin-bottom: 3px;
-  color: var(--muted);
-  font-size: 10px;
-  font-weight: 800;
-}
-
-.spot-info-item strong {
-  overflow-wrap: anywhere;
-  font-size: 12px;
-  line-height: 1.35;
-}
-
-.spot-info-badges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin: 0 0 10px;
-}
-
-.spot-info-badge {
-  min-height: 26px;
-  padding: 5px 8px;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: 800;
-  line-height: 1.25;
-}
-
-.spot-info-badge.is-positive {
-  color: #b6f3d5;
-  border-color: rgba(58, 167, 127, 0.52);
-  background: rgba(30, 105, 77, 0.5);
-}
-
-.spot-info-badge.is-negative {
-  color: #ffc2bd;
-  border-color: rgba(227, 106, 96, 0.55);
-  background: rgba(122, 38, 33, 0.5);
-}
-
-.spot-info-badge.is-pending {
-  color: var(--muted);
-  background: rgba(13, 18, 15, 0.74);
-}
-
-.spot-memo {
-  margin: 0 0 9px;
-  padding: 9px 10px;
-  border-left: 3px solid var(--accent);
-  color: var(--ink);
-  background: rgba(58, 167, 127, 0.1);
-}
-
-.spot-notice {
-  margin: 8px 0 0;
-  padding-top: 8px;
-  border-top: 1px solid var(--line);
-  font-size: 11px !important;
-  line-height: 1.5 !important;
-}
-
 .catch-popup dl {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -1071,50 +1016,53 @@ h1 {
   cursor: pointer;
 }
 
-.spot-card-actions {
+.spot-popup p {
+  margin: 5px 0 0;
+  color: var(--muted);
+}
+
+.popup-spot-actions {
   display: flex;
   gap: 8px;
   margin-top: 10px;
 }
 
-.spot-card-actions button {
+.popup-spot-actions button {
+  flex: 1;
   min-height: 34px;
+  border: 1px solid var(--line);
   border-radius: 8px;
   padding: 0 10px;
   font-weight: 800;
   cursor: pointer;
 }
 
-.spot-card-actions .edit-spot-button {
+.popup-spot-actions .edit-spot-button {
   border: 1px solid rgba(15, 123, 99, 0.35);
   color: var(--accent-dark);
   background: #eaf6f1;
 }
 
-.spot-card-actions .delete-spot-button {
+.popup-spot-actions .delete-spot-button {
   border: 1px solid rgba(178, 56, 45, 0.32);
   color: var(--danger);
   background: #fff;
 }
 
-.spot-card-type {
-  margin: 0 0 4px;
-  font-size: 12px;
-  font-weight: 800;
-  color: var(--accent);
+.leaflet-top.leaflet-right {
+  top: max(8px, env(safe-area-inset-top));
+  right: max(8px, env(safe-area-inset-right));
 }
 
-.spot-card h2 {
-  margin: 0 0 6px;
-  font-size: 19px;
+.leaflet-top.leaflet-right .leaflet-control {
+  margin-top: 8px;
+  margin-right: 0;
+}
+
+.leaflet-control-attribution {
+  max-width: min(320px, calc(100vw - 90px));
+  white-space: normal;
   line-height: 1.25;
-}
-
-.spot-card p:last-child {
-  margin: 0;
-  font-size: 13px;
-  line-height: 1.45;
-  color: var(--muted);
 }
 
 .custom-marker {
@@ -1223,13 +1171,6 @@ h1 {
     top: calc(max(10px, env(safe-area-inset-top)) + 52px);
   }
 
-  .spot-card {
-    right: 12px;
-    bottom: calc(70px + env(safe-area-inset-bottom));
-    max-height: calc(100dvh - 170px - env(safe-area-inset-top));
-    padding: 12px;
-  }
-
   .map-tools {
     left: 12px;
     bottom: max(12px, env(safe-area-inset-bottom));
@@ -1276,6 +1217,21 @@ h1 {
     top: max(10px, env(safe-area-inset-top));
     left: 62px;
     max-width: calc(100% - 72px);
+  }
+
+  .ios-install-hint {
+    bottom: calc(78px + env(safe-area-inset-bottom));
+  }
+
+  .leaflet-top.leaflet-right {
+    top: max(6px, env(safe-area-inset-top));
+    right: 8px;
+  }
+
+  .leaflet-control-attribution {
+    max-width: min(210px, calc(100vw - 76px));
+    padding: 3px 5px;
+    font-size: 9px;
   }
 
   .filter-chip,
@@ -1367,7 +1323,7 @@ body {
 
 .data-button,
 .popup-edit-button,
-.spot-card-actions .edit-spot-button {
+.popup-spot-actions .edit-spot-button {
   color: #a7e8cf;
   border-color: rgba(58, 167, 127, 0.48);
   background: rgba(20, 70, 53, 0.88);
@@ -1396,12 +1352,6 @@ body {
   background: #0b100d;
 }
 
-.spot-card {
-  color: var(--ink);
-  border-color: rgba(255, 255, 255, 0.16);
-  background: rgba(5, 8, 6, 0.94);
-}
-
 .catch-form {
   color: var(--ink);
   border-color: var(--line);
@@ -1415,7 +1365,7 @@ body {
 .catch-photo-field,
 .catch-photo-preview button,
 .delete-button,
-.spot-card-actions .delete-spot-button {
+.popup-spot-actions .delete-spot-button {
   color: var(--ink);
   border-color: var(--line);
   background: #0b100d;
@@ -1435,7 +1385,4 @@ body {
     min-height: 82px;
   }
 
-  .spot-info-grid {
-    grid-template-columns: 1fr;
-  }
 }
