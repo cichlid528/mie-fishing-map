@@ -600,6 +600,7 @@ h1 {
 
 .gps-button,
 .install-button,
+.current-pin-button,
 .spot-mode-button,
 .catch-mode-button,
 .save-button,
@@ -632,6 +633,16 @@ h1 {
 .gps-button.is-active {
   background: #2f8fff;
   box-shadow: 0 0 0 3px rgba(47, 143, 255, 0.24), var(--shadow);
+}
+
+.current-pin-button {
+  color: #fff;
+  background: #354a52;
+  box-shadow: var(--shadow);
+}
+
+.current-pin-button:hover {
+  background: #21343b;
 }
 
 .gps-status {
@@ -1231,6 +1242,7 @@ h1 {
 
   .install-button,
   .gps-button,
+  .current-pin-button,
   .spot-mode-button,
   .catch-mode-button {
     display: flex;
