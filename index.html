@@ -39,7 +39,7 @@
       integrity="sha256-p4NxAoJBhIINfQDP4nD8xQV9qVtAkM5M5OgFHJt0f9I="
       crossorigin=""
     >
-    <link rel="stylesheet" href="style.css?v=13">
+    <link rel="stylesheet" href="style.css?v=14">
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -125,6 +125,10 @@
           <button id="locateMe" class="gps-button" type="button" aria-pressed="false">
             <span class="tool-icon" aria-hidden="true">⌖</span>
             <span class="tool-label">現在地</span>
+          </button>
+          <button id="pinCurrentLocation" class="current-pin-button" type="button" aria-label="現在地に普通のピンを追加">
+            <span class="tool-icon" aria-hidden="true">◎</span>
+            <span class="tool-label">現在地ピン</span>
           </button>
           <button id="addSpotMode" class="spot-mode-button" type="button" aria-label="釣り場を追加" aria-pressed="false">
             <span class="tool-icon" aria-hidden="true">＋</span>
@@ -312,11 +316,61 @@
       </form>
     </section>
 
+    <section id="locationPinPanel" class="catch-panel" aria-label="現在地ピン" aria-hidden="true">
+      <form id="locationPinForm" class="catch-form">
+        <header class="catch-form-header">
+          <div>
+            <p class="kicker">Location Pin</p>
+            <h2>現在地にピン</h2>
+          </div>
+          <button id="closeLocationPinPanel" class="icon-button" type="button" title="閉じる" aria-label="閉じる">×</button>
+        </header>
+
+        <input id="locationPinLat" type="hidden">
+        <input id="locationPinLng" type="hidden">
+
+        <div class="form-grid">
+          <label>
+            <span>ピンの名前</span>
+            <input id="locationPinName" type="text" placeholder="例: 気になる場所">
+          </label>
+
+          <label class="full-width">
+            <span>メモ</span>
+            <textarea id="locationPinMemo" rows="3" placeholder="目印、状況、確認したいことなど"></textarea>
+          </label>
+
+          <div class="catch-photo-field">
+            <div class="photo-source-actions">
+              <label class="photo-picker" for="locationPinPhoto">
+                <span>Googleフォト・端末から選ぶ</span>
+                <input id="locationPinPhoto" type="file" accept="image/*">
+              </label>
+              <label class="photo-picker photo-picker-secondary" for="locationPinCamera">
+                <span>カメラで撮る</span>
+                <input id="locationPinCamera" type="file" accept="image/*" capture="environment">
+              </label>
+            </div>
+            <figure id="locationPinPhotoPreview" class="catch-photo-preview is-hidden">
+              <img id="locationPinPhotoImage" alt="ピンに添付する写真">
+              <button id="removeLocationPinPhoto" type="button">写真を外す</button>
+            </figure>
+            <p id="locationPinPhotoStatus" class="catch-photo-status" aria-live="polite">写真は圧縮してこの端末に保存します</p>
+          </div>
+        </div>
+
+        <div class="catch-actions">
+          <button id="deleteLocationPin" class="delete-button" type="button">削除</button>
+          <button class="save-button" type="submit">ピンを保存</button>
+        </div>
+      </form>
+    </section>
+
     <script
       src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
       integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
       crossorigin=""
     ></script>
-    <script src="app.js?v=13"></script>
+    <script src="app.js?v=14"></script>
   </body>
 </html>
