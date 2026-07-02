@@ -9,10 +9,29 @@
     <meta name="apple-mobile-web-app-title" content="三重県釣りMAP">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="format-detection" content="telephone=no">
-    <title>三重県釣りMAP</title>
-    <link rel="manifest" href="manifest.json?v=2">
+    <meta name="description" content="三重県の野池、川、ダム、漁港、港、マリーナを地図で探せる釣り場マップ。バス釣り情報、GPS現在地、釣果記録、現地チェックに対応した無料PWAです。">
+    <meta name="keywords" content="三重県釣りMAP,三重県釣り場マップ,三重県釣り場,三重県 野池,三重県 バス釣り,三重県 ダム,三重県 漁港,三重県 港,三重県 マリーナ">
+    <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="ja_JP">
+    <meta property="og:site_name" content="三重県釣りMAP">
+    <meta property="og:title" content="三重県釣りMAP｜野池・ダム・川・漁港の釣り場地図">
+    <meta property="og:description" content="三重県の野池、川、ダム、漁港、港、マリーナを地図で探せる無料の釣り場マップです。">
+    <meta property="og:url" content="https://cichlid528.github.io/mie-fishing-map/">
+    <meta property="og:image" content="https://cichlid528.github.io/mie-fishing-map/icon-512.png">
+    <meta property="og:image:width" content="512">
+    <meta property="og:image:height" content="512">
+    <meta property="og:image:alt" content="三重県釣りMAPのアプリアイコン">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="三重県釣りMAP｜野池・ダム・川・漁港の釣り場地図">
+    <meta name="twitter:description" content="三重県の釣り場を地図で探し、GPSや釣果記録を使える無料PWAです。">
+    <meta name="twitter:image" content="https://cichlid528.github.io/mie-fishing-map/icon-512.png">
+    <title>三重県釣りMAP｜野池・ダム・川・漁港の釣り場地図</title>
+    <link rel="canonical" href="https://cichlid528.github.io/mie-fishing-map/">
+    <link rel="manifest" href="manifest.json?v=3">
     <link rel="icon" href="icon-192.png" sizes="192x192" type="image/png">
-    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png" sizes="192x192">
+    <link rel="sitemap" type="application/xml" href="sitemap.xml">
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -20,6 +39,24 @@
       crossorigin=""
     >
     <link rel="stylesheet" href="style.css?v=12">
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "三重県釣りMAP",
+        "url": "https://cichlid528.github.io/mie-fishing-map/",
+        "description": "三重県の野池、川、ダム、漁港、港、マリーナを地図で探せる釣り場マップ",
+        "applicationCategory": "SportsApplication",
+        "operatingSystem": "Android, iOS, Windows, macOS",
+        "inLanguage": "ja",
+        "isAccessibleForFree": true,
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "JPY"
+        }
+      }
+    </script>
   </head>
   <body>
     <main class="app-shell">
