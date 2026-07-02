@@ -1,9 +1,9 @@
-const CACHE_NAME = "mie-fishing-map-v17";
+const CACHE_NAME = "mie-fishing-map-v18";
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./style.css?v=13",
-  "./app.js?v=13",
+  "./style.css?v=14",
+  "./app.js?v=14",
   "./manifest.json?v=4",
   "./icon-fishing-192.png",
   "./icon-fishing-512.png",
