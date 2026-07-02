@@ -2,6 +2,9 @@ const STORAGE_KEY = "mie-bass-map-v1";
 const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
 const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
 const LOCATION_PIN_STORAGE_KEY = "mie-map-location-pins-v1";
+const BACKGROUND_DB_NAME = "mie-fishing-map-settings";
+const BACKGROUND_DB_STORE = "appearance";
+const BACKGROUND_DB_KEY = "sidebar-background";
 
 // 国土地理院の名称検索で同名地点を確認できた座標に合わせています。
 const seedSpots = [
@@ -200,6 +203,14 @@ const closeIosInstallHintButton = document.querySelector("#closeIosInstallHint")
 const gpsStatus = document.querySelector("#gpsStatus");
 const mobileListToggle = document.querySelector("#mobileListToggle");
 const sidebar = document.querySelector(".sidebar");
+const openBackgroundPanelButton = document.querySelector("#openBackgroundPanel");
+const backgroundPanel = document.querySelector("#backgroundPanel");
+const closeBackgroundPanelButton = document.querySelector("#closeBackgroundPanel");
+const backgroundCamera = document.querySelector("#backgroundCamera");
+const backgroundPhoto = document.querySelector("#backgroundPhoto");
+const backgroundPreview = document.querySelector("#backgroundPreview");
+const backgroundStatus = document.querySelector("#backgroundStatus");
+const resetBackgroundButton = document.querySelector("#resetBackground");
 const filterButtons = [...document.querySelectorAll(".filter-chip")];
 const markers = new Map();
 const catchMarkers = new Map();
@@ -222,6 +233,8 @@ let currentAccuracyCircle = null;
 let lastKnownLocation = null;
 let pendingCurrentLocationPin = false;
 let deferredInstallPrompt = null;
+let backgroundDbPromise = null;
+let backgroundObjectUrl = "";
 
 dataStatus.textContent = `公的データで${seedSpots.filter((spot) => spot.type === "池").length}池・${seedSpots.filter((spot) => spot.type === "漁港").length}漁港・${seedSpots.filter((spot) => spot.type === "港").length}港・${seedSpots.filter((spot) => spot.type === "マリーナ").length}マリーナを登録`;
 
@@ -605,6 +618,189 @@ function compressCatchPhoto(file) {
   });
 }
 
+function setBackgroundStatus(message, isError = false) {
+  backgroundStatus.textContent = message;
+  backgroundStatus.classList.toggle("is-error", isError);
+}
+
+function openBackgroundDatabase() {
+  if (backgroundDbPromise) return backgroundDbPromise;
+  if (!("indexedDB" in window)) {
+    return Promise.reject(new Error("この端末では背景画像を保存できません"));
+  }
+
+  backgroundDbPromise = new Promise((resolve, reject) => {
+    const request = indexedDB.open(BACKGROUND_DB_NAME, 1);
+    request.onupgradeneeded = () => {
+      const database = request.result;
+      if (!database.objectStoreNames.contains(BACKGROUND_DB_STORE)) {
+        database.createObjectStore(BACKGROUND_DB_STORE, { keyPath: "key" });
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(new Error("背景画像の保存領域を開けませんでした"));
+    request.onblocked = () => reject(new Error("アプリを閉じてから、もう一度お試しください"));
+  });
+
+  return backgroundDbPromise;
+}
+
+async function loadStoredBackground() {
+  const database = await openBackgroundDatabase();
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(BACKGROUND_DB_STORE, "readonly");
+    const request = transaction.objectStore(BACKGROUND_DB_STORE).get(BACKGROUND_DB_KEY);
+    request.onsuccess = () => resolve(request.result?.blob || null);
+    request.onerror = () => reject(new Error("保存した背景画像を読み込めませんでした"));
+  });
+}
+
+async function saveStoredBackground(blob) {
+  const database = await openBackgroundDatabase();
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(BACKGROUND_DB_STORE, "readwrite");
+    transaction.objectStore(BACKGROUND_DB_STORE).put({
+      key: BACKGROUND_DB_KEY,
+      blob,
+      updatedAt: Date.now()
+    });
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(new Error("背景画像を保存できませんでした"));
+    transaction.onabort = () => reject(new Error("背景画像の保存が中断されました"));
+  });
+}
+
+async function deleteStoredBackground() {
+  const database = await openBackgroundDatabase();
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(BACKGROUND_DB_STORE, "readwrite");
+    transaction.objectStore(BACKGROUND_DB_STORE).delete(BACKGROUND_DB_KEY);
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(new Error("保存した背景画像を削除できませんでした"));
+    transaction.onabort = () => reject(new Error("背景画像の初期化が中断されました"));
+  });
+}
+
+function canvasToJpegBlob(canvas, quality) {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (blob) resolve(blob);
+      else reject(new Error("画像を圧縮できませんでした"));
+    }, "image/jpeg", quality);
+  });
+}
+
+function compressBackgroundPhoto(file) {
+  return new Promise((resolve, reject) => {
+    if (!file?.type.startsWith("image/")) {
+      reject(new Error("画像ファイルを選んでください"));
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    const image = new Image();
+    image.onload = async () => {
+      URL.revokeObjectURL(objectUrl);
+      try {
+        const maxDimension = 1600;
+        const scale = Math.min(1, maxDimension / Math.max(image.naturalWidth, image.naturalHeight));
+        const width = Math.max(1, Math.round(image.naturalWidth * scale));
+        const height = Math.max(1, Math.round(image.naturalHeight * scale));
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const context = canvas.getContext("2d");
+        if (!context) throw new Error("画像を処理できませんでした");
+        context.fillStyle = "#000";
+        context.fillRect(0, 0, width, height);
+        context.drawImage(image, 0, 0, width, height);
+
+        let quality = 0.82;
+        let blob = await canvasToJpegBlob(canvas, quality);
+        while (blob.size > 1500000 && quality > 0.5) {
+          quality -= 0.08;
+          blob = await canvasToJpegBlob(canvas, quality);
+        }
+        resolve(blob);
+      } catch (error) {
+        reject(error);
+      }
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error("画像を読み込めませんでした"));
+    };
+    image.src = objectUrl;
+  });
+}
+
+function applySidebarBackground(blob) {
+  if (backgroundObjectUrl) {
+    URL.revokeObjectURL(backgroundObjectUrl);
+    backgroundObjectUrl = "";
+  }
+
+  if (blob instanceof Blob) {
+    backgroundObjectUrl = URL.createObjectURL(blob);
+    const imageValue = `url("${backgroundObjectUrl}")`;
+    sidebar.style.setProperty("--sidebar-custom-background", imageValue);
+    sidebar.classList.add("has-custom-background");
+    backgroundPreview.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.42)), ${imageValue}`;
+    resetBackgroundButton.disabled = false;
+    setBackgroundStatus("設定した背景画像を使用しています");
+    return;
+  }
+
+  sidebar.classList.remove("has-custom-background");
+  sidebar.style.removeProperty("--sidebar-custom-background");
+  backgroundPreview.style.backgroundImage = getComputedStyle(sidebar).backgroundImage;
+  resetBackgroundButton.disabled = true;
+  setBackgroundStatus("現在は初期背景です");
+}
+
+async function restoreSidebarBackground() {
+  applySidebarBackground(null);
+  try {
+    const blob = await loadStoredBackground();
+    if (blob instanceof Blob) applySidebarBackground(blob);
+  } catch (error) {
+    setBackgroundStatus(error.message, true);
+  }
+}
+
+async function handleBackgroundSelection(input) {
+  const [file] = input.files;
+  if (!file) return;
+  setBackgroundStatus("画像を縮小・圧縮しています…");
+  try {
+    const blob = await compressBackgroundPhoto(file);
+    await saveStoredBackground(blob);
+    applySidebarBackground(blob);
+    setBackgroundStatus("背景画像を保存しました");
+  } catch (error) {
+    setBackgroundStatus(error.message, true);
+  } finally {
+    backgroundCamera.value = "";
+    backgroundPhoto.value = "";
+  }
+}
+
+function closeBackgroundPanel() {
+  backgroundPanel.classList.remove("is-open");
+  backgroundPanel.setAttribute("aria-hidden", "true");
+}
+
+function openBackgroundPanel() {
+  closeCatchPanel();
+  closeSpotPanel();
+  closeLocationPinPanel();
+  setCatchMode(false);
+  setSpotMode(false);
+  backgroundPanel.classList.add("is-open");
+  backgroundPanel.setAttribute("aria-hidden", "false");
+  if (window.matchMedia("(max-width: 820px)").matches) setMobileList(false);
+}
+
 async function handleCatchPhotoSelection(input) {
   const [file] = input.files;
   if (!file) return;
@@ -655,6 +851,7 @@ function closeSpotPanel() {
 }
 
 function openCatchPanel(catchLog = null, latLng = null) {
+  closeBackgroundPanel();
   editingCatchId = catchLog?.id || null;
 
   const lat = catchLog?.lat ?? latLng?.lat;
@@ -688,6 +885,7 @@ function closeLocationPinPanel() {
 }
 
 function openLocationPinPanel(pin = null, latLng = null) {
+  closeBackgroundPanel();
   editingLocationPinId = pin?.id || null;
   locationPinLat.value = pin?.lat ?? latLng?.lat;
   locationPinLng.value = pin?.lng ?? latLng?.lng;
@@ -702,6 +900,7 @@ function openLocationPinPanel(pin = null, latLng = null) {
 }
 
 function openSpotPanel(spot = null, latLng = null) {
+  closeBackgroundPanel();
   editingSpotId = spot?.id || null;
   const lat = spot?.lat ?? latLng?.lat;
   const lng = spot?.lng ?? latLng?.lng;
@@ -997,6 +1196,25 @@ mobileListToggle.addEventListener("click", () => {
 closeCatchPanelButton.addEventListener("click", closeCatchPanel);
 closeSpotPanelButton.addEventListener("click", closeSpotPanel);
 closeLocationPinPanelButton.addEventListener("click", closeLocationPinPanel);
+openBackgroundPanelButton.addEventListener("click", openBackgroundPanel);
+closeBackgroundPanelButton.addEventListener("click", closeBackgroundPanel);
+backgroundCamera.addEventListener("change", () => handleBackgroundSelection(backgroundCamera));
+backgroundPhoto.addEventListener("change", () => handleBackgroundSelection(backgroundPhoto));
+
+resetBackgroundButton.addEventListener("click", async () => {
+  resetBackgroundButton.disabled = true;
+  setBackgroundStatus("初期背景へ戻しています…");
+  try {
+    await deleteStoredBackground();
+    applySidebarBackground(null);
+    setBackgroundStatus("初期背景へ戻しました");
+  } catch (error) {
+    resetBackgroundButton.disabled = false;
+    setBackgroundStatus(error.message, true);
+  }
+});
+
+restoreSidebarBackground();
 
 deleteSpotButton.addEventListener("click", () => {
   if (!editingSpotId) return;
@@ -1167,7 +1385,10 @@ window.addEventListener("resize", () => {
   map.invalidateSize({ pan: false });
 });
 
-window.addEventListener("beforeunload", stopLocationTracking);
+window.addEventListener("beforeunload", () => {
+  stopLocationTracking();
+  if (backgroundObjectUrl) URL.revokeObjectURL(backgroundObjectUrl);
+});
 
 const isStandaloneMode = () =>
   window.matchMedia("(display-mode: standalone)").matches ||
