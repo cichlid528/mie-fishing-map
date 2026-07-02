@@ -1036,6 +1036,12 @@ window.addEventListener("resize", () => {
 
 window.addEventListener("beforeunload", stopLocationTracking);
 
+const isStandaloneMode = () =>
+  window.matchMedia("(display-mode: standalone)").matches ||
+  window.navigator.standalone === true;
+
+installAppButton.classList.toggle("is-hidden", isStandaloneMode());
+
 window.addEventListener("beforeinstallprompt", (event) => {
   event.preventDefault();
   deferredInstallPrompt = event;
@@ -1043,13 +1049,17 @@ window.addEventListener("beforeinstallprompt", (event) => {
 });
 
 installAppButton.addEventListener("click", async () => {
-  if (!deferredInstallPrompt) return;
+  if (!deferredInstallPrompt) {
+    setGpsStatus("Chromeのメニューから「アプリをインストール」または「ホーム画面に追加」を選んでください。");
+    return;
+  }
+
   installAppButton.disabled = true;
   await deferredInstallPrompt.prompt();
-  await deferredInstallPrompt.userChoice;
+  const choice = await deferredInstallPrompt.userChoice;
   deferredInstallPrompt = null;
   installAppButton.disabled = false;
-  installAppButton.classList.add("is-hidden");
+  installAppButton.classList.toggle("is-hidden", choice.outcome === "accepted");
 });
 
 window.addEventListener("appinstalled", () => {
@@ -1064,8 +1074,12 @@ setActiveList("spots");
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js")
+    navigator.serviceWorker.register("./sw.js", {
+      scope: "./",
+      updateViaCache: "none"
+    })
       .then((registration) => {
+        registration.update();
         console.log("Service worker registered:", registration.scope);
       })
       .catch((error) => {
