@@ -1386,3 +1386,124 @@ body {
   }
 
 }
+
+.background-settings-button {
+  width: 100%;
+  min-height: 38px;
+  border: 1px solid rgba(58, 167, 127, 0.48);
+  border-radius: 8px;
+  padding: 7px 12px;
+  color: #d9f7eb;
+  font-weight: 800;
+  line-height: 1.35;
+  background: rgba(20, 70, 53, 0.88);
+  cursor: pointer;
+}
+
+.background-settings-button:hover,
+.background-settings-button:focus-visible {
+  border-color: #78d5b1;
+  background: rgba(24, 88, 65, 0.96);
+  outline: none;
+}
+
+.sidebar.has-custom-background {
+  background-image:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.24) 0%, rgba(0, 0, 0, 0.74) 36%, #000 78%),
+    var(--sidebar-custom-background);
+  background-position: center top;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.background-panel {
+  width: min(560px, 100vw);
+}
+
+.background-form {
+  gap: 14px;
+}
+
+.background-preview {
+  width: 100%;
+  aspect-ratio: 16 / 8;
+  min-height: 150px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background-color: #000;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.background-source-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.background-action-button {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.background-action-button span {
+  display: grid;
+  place-items: center;
+  min-height: 48px;
+  border: 1px solid rgba(58, 167, 127, 0.5);
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: #d9f7eb;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.35;
+  text-align: center;
+  background: rgba(20, 70, 53, 0.88);
+}
+
+.background-action-button:hover span,
+.background-action-button:focus-within span {
+  border-color: #78d5b1;
+  background: rgba(24, 88, 65, 0.96);
+}
+
+.background-action-button input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.background-status {
+  min-height: 18px;
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.background-status.is-error {
+  color: var(--danger);
+}
+
+#resetBackground:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+@media (max-width: 520px) {
+  .background-source-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .background-preview {
+    min-height: 120px;
+  }
+}
