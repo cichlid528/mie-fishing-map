@@ -812,12 +812,27 @@ h1 {
   background: #fff;
 }
 
+.photo-source-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
 .photo-picker {
   display: grid;
   gap: 6px;
 }
 
+.photo-picker > span {
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
 .photo-picker input[type="file"] {
+  width: 100%;
   min-height: auto;
   padding: 8px;
 }
@@ -856,6 +871,16 @@ h1 {
   margin: 0;
   font-size: 11px;
   color: var(--muted);
+}
+
+@media (max-width: 520px) {
+  .photo-source-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .photo-picker > span {
+    min-height: 0;
+  }
 }
 
 .save-button {
