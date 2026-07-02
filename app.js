@@ -110,6 +110,7 @@ const map = L.map("map", {
   fadeAnimation: false,
   markerZoomAnimation: false
 }).setView([34.6761, 136.5086], 9);
+map.attributionControl.setPosition("topright");
 
 const standardMap = L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png", {
   maxZoom: 18,
@@ -139,7 +140,6 @@ const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
 const spotList = document.querySelector("#spotList");
 const searchInput = document.querySelector("#searchInput");
 const visibleCount = document.querySelector("#visibleCount");
-const spotCard = document.querySelector("#spotCard");
 const dataStatus = document.querySelector("#dataStatus");
 const spotTab = document.querySelector("#spotTab");
 const catchTab = document.querySelector("#catchTab");
@@ -195,6 +195,8 @@ const closeLocationPinPanelButton = document.querySelector("#closeLocationPinPan
 const locateMeButton = document.querySelector("#locateMe");
 const pinCurrentLocationButton = document.querySelector("#pinCurrentLocation");
 const installAppButton = document.querySelector("#installApp");
+const iosInstallHint = document.querySelector("#iosInstallHint");
+const closeIosInstallHintButton = document.querySelector("#closeIosInstallHint");
 const gpsStatus = document.querySelector("#gpsStatus");
 const mobileListToggle = document.querySelector("#mobileListToggle");
 const sidebar = document.querySelector(".sidebar");
@@ -265,8 +267,14 @@ function addMarker(spot) {
   if (markers.has(spot.id)) return;
   const marker = L.marker([spot.lat, spot.lng], { icon: makeIcon(spot) })
     .addTo(map)
-    .bindPopup(`<strong>${spot.name}</strong><br>${spot.type} / ${spot.area}`);
+    .bindPopup(spotPopupHtml(spot));
   marker.on("click", () => selectSpot(spot.id));
+  marker.on("popupopen", () => {
+    const editButton = document.querySelector(`[data-edit-spot-id="${spot.id}"]`);
+    if (editButton) editButton.addEventListener("click", () => openSpotPanel(spot));
+    const deleteButton = document.querySelector(`[data-delete-spot-id="${spot.id}"]`);
+    if (deleteButton) deleteButton.addEventListener("click", () => deleteCustomSpot(spot.id));
+  });
   markers.set(spot.id, marker);
 }
 
@@ -293,11 +301,6 @@ function deleteCustomSpot(spotId) {
   closeSpotPanel();
 
   selectedId = null;
-  spotCard.innerHTML = `
-    <p class="spot-card-type">選択中</p>
-    <h2>左のリストから場所を選択</h2>
-    <p>選んだ場所へ地図が移動します。</p>
-  `;
 }
 
 function persist() {
@@ -850,74 +853,20 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
-function spotStatusBadges(spot) {
-  const state = savedState[spot.id] || {};
-  const coastalSpot = spot.type === "漁港" || spot.type === "港" || spot.type === "マリーナ";
-  const subject = coastalSpot ? "釣果" : "バス";
-  const bass = state.hasBass
-    ? [`${subject} ○`, "is-positive"]
-    : state.noBass
-      ? [`${subject} ×`, "is-negative"]
-      : [`${subject} 未確認`, "is-pending"];
-  const banned = state.banned
-    ? ["釣り禁止", "is-negative"]
-    : ["禁止 未確認", "is-pending"];
-  const parking = state.parking
-    ? ["駐車 ○", "is-positive"]
-    : ["駐車 未確認", "is-pending"];
-
-  return [bass, banned, parking]
-    .map(([label, className]) => `<span class="spot-info-badge ${className}">${label}</span>`)
-    .join("");
-}
-
-function renderSpotCard(spot) {
-  const spotCatches = catches
-    .filter((catchLog) => catchLog.spotId === spot.id)
-    .sort((a, b) => new Date(b.time || 0) - new Date(a.time || 0));
-  const latestCatch = spotCatches[0];
-  const source = spot.source || (spot.custom ? "ユーザー登録" : "初期登録データ");
-  const coastalSpot = spot.type === "漁港" || spot.type === "港" || spot.type === "マリーナ";
-  const notice = coastalSpot
-    ? "港は船舶や作業車両が行き交う仕事場です。作業区域、立入禁止、駐車禁止の表示を優先し、船や荷役作業の妨げにならないようにしてください。"
-    : "現地の看板、立入禁止区域、遊漁規則を優先してください。駐車は周囲の迷惑にならない場所を確認してください。";
-
-  spotCard.innerHTML = `
-    <p class="spot-card-type">${escapeHtml(spot.type)} / ${escapeHtml(spot.area)}</p>
-    <h2>${escapeHtml(spot.name)}</h2>
-    <div class="spot-info-grid">
-      <div class="spot-info-item">
-        <span>座標</span>
-        <strong>${Number(spot.lat).toFixed(5)}, ${Number(spot.lng).toFixed(5)}</strong>
-      </div>
-      <div class="spot-info-item">
-        <span>釣果記録</span>
-        <strong>${spotCatches.length}件${latestCatch ? ` / 最新 ${formatCatchTime(latestCatch.time)}` : ""}</strong>
-      </div>
+function spotPopupHtml(spot) {
+  return `
+    <div class="spot-popup">
+      <strong>${escapeHtml(spot.name)}</strong>
+      <p>${escapeHtml(spot.type)} / ${escapeHtml(spot.area)}</p>
+      ${spot.memo ? `<p>${escapeHtml(spot.memo)}</p>` : ""}
+      ${spot.custom ? `
+        <div class="popup-spot-actions">
+          <button class="edit-spot-button" type="button" data-edit-spot-id="${spot.id}">編集</button>
+          <button class="delete-spot-button" type="button" data-delete-spot-id="${spot.id}">削除</button>
+        </div>
+      ` : ""}
     </div>
-    <div class="spot-info-badges" aria-label="チェック状況">
-      ${spotStatusBadges(spot)}
-    </div>
-    ${spot.memo ? `<p class="spot-memo">${escapeHtml(spot.memo)}</p>` : ""}
-    <p class="spot-source">情報元: ${escapeHtml(source)}</p>
-    <p class="spot-notice">${notice}</p>
-    ${spot.custom ? `
-      <div class="spot-card-actions">
-        <button class="edit-spot-button" type="button" id="editCustomSpot">編集</button>
-        <button class="delete-spot-button" type="button" id="deleteCustomSpotCard">削除</button>
-      </div>
-    ` : ""}
   `;
-
-  const editButton = document.querySelector("#editCustomSpot");
-  if (editButton) editButton.addEventListener("click", () => openSpotPanel(spot));
-  const deleteButton = document.querySelector("#deleteCustomSpotCard");
-  if (deleteButton) deleteButton.addEventListener("click", () => deleteCustomSpot(spot.id));
-}
-
-function refreshSelectedSpotCard() {
-  const selectedSpot = spots.find((spot) => spot.id === selectedId);
-  if (selectedSpot) renderSpotCard(selectedSpot);
 }
 
 function selectSpot(id) {
@@ -929,7 +878,6 @@ function selectSpot(id) {
   const marker = markers.get(id);
   if (marker) marker.openPopup();
 
-  renderSpotCard(spot);
   renderList();
   if (window.matchMedia("(max-width: 820px)").matches) setMobileList(false);
 }
@@ -948,7 +896,6 @@ function createCheckbox(spot, kind, label) {
     if (kind === "noBass" && event.target.checked) savedState[spot.id].hasBass = false;
 
     persist();
-    if (selectedId === spot.id) renderSpotCard(spot);
     renderList();
   });
   return input;
@@ -1042,11 +989,6 @@ filterButtons.forEach((button) => {
 document.querySelector("#resetView").addEventListener("click", () => {
   selectedId = null;
   moveMapTo(34.6761, 136.5086, 9);
-  spotCard.innerHTML = `
-    <p class="spot-card-type">選択中</p>
-    <h2>左のリストから場所を選択</h2>
-    <p>選んだ場所へ地図が移動します。</p>
-  `;
   renderList();
 });
 
@@ -1070,7 +1012,6 @@ deleteCatchButton.addEventListener("click", () => {
   if (!editingCatchId) return;
   catches = catches.filter((catchLog) => catchLog.id !== editingCatchId);
   persistCatches();
-  refreshSelectedSpotCard();
   renderCatchMarkers();
   renderCatchList();
   setActiveList("catches");
@@ -1125,10 +1066,9 @@ spotForm.addEventListener("submit", (event) => {
   if (editingSpotId) {
     spots = spots.map((spot) => (spot.id === editingSpotId ? spotData : spot));
     const marker = markers.get(spotData.id);
-    if (marker) {
-      marker.setLatLng([spotData.lat, spotData.lng]);
-      marker.setPopupContent(`<strong>${spotData.name}</strong><br>${spotData.type} / ${spotData.area}`);
-    }
+    if (marker) marker.remove();
+    markers.delete(spotData.id);
+    addMarker(spotData);
   } else {
     spots.push(spotData);
     addMarker(spotData);
@@ -1203,7 +1143,6 @@ catchForm.addEventListener("submit", (event) => {
     catchPhotoStatus.textContent = "端末の保存容量が不足しています。写真を外すか、小さい画像を選んでください。";
     return;
   }
-  refreshSelectedSpotCard();
   renderCatchMarkers();
   renderCatchList();
   setActiveList("catches");
@@ -1239,12 +1178,34 @@ const isStandaloneMode = () =>
   window.matchMedia("(display-mode: standalone)").matches ||
   window.navigator.standalone === true;
 
-installAppButton.classList.toggle("is-hidden", isStandaloneMode());
+const isIosDevice = /iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+  (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const isIosSafari = isIosDevice &&
+  /Safari/i.test(navigator.userAgent) &&
+  !/CriOS|FxiOS|EdgiOS|OPiOS/i.test(navigator.userAgent);
+const iosHintDismissed = localStorage.getItem("mie-ios-install-hint-dismissed-v1") === "1";
+
+installAppButton.classList.add("is-hidden");
+iosInstallHint.classList.toggle("is-visible", isIosSafari && !isStandaloneMode() && !iosHintDismissed);
+iosInstallHint.setAttribute(
+  "aria-hidden",
+  String(!isIosSafari || isStandaloneMode() || iosHintDismissed)
+);
+
+closeIosInstallHintButton.addEventListener("click", () => {
+  iosInstallHint.classList.remove("is-visible");
+  iosInstallHint.setAttribute("aria-hidden", "true");
+  try {
+    localStorage.setItem("mie-ios-install-hint-dismissed-v1", "1");
+  } catch (error) {
+    // The hint still closes when private browsing blocks storage.
+  }
+});
 
 window.addEventListener("beforeinstallprompt", (event) => {
   event.preventDefault();
   deferredInstallPrompt = event;
-  installAppButton.classList.remove("is-hidden");
+  if (!isStandaloneMode()) installAppButton.classList.remove("is-hidden");
 });
 
 installAppButton.addEventListener("click", async () => {
@@ -1264,6 +1225,8 @@ installAppButton.addEventListener("click", async () => {
 window.addEventListener("appinstalled", () => {
   deferredInstallPrompt = null;
   installAppButton.classList.add("is-hidden");
+  iosInstallHint.classList.remove("is-visible");
+  iosInstallHint.setAttribute("aria-hidden", "true");
 });
 
 requestAnimationFrame(() => map.invalidateSize({ pan: false }));
