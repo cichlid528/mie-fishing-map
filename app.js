@@ -935,14 +935,9 @@ function renderList() {
     main.append(name, meta);
     row.append(main);
 
-    const coastalSpot = spot.type === "漁港" || spot.type === "港" || spot.type === "マリーナ";
-    const presenceLabels = coastalSpot
-      ? ["釣果がある", "釣果がない"]
-      : ["ブラックバスがいる", "ブラックバスがいない"];
-
     [
-      ["hasBass", presenceLabels[0]],
-      ["noBass", presenceLabels[1]],
+      ["hasBass", "釣れた"],
+      ["noBass", "釣れてない"],
       ["banned", "釣り禁止"],
       ["parking", "駐車スペースがある"]
     ].forEach(([kind, label]) => {
