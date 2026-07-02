@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://cichlid528.github.io/mie-fishing-map/sitemap.xml
