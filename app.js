@@ -170,6 +170,7 @@ const catchWater = document.querySelector("#catchWater");
 const catchSize = document.querySelector("#catchSize");
 const catchMemo = document.querySelector("#catchMemo");
 const catchPhoto = document.querySelector("#catchPhoto");
+const catchCamera = document.querySelector("#catchCamera");
 const catchPhotoPreview = document.querySelector("#catchPhotoPreview");
 const catchPhotoImage = document.querySelector("#catchPhotoImage");
 const removeCatchPhotoButton = document.querySelector("#removeCatchPhoto");
@@ -496,7 +497,7 @@ function showCatchPhoto(value) {
   if (photo) catchPhotoImage.src = photo;
   catchPhotoStatus.textContent = photo
     ? "写真を添付します"
-    : "写真は圧縮してこの端末に保存します";
+    : "Googleフォトまたは端末の写真を圧縮して保存します";
 }
 
 function compressCatchPhoto(file) {
@@ -536,6 +537,22 @@ function compressCatchPhoto(file) {
     };
     image.src = objectUrl;
   });
+}
+
+async function handleCatchPhotoSelection(input) {
+  const [file] = input.files;
+  if (!file) return;
+  catchPhotoStatus.textContent = "写真を圧縮しています…";
+  try {
+    pendingCatchPhoto = await compressCatchPhoto(file);
+    showCatchPhoto(pendingCatchPhoto);
+  } catch (error) {
+    pendingCatchPhoto = "";
+    showCatchPhoto("");
+    catchPhotoStatus.textContent = error.message;
+  } finally {
+    input.value = "";
+  }
 }
 
 function closeSpotPanel() {
@@ -917,23 +934,13 @@ deleteCatchButton.addEventListener("click", () => {
   closeCatchPanel();
 });
 
-catchPhoto.addEventListener("change", async () => {
-  const [file] = catchPhoto.files;
-  if (!file) return;
-  catchPhotoStatus.textContent = "写真を圧縮しています…";
-  try {
-    pendingCatchPhoto = await compressCatchPhoto(file);
-    showCatchPhoto(pendingCatchPhoto);
-  } catch (error) {
-    pendingCatchPhoto = "";
-    showCatchPhoto("");
-    catchPhotoStatus.textContent = error.message;
-  }
-});
+catchPhoto.addEventListener("change", () => handleCatchPhotoSelection(catchPhoto));
+catchCamera.addEventListener("change", () => handleCatchPhotoSelection(catchCamera));
 
 removeCatchPhotoButton.addEventListener("click", () => {
   pendingCatchPhoto = "";
   catchPhoto.value = "";
+  catchCamera.value = "";
   showCatchPhoto("");
 });
 
