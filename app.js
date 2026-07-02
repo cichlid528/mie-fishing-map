@@ -1,6 +1,7 @@
 const STORAGE_KEY = "mie-bass-map-v1";
 const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
 const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
+const LOCATION_PIN_STORAGE_KEY = "mie-map-location-pins-v1";
 
 // 国土地理院の名称検索で同名地点を確認できた座標に合わせています。
 const seedSpots = [
@@ -177,7 +178,22 @@ const removeCatchPhotoButton = document.querySelector("#removeCatchPhoto");
 const catchPhotoStatus = document.querySelector("#catchPhotoStatus");
 const deleteCatchButton = document.querySelector("#deleteCatch");
 const closeCatchPanelButton = document.querySelector("#closeCatchPanel");
+const locationPinPanel = document.querySelector("#locationPinPanel");
+const locationPinForm = document.querySelector("#locationPinForm");
+const locationPinLat = document.querySelector("#locationPinLat");
+const locationPinLng = document.querySelector("#locationPinLng");
+const locationPinName = document.querySelector("#locationPinName");
+const locationPinMemo = document.querySelector("#locationPinMemo");
+const locationPinPhoto = document.querySelector("#locationPinPhoto");
+const locationPinCamera = document.querySelector("#locationPinCamera");
+const locationPinPhotoPreview = document.querySelector("#locationPinPhotoPreview");
+const locationPinPhotoImage = document.querySelector("#locationPinPhotoImage");
+const locationPinPhotoStatus = document.querySelector("#locationPinPhotoStatus");
+const removeLocationPinPhotoButton = document.querySelector("#removeLocationPinPhoto");
+const deleteLocationPinButton = document.querySelector("#deleteLocationPin");
+const closeLocationPinPanelButton = document.querySelector("#closeLocationPinPanel");
 const locateMeButton = document.querySelector("#locateMe");
+const pinCurrentLocationButton = document.querySelector("#pinCurrentLocation");
 const installAppButton = document.querySelector("#installApp");
 const gpsStatus = document.querySelector("#gpsStatus");
 const mobileListToggle = document.querySelector("#mobileListToggle");
@@ -185,7 +201,9 @@ const sidebar = document.querySelector(".sidebar");
 const filterButtons = [...document.querySelectorAll(".filter-chip")];
 const markers = new Map();
 const catchMarkers = new Map();
+const locationPinMarkers = new Map();
 let catches = JSON.parse(localStorage.getItem(CATCH_STORAGE_KEY) || "[]");
+let locationPins = JSON.parse(localStorage.getItem(LOCATION_PIN_STORAGE_KEY) || "[]");
 let selectedId = null;
 let activeFilter = "all";
 let activeList = "spots";
@@ -194,9 +212,13 @@ let editingSpotId = null;
 let catchMode = false;
 let editingCatchId = null;
 let pendingCatchPhoto = "";
+let editingLocationPinId = null;
+let pendingLocationPinPhoto = "";
 let locationWatchId = null;
 let currentLocationMarker = null;
 let currentAccuracyCircle = null;
+let lastKnownLocation = null;
+let pendingCurrentLocationPin = false;
 let deferredInstallPrompt = null;
 
 dataStatus.textContent = `公的データで${seedSpots.filter((spot) => spot.type === "池").length}池・${seedSpots.filter((spot) => spot.type === "漁港").length}漁港・${seedSpots.filter((spot) => spot.type === "港").length}港・${seedSpots.filter((spot) => spot.type === "マリーナ").length}マリーナを登録`;
@@ -296,6 +318,15 @@ function persistCatches() {
   }
 }
 
+function persistLocationPins() {
+  try {
+    localStorage.setItem(LOCATION_PIN_STORAGE_KEY, JSON.stringify(locationPins));
+    return true;
+  } catch (error) {
+    return false;
+  }
+}
+
 function formatDateTimeForInput(date = new Date()) {
   const pad = (value) => String(value).padStart(2, "0");
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
@@ -377,6 +408,38 @@ function renderCatchMarkers() {
   catchMarkers.forEach((marker) => marker.remove());
   catchMarkers.clear();
   catches.forEach(addCatchMarker);
+}
+
+function locationPinPopupHtml(pin) {
+  return `
+    <div class="catch-popup">
+      <strong>${escapeHtml(pin.name || "保存したピン")}</strong>
+      ${validCatchPhoto(pin.photo) ? `<img class="catch-popup-photo" src="${pin.photo}" alt="ピンの写真">` : ""}
+      ${pin.memo ? `<p>${escapeHtml(pin.memo)}</p>` : ""}
+      <button class="popup-edit-button" type="button" data-location-pin-id="${pin.id}">編集</button>
+    </div>
+  `;
+}
+
+function addLocationPinMarker(pin) {
+  const marker = L.marker([pin.lat, pin.lng], {
+    title: pin.name || "保存したピン"
+  })
+    .addTo(map)
+    .bindPopup(locationPinPopupHtml(pin));
+
+  marker.on("popupopen", () => {
+    const button = document.querySelector(`[data-location-pin-id="${pin.id}"]`);
+    if (button) button.addEventListener("click", () => openLocationPinPanel(pin));
+  });
+
+  locationPinMarkers.set(pin.id, marker);
+}
+
+function renderLocationPinMarkers() {
+  locationPinMarkers.forEach((marker) => marker.remove());
+  locationPinMarkers.clear();
+  locationPins.forEach(addLocationPinMarker);
 }
 
 function renderCatchList() {
@@ -555,6 +618,32 @@ async function handleCatchPhotoSelection(input) {
   }
 }
 
+function showLocationPinPhoto(value) {
+  const photo = validCatchPhoto(value) ? value : "";
+  locationPinPhotoImage.removeAttribute("src");
+  locationPinPhotoPreview.classList.toggle("is-hidden", !photo);
+  if (photo) locationPinPhotoImage.src = photo;
+  locationPinPhotoStatus.textContent = photo
+    ? "写真をピンに添付します"
+    : "写真は圧縮してこの端末に保存します";
+}
+
+async function handleLocationPinPhotoSelection(input) {
+  const [file] = input.files;
+  if (!file) return;
+  locationPinPhotoStatus.textContent = "写真を圧縮しています…";
+  try {
+    pendingLocationPinPhoto = await compressCatchPhoto(file);
+    showLocationPinPhoto(pendingLocationPinPhoto);
+  } catch (error) {
+    pendingLocationPinPhoto = "";
+    showLocationPinPhoto("");
+    locationPinPhotoStatus.textContent = error.message;
+  } finally {
+    input.value = "";
+  }
+}
+
 function closeSpotPanel() {
   spotPanel.classList.remove("is-open");
   spotPanel.setAttribute("aria-hidden", "true");
@@ -584,6 +673,29 @@ function openCatchPanel(catchLog = null, latLng = null) {
   catchPanel.classList.add("is-open");
   catchPanel.setAttribute("aria-hidden", "false");
   setCatchMode(false);
+}
+
+function closeLocationPinPanel() {
+  locationPinPanel.classList.remove("is-open");
+  locationPinPanel.setAttribute("aria-hidden", "true");
+  editingLocationPinId = null;
+  pendingLocationPinPhoto = "";
+  locationPinForm.reset();
+  showLocationPinPhoto("");
+}
+
+function openLocationPinPanel(pin = null, latLng = null) {
+  editingLocationPinId = pin?.id || null;
+  locationPinLat.value = pin?.lat ?? latLng?.lat;
+  locationPinLng.value = pin?.lng ?? latLng?.lng;
+  locationPinName.value = pin?.name || "保存したピン";
+  locationPinMemo.value = pin?.memo || "";
+  pendingLocationPinPhoto = validCatchPhoto(pin?.photo) ? pin.photo : "";
+  showLocationPinPhoto(pendingLocationPinPhoto);
+  deleteLocationPinButton.classList.toggle("is-hidden", !editingLocationPinId);
+
+  locationPinPanel.classList.add("is-open");
+  locationPinPanel.setAttribute("aria-hidden", "false");
 }
 
 function openSpotPanel(spot = null, latLng = null) {
@@ -640,6 +752,12 @@ function stopLocationTracking() {
 function showCurrentLocation(position) {
   const { latitude, longitude, accuracy } = position.coords;
   const latlng = [latitude, longitude];
+  lastKnownLocation = {
+    lat: latitude,
+    lng: longitude,
+    accuracy,
+    timestamp: position.timestamp || Date.now()
+  };
 
   if (!currentLocationMarker) {
     currentAccuracyCircle = L.circle(latlng, {
@@ -663,9 +781,15 @@ function showCurrentLocation(position) {
   }
 
   setGpsStatus(`現在地を表示中（精度 約${Math.round(accuracy)}m）`);
+
+  if (pendingCurrentLocationPin) {
+    pendingCurrentLocationPin = false;
+    openLocationPinPanel(null, lastKnownLocation);
+  }
 }
 
 function handleLocationError(error) {
+  pendingCurrentLocationPin = false;
   stopLocationTracking();
   const messages = {
     1: "位置情報の利用が許可されていません。端末の設定で許可してください。",
@@ -699,6 +823,22 @@ function toggleLocationTracking() {
       maximumAge: 15000
     }
   );
+}
+
+function addPinAtCurrentLocation() {
+  if (lastKnownLocation) {
+    openLocationPinPanel(null, lastKnownLocation);
+    return;
+  }
+
+  if (!navigator.geolocation) {
+    setGpsStatus("この端末ではGPSを利用できません。", true);
+    return;
+  }
+
+  pendingCurrentLocationPin = true;
+  setGpsStatus("現在地を取得してピンを準備しています…");
+  if (locationWatchId === null) toggleLocationTracking();
 }
 
 function escapeHtml(value) {
@@ -877,6 +1017,7 @@ spots.forEach(addMarker);
 populateCatchSpots();
 renderCatchMarkers();
 renderCatchList();
+renderLocationPinMarkers();
 
 searchInput.addEventListener("input", renderList);
 
@@ -912,11 +1053,13 @@ document.querySelector("#resetView").addEventListener("click", () => {
 addCatchModeButton.addEventListener("click", () => setCatchMode(!catchMode));
 addSpotModeButton.addEventListener("click", () => setSpotMode(!spotMode));
 locateMeButton.addEventListener("click", toggleLocationTracking);
+pinCurrentLocationButton.addEventListener("click", addPinAtCurrentLocation);
 mobileListToggle.addEventListener("click", () => {
   setMobileList(!sidebar.classList.contains("is-open"));
 });
 closeCatchPanelButton.addEventListener("click", closeCatchPanel);
 closeSpotPanelButton.addEventListener("click", closeSpotPanel);
+closeLocationPinPanelButton.addEventListener("click", closeLocationPinPanel);
 
 deleteSpotButton.addEventListener("click", () => {
   if (!editingSpotId) return;
@@ -942,6 +1085,24 @@ removeCatchPhotoButton.addEventListener("click", () => {
   catchPhoto.value = "";
   catchCamera.value = "";
   showCatchPhoto("");
+});
+
+locationPinPhoto.addEventListener("change", () => handleLocationPinPhotoSelection(locationPinPhoto));
+locationPinCamera.addEventListener("change", () => handleLocationPinPhotoSelection(locationPinCamera));
+
+removeLocationPinPhotoButton.addEventListener("click", () => {
+  pendingLocationPinPhoto = "";
+  locationPinPhoto.value = "";
+  locationPinCamera.value = "";
+  showLocationPinPhoto("");
+});
+
+deleteLocationPinButton.addEventListener("click", () => {
+  if (!editingLocationPinId) return;
+  locationPins = locationPins.filter((pin) => pin.id !== editingLocationPinId);
+  persistLocationPins();
+  renderLocationPinMarkers();
+  closeLocationPinPanel();
 });
 
 spotForm.addEventListener("submit", (event) => {
@@ -979,6 +1140,37 @@ spotForm.addEventListener("submit", (event) => {
   closeSpotPanel();
   setActiveList("spots");
   selectSpot(spotData.id);
+});
+
+locationPinForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const pinData = {
+    id: editingLocationPinId || `location-pin-${Date.now()}`,
+    name: locationPinName.value.trim() || "保存したピン",
+    memo: locationPinMemo.value.trim(),
+    photo: pendingLocationPinPhoto,
+    lat: Number(locationPinLat.value),
+    lng: Number(locationPinLng.value)
+  };
+
+  const previousPins = locationPins;
+  if (editingLocationPinId) {
+    locationPins = locationPins.map((pin) => (pin.id === editingLocationPinId ? pinData : pin));
+  } else {
+    locationPins = [...locationPins, pinData];
+  }
+
+  if (!persistLocationPins()) {
+    locationPins = previousPins;
+    locationPinPhotoStatus.textContent = "端末の保存容量が不足しています。写真を外すか、小さい画像を選んでください。";
+    return;
+  }
+
+  renderLocationPinMarkers();
+  closeLocationPinPanel();
+  const marker = locationPinMarkers.get(pinData.id);
+  if (marker) marker.openPopup();
 });
 
 catchForm.addEventListener("submit", (event) => {
