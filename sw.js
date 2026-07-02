@@ -1,13 +1,15 @@
-const CACHE_NAME = "mie-fishing-map-v18";
+const CACHE_NAME = "mie-fishing-map-v19";
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./style.css?v=14",
-  "./app.js?v=14",
-  "./manifest.json?v=4",
-  "./icon-fishing-192.png",
-  "./icon-fishing-512.png",
-  "./icon-fishing-maskable-512.png"
+  "./style.css?v=15",
+  "./app.js?v=15",
+  "./manifest.json?v=5",
+  "./icon-v2-180.png",
+  "./icon-v2-192.png",
+  "./icon-v2-512.png",
+  "./icon-v2-maskable-512.png",
+  "./icon-v2-1024.png"
 ];
 
 self.addEventListener("install", (event) => {
