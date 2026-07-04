@@ -1,4 +1,4 @@
-v18: アプリのアイコンを新しい画像に変更しました。
+v22: 小さいiPhone画面向けにメニューとポイント詳細カードをコンパクト表示に調整しました。
 
 GitHubにアップロードするもの:
 - index.html
@@ -9,8 +9,9 @@ GitHubにアップロードするもの:
 - icons フォルダー内の4つのPNG画像
 
 ZIPのままではなく、解凍した中身をアップロードしてください。
-確認URL: https://cichlid528.github.io/mie-fishing-map/?v=18
 
+コミット名の例:
+小さいiPhone画面のメニュー表示を調整
 
-更新内容: 背景画像設定時のメニュー項目の背景透過率を50%に調整。
-確認URL: https://cichlid528.github.io/mie-fishing-map/?v=21
+確認URL:
+https://cichlid528.github.io/mie-fishing-map/?v=22
