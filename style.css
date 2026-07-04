@@ -1508,6 +1508,32 @@ h1 {
   }
 }
 
+/* v25: メニュー全体はスクロールさせず、一覧部分だけを内部で動かす */
+@media (max-width: 820px) {
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .controls,
+  .list-head,
+  .catch-list-head,
+  .sidebar-footer,
+  .sidebar-actions {
+    flex: 0 0 auto;
+  }
+
+  .spot-list,
+  .catch-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+}
+
+
 
 .notice-banner,
 .panel-warning {
@@ -1752,6 +1778,13 @@ h1 {
     padding: 0 5px;
     font-size: 10px;
     border-radius: 7px;
+  }
+
+
+  .spot-list,
+  .catch-list {
+    min-height: 0;
+    max-height: none;
   }
 
   .sidebar-footer {

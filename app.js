@@ -1314,18 +1314,27 @@ function createCheckbox(spot, kind, label) {
   input.dataset.kind = kind;
   input.checked = Boolean(savedState[spot.id]?.[kind]);
   input.setAttribute("aria-label", `${spot.name}: ${label}`);
+  input.addEventListener("click", (event) => {
+    // チェック操作が行の選択タップとして扱われないようにする。
+    event.stopPropagation();
+  });
   input.addEventListener("change", (event) => {
+    event.stopPropagation();
+    const checked = event.target.checked;
     const state = getSpotState(spot.id);
-    state[kind] = event.target.checked;
 
     if (kind === "hasBass") {
-      setCaughtState(spot.id, event.target.checked);
+      setCaughtState(spot.id, checked);
     } else {
+      state[kind] = checked;
       persist();
     }
 
+    // v25: 釣れた・魚種だけでなく、禁止・駐車もチェックした釣り場の詳細カードへ即反映する。
+    selectedId = spot.id;
     renderList();
-    if (selectedId === spot.id) updateSpotCard(spot);
+    const current = spots.find((item) => item.id === spot.id) || spot;
+    updateSpotCard(current);
   });
   return input;
 }
