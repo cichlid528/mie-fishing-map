@@ -2,8 +2,14 @@ const STORAGE_KEY = "mie-bass-map-v1";
 const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
 const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
 const BACKGROUND_STORAGE_KEY = "mie-fishing-map-sidebar-background-v1";
-const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v1";
-const AUTO_ALIGN_STORAGE_KEY = "mie-fishing-map-auto-align-v1";
+const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v5";
+const PREVIOUS_POSITION_STORAGE_KEYS = [
+  "mie-fishing-map-position-overrides-v4",
+  "mie-fishing-map-position-overrides-v3",
+  "mie-fishing-map-position-overrides-v2",
+  "mie-fishing-map-position-overrides-v1"
+];
+const AUTO_ALIGN_STORAGE_KEY = "mie-fishing-map-auto-align-v5";
 
 // 国土地理院の名称検索で同名地点を確認できた座標に合わせています。
 const seedSpots = [
@@ -125,6 +131,20 @@ const portSpots = [
   { id: "port-udono", name: "鵜殿港", type: "港", area: "南牟婁郡紀宝町鵜殿", lat: 33.7359, lng: 136.0082, zoom: 16, source: "港・漁港初期位置補正" }
 ];
 
+const marinaSpots = [
+  { id: "marina-isewan", name: "伊勢湾マリーナ", type: "マリーナ", area: "四日市市天カ須賀", lat: 34.992667, lng: 136.654650, zoom: 17, source: "海の駅・公式位置情報" },
+  { id: "marina-yamato", name: "ヤマトマリーナ", type: "マリーナ", area: "鈴鹿市江島本町", lat: 34.833376, lng: 136.595698, zoom: 18, source: "NAVITIME / Yahoo!マップ" },
+  { id: "marina-suzuki-shiroko", name: "スズキマリーナ白子", type: "マリーナ", area: "鈴鹿市江島本町", lat: 34.833230, lng: 136.596120, zoom: 18, source: "所在地から初期配置" },
+  { id: "marina-kawage", name: "マリーナ河芸", type: "マリーナ", area: "津市河芸町東千里", lat: 34.798339, lng: 136.562838, zoom: 18, source: "MapFan / 公式所在地" },
+  { id: "marina-tsu-yacht", name: "津ヨットハーバー", type: "マリーナ", area: "津市津興", lat: 34.708344, lng: 136.524048, zoom: 17, source: "MapFan / 津市観光協会" },
+  { id: "marina-matsusaka", name: "松阪マリーナ", type: "マリーナ", area: "松阪市大口町", lat: 34.593204, lng: 136.552180, zoom: 17, source: "MapFan" },
+  { id: "marina-njm", name: "NJMマリーナ", type: "マリーナ", area: "伊勢市有滝町", lat: 34.544386, lng: 136.703818, zoom: 17, source: "NAVITIME / Yahoo!マップ" },
+  { id: "marina-ise", name: "マリーナ伊勢", type: "マリーナ", area: "伊勢市大湊町", lat: 34.524407, lng: 136.744185, zoom: 17, source: "NAVITIME / MapFan" },
+  { id: "marina-toba", name: "鳥羽マリーナ", type: "マリーナ", area: "鳥羽市千賀町", lat: 34.388732, lng: 136.880716, zoom: 17, source: "NAVITIME / 海の駅" },
+  { id: "marina-westcove-iseshima", name: "WestCove伊勢志摩マリーナ", type: "マリーナ", area: "度会郡南伊勢町船越", lat: 34.336252, lng: 136.683410, zoom: 17, source: "MapFan / 公式所在地" },
+  { id: "marina-kaiyujin", name: "海遊人マリーナ", type: "マリーナ", area: "度会郡南伊勢町迫間浦", lat: 34.307176, lng: 136.641763, zoom: 17, source: "NAVITIME / 公式所在地" }
+];
+
 const fishSpeciesGroups = [
   {
     name: "淡水魚",
@@ -136,10 +156,37 @@ const fishSpeciesGroups = [
   }
 ];
 
-let customSpots = JSON.parse(localStorage.getItem(CUSTOM_SPOT_STORAGE_KEY) || "[]");
-let positionOverrides = JSON.parse(localStorage.getItem(POSITION_STORAGE_KEY) || "{}");
+function safeParseJson(value, fallback) {
+  try {
+    return JSON.parse(value || "") || fallback;
+  } catch (error) {
+    return fallback;
+  }
+}
+
+function loadPositionOverrides() {
+  const current = safeParseJson(localStorage.getItem(POSITION_STORAGE_KEY), {});
+  if (Object.keys(current).length > 0) return current;
+
+  // v34 以前の自動補正は、表記と違う候補を保存してしまうことがあったため引き継ぎません。
+  // 詳細カードから手で直した位置だけ、新しい保存先へ移します。
+  const manualOnly = {};
+  PREVIOUS_POSITION_STORAGE_KEYS.forEach((key) => {
+    const legacy = safeParseJson(localStorage.getItem(key), {});
+    Object.entries(legacy).forEach(([spotId, value]) => {
+      if (value?.source === "手動補正" && validPosition(value)) manualOnly[spotId] = value;
+    });
+  });
+  if (Object.keys(manualOnly).length > 0) {
+    localStorage.setItem(POSITION_STORAGE_KEY, JSON.stringify(manualOnly));
+  }
+  return manualOnly;
+}
+
+let customSpots = safeParseJson(localStorage.getItem(CUSTOM_SPOT_STORAGE_KEY), []);
+let positionOverrides = loadPositionOverrides();
 const defaultSpotPositions = new Map(
-  [...seedSpots, ...portSpots].map((spot) => [spot.id, { lat: spot.lat, lng: spot.lng }])
+  [...seedSpots, ...portSpots, ...marinaSpots].map((spot) => [spot.id, { lat: spot.lat, lng: spot.lng }])
 );
 
 function validPosition(value) {
@@ -165,12 +212,17 @@ function applyPositionOverride(spot) {
   };
 }
 
-let spots = [...seedSpots, ...portSpots].map(applyPositionOverride).concat(customSpots);
+let spots = [...seedSpots, ...portSpots, ...marinaSpots].map(applyPositionOverride).concat(customSpots);
 
-const GSI_AUTO_ALIGN_VERSION = "v31";
+const GSI_AUTO_ALIGN_VERSION = "v36";
 const GSI_NAME_SEARCH_ENDPOINT = "https://msearch.gsi.go.jp/address-search/AddressSearch?q=";
-const GSI_VECTOR_TILE_ZOOM = 15;
-const GSI_VECTOR_TILE_LAYERS = ["experimental_anno", "experimental_nnfpt", "experimental_pfpt", "experimental_nrpt"];
+const GSI_VECTOR_TILE_ZOOMS = [15];
+const GSI_VECTOR_TILE_LAYERS = [
+  { id: "experimental_anno", source: "国土地理院地図注記" },
+  { id: "experimental_nnfpt", source: "国土地理院自然地名" },
+  { id: "experimental_pfpt", source: "国土地理院公共施設" },
+  { id: "experimental_nrpt", source: "国土地理院居住地名" }
+];
 const gsiTileCache = new Map();
 let autoAlignRunning = false;
 
@@ -284,6 +336,7 @@ const catchTab = document.querySelector("#catchTab");
 const spotListHead = document.querySelector("#spotListHead");
 const catchListHead = document.querySelector("#catchListHead");
 const catchList = document.querySelector("#catchList");
+const locateCatchButton = document.querySelector("#locateCatchButton");
 const addSpotModeButton = document.querySelector("#addSpotMode");
 const addCatchModeButton = document.querySelector("#addCatchMode");
 const spotPanel = document.querySelector("#spotPanel");
@@ -302,6 +355,8 @@ const catchSpot = document.querySelector("#catchSpot");
 const catchTime = document.querySelector("#catchTime");
 const catchLat = document.querySelector("#catchLat");
 const catchLng = document.querySelector("#catchLng");
+const catchLocationStatus = document.querySelector("#catchLocationStatus");
+const useCurrentLocationButton = document.querySelector("#useCurrentLocationButton");
 const catchBait = document.querySelector("#catchBait");
 const catchWeather = document.querySelector("#catchWeather");
 const catchWind = document.querySelector("#catchWind");
@@ -319,6 +374,8 @@ const closeCatchPanelButton = document.querySelector("#closeCatchPanel");
 const filterButtons = [...document.querySelectorAll(".filter-chip")];
 const markers = new Map();
 const catchMarkers = new Map();
+let currentLocationMarker = null;
+let currentLocationAccuracyCircle = null;
 let catches = JSON.parse(localStorage.getItem(CATCH_STORAGE_KEY) || "[]");
 let selectedId = null;
 let activeFilter = "all";
@@ -331,7 +388,7 @@ let pendingCatchPhoto = "";
 let moveSpotModeId = null;
 let spotCardSize = null;
 
-dataStatus.textContent = `池${seedSpots.filter((spot) => spot.type === "池").length}件、港・漁港${portSpots.length}件を表示中（港ピン初期位置を補正済み・詳細カードから再補正できます）`;
+dataStatus.textContent = `池${seedSpots.filter((spot) => spot.type === "池").length}件、港・漁港${portSpots.length}件、マリーナ${marinaSpots.length}件を表示中（港・マリーナの初期位置を追加・補正済み）`;
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -603,6 +660,7 @@ function markerClass(type) {
   if (type === "川") return "river";
   if (type === "ダム") return "dam";
   if (type === "港") return "port";
+  if (type === "マリーナ") return "marina";
   return "pond";
 }
 
@@ -610,6 +668,7 @@ function markerLabel(type) {
   if (type === "川") return "川";
   if (type === "ダム") return "堰";
   if (type === "港") return "港";
+  if (type === "マリーナ") return "船";
   return "池";
 }
 
@@ -631,6 +690,127 @@ function makeCatchIcon(number) {
     iconAnchor: [15, 30],
     popupAnchor: [0, -28]
   });
+}
+
+function makeCurrentLocationIcon() {
+  return L.divIcon({
+    className: "",
+    html: '<div class="current-location-marker"><span></span></div>',
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+    popupAnchor: [0, -16]
+  });
+}
+
+function formatLatLng(lat, lng) {
+  const nextLat = Number(lat);
+  const nextLng = Number(lng);
+  if (!Number.isFinite(nextLat) || !Number.isFinite(nextLng)) return "位置未指定";
+  return `${nextLat.toFixed(6)}, ${nextLng.toFixed(6)}`;
+}
+
+function setCatchLocationStatus(lat, lng, source = "記録位置", accuracy = null) {
+  if (!catchLocationStatus) return;
+  const nextLat = Number(lat);
+  const nextLng = Number(lng);
+  if (!Number.isFinite(nextLat) || !Number.isFinite(nextLng)) {
+    catchLocationStatus.textContent = "地図をタップするか、現在地ボタンで記録位置を指定してください。";
+    return;
+  }
+  const accuracyText = Number.isFinite(Number(accuracy)) ? ` / 誤差約${Math.round(Number(accuracy))}m` : "";
+  catchLocationStatus.textContent = `${source}: ${formatLatLng(nextLat, nextLng)}${accuracyText}`;
+}
+
+function updateCurrentLocationMarker(lat, lng, accuracy = null) {
+  const nextLat = Number(lat);
+  const nextLng = Number(lng);
+  if (!Number.isFinite(nextLat) || !Number.isFinite(nextLng)) return;
+  const latLng = [nextLat, nextLng];
+
+  if (!currentLocationMarker) {
+    currentLocationMarker = L.marker(latLng, { icon: makeCurrentLocationIcon(), zIndexOffset: 1200 })
+      .addTo(map)
+      .bindPopup("現在地");
+  } else {
+    currentLocationMarker.setLatLng(latLng);
+  }
+
+  if (Number.isFinite(Number(accuracy)) && Number(accuracy) > 0) {
+    if (!currentLocationAccuracyCircle) {
+      currentLocationAccuracyCircle = L.circle(latLng, {
+        radius: Number(accuracy),
+        className: "current-location-accuracy"
+      }).addTo(map);
+    } else {
+      currentLocationAccuracyCircle.setLatLng(latLng);
+      currentLocationAccuracyCircle.setRadius(Number(accuracy));
+    }
+  }
+}
+
+function getCurrentPosition() {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error("この端末・ブラウザでは現在地取得が使えません"));
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(resolve, reject, {
+      enableHighAccuracy: true,
+      timeout: 15000,
+      maximumAge: 30000
+    });
+  });
+}
+
+function geolocationErrorMessage(error) {
+  if (error?.code === 1) return "現在地の使用が許可されていません。ブラウザの位置情報許可をオンにしてください。";
+  if (error?.code === 2) return "現在地を取得できませんでした。電波やGPSの状態を確認してください。";
+  if (error?.code === 3) return "現在地の取得がタイムアウトしました。もう一度試してください。";
+  return error?.message || "現在地を取得できませんでした。";
+}
+
+async function useCurrentLocationForCatch(options = {}) {
+  const { openPanel = true, button = locateCatchButton } = options;
+  const targetButton = button || locateCatchButton;
+  const previousText = targetButton?.textContent;
+  if (targetButton) {
+    targetButton.disabled = true;
+    targetButton.textContent = "現在地取得中…";
+  }
+  if (dataStatus) dataStatus.textContent = "現在地を取得しています…";
+  if (catchLocationStatus && !openPanel) catchLocationStatus.textContent = "現在地を取得しています…";
+
+  try {
+    const position = await getCurrentPosition();
+    const { latitude, longitude, accuracy } = position.coords;
+    const latLng = L.latLng(latitude, longitude);
+
+    setSpotMode(false);
+    setCatchMode(false);
+    updateCurrentLocationMarker(latitude, longitude, accuracy);
+    moveMapTo(latitude, longitude, Math.max(map.getZoom(), 17));
+
+    if (openPanel) {
+      openCatchPanel(null, latLng, { source: "現在地", accuracy });
+      closeMobileMenu();
+    } else {
+      catchLat.value = latitude;
+      catchLng.value = longitude;
+      catchSpot.value = nearestSpotId(latitude, longitude);
+      setCatchLocationStatus(latitude, longitude, "現在地", accuracy);
+    }
+
+    if (dataStatus) dataStatus.textContent = `現在地を取得しました（誤差約${Math.round(Number(accuracy) || 0)}m）`;
+  } catch (error) {
+    const message = geolocationErrorMessage(error);
+    if (dataStatus) dataStatus.textContent = message;
+    if (catchLocationStatus && !openPanel) catchLocationStatus.textContent = message;
+  } finally {
+    if (targetButton) {
+      targetButton.disabled = false;
+      targetButton.textContent = previousText || "現在地で記録";
+    }
+  }
 }
 
 function addMarker(spot) {
@@ -694,30 +874,72 @@ function uniqueValues(values) {
 }
 
 function spotNameVariants(spot) {
-  const name = String(spot.name || "");
+  const name = String(spot.name || "").trim();
   const variants = [name];
 
+  // 地図表記と完全一致しやすい別名だけを使います。
+  // 末尾を削っただけの短い名前は、市町名や駅名を拾ってピンが大きくずれる原因になるため使いません。
   if (spot.type === "港") {
-    variants.push(name.replace(/漁港$/u, "港"));
-    variants.push(name.replace(/漁港$/u, ""));
-    variants.push(name.replace(/港$/u, ""));
+    if (/漁港$/u.test(name)) variants.push(name.replace(/漁港$/u, "港"));
+    if (/港$/u.test(name) && !/漁港$/u.test(name)) variants.push(name.replace(/港$/u, "漁港"));
+  }
+
+  if (spot.type === "マリーナ") {
+    if (/マリーナ$/u.test(name)) variants.push(name.replace(/マリーナ$/u, "ヨットハーバー"));
+    if (/ヨットハーバー$/u.test(name)) variants.push(name.replace(/ヨットハーバー$/u, "マリーナ"));
+    if (/^WestCove/u.test(name)) variants.push(name.replace(/^WestCove/u, ""));
+    if (/^ＷｅｓｔＣｏｖｅ/u.test(name)) variants.push(name.replace(/^ＷｅｓｔＣｏｖｅ/u, ""));
   }
 
   if (spot.type === "ダム") {
-    variants.push(name.replace(/ダム$/u, ""));
+    variants.push(name.replace(/ダム$/u, "湖"));
   }
 
   if (spot.type === "池") {
-    variants.push(name.replace(/貯水池$/u, ""));
-    variants.push(name.replace(/湖$/u, ""));
-    variants.push(name.replace(/池$/u, ""));
-  }
-
-  if (spot.type === "川") {
-    variants.push(name.replace(/川$/u, ""));
+    if (/貯水池$/u.test(name)) {
+      variants.push(name.replace(/貯水池$/u, "湖"));
+      variants.push(name.replace(/貯水池$/u, "池"));
+    }
+    if (/湖$/u.test(name)) variants.push(name.replace(/湖$/u, "池"));
+    if (/池$/u.test(name) && !/貯水池$/u.test(name)) variants.push(name.replace(/池$/u, "湖"));
   }
 
   return uniqueValues(variants.map(normalizePlaceText)).filter((value) => value.length >= 2);
+}
+
+function shortSpotNameVariants(spot) {
+  const name = String(spot.name || "").trim();
+  const variants = [];
+
+  // 漁港は、地理院地図では「〇〇漁港」ではなく「〇〇」だけで注記されることがあります。
+  // ただし市町名へ飛ぶと大きくズレるため、候補採用時に距離をかなり短く制限します。
+  if (spot.type === "港" && /漁港$/u.test(name)) {
+    variants.push(name.replace(/漁港$/u, ""));
+  }
+
+  if (spot.type === "マリーナ") {
+    if (/マリーナ$/u.test(name)) variants.push(name.replace(/マリーナ$/u, ""));
+    if (/ヨットハーバー$/u.test(name)) variants.push(name.replace(/ヨットハーバー$/u, ""));
+  }
+
+  return uniqueValues(variants.map(normalizePlaceText)).filter((value) => value.length >= 2);
+}
+
+function maxShortLabelDistanceKm(spot) {
+  if (spot.type === "港") return 0.85;
+  if (spot.type === "マリーナ") return 0.55;
+  return 0.45;
+}
+
+function labelLooksLikeWrongType(spot, labelNorm) {
+  if (!labelNorm) return true;
+  if (/(市役所|区役所|町役場|村役場|駅|学校|病院|郵便局|警察署|消防署)$/u.test(labelNorm)) return true;
+  if (spot.type === "港" && !/(港|漁港|浦|泊|岸壁|埠頭|ふ頭|防波堤|マリーナ|ヨットハーバー|ハーバー|海の駅)$/u.test(labelNorm)) return true;
+  if (spot.type === "マリーナ" && !/(マリーナ|ヨットハーバー|ハーバー|港|海の駅|船|係留)$/u.test(labelNorm)) return true;
+  if (spot.type === "ダム" && !/(ダム|堰|湖|貯水池)$/u.test(labelNorm)) return true;
+  if (spot.type === "川" && !/(川|河川)$/u.test(labelNorm)) return true;
+  if (spot.type === "池" && !/(池|湖|沼|溜|ため池|貯水池)$/u.test(labelNorm)) return true;
+  return false;
 }
 
 function distanceKm(lat1, lng1, lat2, lng2) {
@@ -730,24 +952,40 @@ function distanceKm(lat1, lng1, lat2, lng2) {
 }
 
 function maxAutoAlignDistanceKm(spot) {
-  if (spot.type === "川") return 45;
-  if (spot.type === "港") return 18;
-  return 22;
+  if (spot.type === "川") return 18;
+  if (spot.type === "港") return 8;
+  if (spot.type === "マリーナ") return 5;
+  if (spot.type === "ダム") return 10;
+  return 8;
 }
 
 function scoreLabelMatch(spot, label) {
   const labelNorm = normalizePlaceText(label);
   if (!labelNorm) return 0;
   const fullName = normalizePlaceText(spot.name);
-  if (labelNorm === fullName) return 130;
-  if (labelNorm.includes(fullName) || fullName.includes(labelNorm)) return 115;
+
+  // まず正式名の完全一致を最優先。
+  if (labelNorm === fullName) return 180;
+
+  // 正式名を含む注記だけ許可します。短い部分一致は誤爆の原因になるため禁止。
+  if (labelNorm.includes(fullName) && !labelLooksLikeWrongType(spot, labelNorm)) return 145;
 
   const variants = spotNameVariants(spot);
   let best = 0;
   variants.forEach((variant) => {
     if (variant.length < 3) return;
-    if (labelNorm === variant) best = Math.max(best, 100);
-    if (labelNorm.includes(variant) || variant.includes(labelNorm)) best = Math.max(best, 84);
+    if (labelNorm === variant) best = Math.max(best, 150);
+    if (labelNorm.includes(variant) && !labelLooksLikeWrongType(spot, labelNorm)) best = Math.max(best, 118);
+  });
+  return best;
+}
+
+function scoreShortLabelMatch(spot, label) {
+  const labelNorm = normalizePlaceText(label);
+  if (!labelNorm) return 0;
+  let best = 0;
+  shortSpotNameVariants(spot).forEach((variant) => {
+    if (labelNorm === variant) best = Math.max(best, 104);
   });
   return best;
 }
@@ -761,29 +999,46 @@ function featureLabel(feature) {
   for (const key of keys) {
     if (properties[key]) return String(properties[key]);
   }
+
+  const characterLabel = Array.from({ length: 22 }, (_, index) => properties[`charG${index + 1}`])
+    .filter((value) => typeof value === "string" && value.trim().length > 0)
+    .join("");
+  if (characterLabel) return characterLabel;
+
   const fallback = Object.values(properties).find((value) => typeof value === "string" && value.trim().length > 0);
   return fallback ? String(fallback) : "";
 }
 
-function firstCoordinatePair(coordinates) {
-  if (!Array.isArray(coordinates)) return null;
+function collectCoordinatePairs(coordinates, pairs = []) {
+  if (!Array.isArray(coordinates)) return pairs;
   if (coordinates.length >= 2 && Number.isFinite(Number(coordinates[0])) && Number.isFinite(Number(coordinates[1]))) {
-    return coordinates;
+    const lng = Number(coordinates[0]);
+    const lat = Number(coordinates[1]);
+    if (lat >= 33 && lat <= 36 && lng >= 135 && lng <= 138) pairs.push([lng, lat]);
+    return pairs;
   }
-  for (const item of coordinates) {
-    const found = firstCoordinatePair(item);
-    if (found) return found;
+  coordinates.forEach((item) => collectCoordinatePairs(item, pairs));
+  return pairs;
+}
+
+function centerOfCoordinatePairs(pairs) {
+  if (!pairs.length) return null;
+  if (pairs.length === 1) {
+    const [lng, lat] = pairs[0];
+    return { lat, lng };
   }
-  return null;
+  const lngs = pairs.map(([lng]) => lng);
+  const lats = pairs.map(([, lat]) => lat);
+  const lng = (Math.min(...lngs) + Math.max(...lngs)) / 2;
+  const lat = (Math.min(...lats) + Math.max(...lats)) / 2;
+  return { lat, lng };
 }
 
 function featurePoint(feature) {
-  const pair = firstCoordinatePair(feature?.geometry?.coordinates);
-  if (!pair) return null;
-  const lng = Number(pair[0]);
-  const lat = Number(pair[1]);
-  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
-  return { lat, lng };
+  const pairs = collectCoordinatePairs(feature?.geometry?.coordinates);
+  const point = centerOfCoordinatePairs(pairs);
+  if (!point || !Number.isFinite(point.lat) || !Number.isFinite(point.lng)) return null;
+  return point;
 }
 
 function candidatesFromFeatures(spot, features, source) {
@@ -793,10 +1048,16 @@ function candidatesFromFeatures(spot, features, source) {
       const label = featureLabel(feature);
       const point = featurePoint(feature);
       if (!label || !point) return null;
-      const labelScore = scoreLabelMatch(spot, label);
+      let labelScore = scoreLabelMatch(spot, label);
+      let shortLabelOnly = false;
+      if (labelScore <= 0) {
+        labelScore = scoreShortLabelMatch(spot, label);
+        shortLabelOnly = labelScore > 0;
+      }
       if (labelScore <= 0) return null;
       const distance = distanceKm(spot.lat, spot.lng, point.lat, point.lng);
       if (distance > maxDistance) return null;
+      if (shortLabelOnly && distance > maxShortLabelDistanceKm(spot)) return null;
       return {
         lat: point.lat,
         lng: point.lng,
@@ -825,10 +1086,16 @@ async function fetchJsonWithTimeout(url, timeout = 7500) {
 }
 
 function gsiSearchQueries(spot, thorough = false) {
-  const queries = [`三重県 ${spot.area} ${spot.name}`];
+  const queries = [
+    `三重県 ${spot.area} ${spot.name}`,
+    `三重県 ${spot.name}`
+  ];
   if (thorough) {
-    queries.push(`三重県 ${spot.name}`);
     queries.push(`${spot.name} ${spot.area}`);
+    queries.push(`${spot.area} ${spot.name}`);
+    spotNameVariants(spot).forEach((variant) => {
+      if (variant.length >= 3) queries.push(`三重県 ${variant}`);
+    });
   }
   return uniqueValues(queries);
 }
@@ -853,7 +1120,7 @@ function lonLatToTile(lng, lat, zoom) {
   return { x, y };
 }
 
-async function fetchGsiVectorTile(layer, x, y, z = GSI_VECTOR_TILE_ZOOM) {
+async function fetchGsiVectorTile(layer, x, y, z) {
   const key = `${layer}:${z}:${x}:${y}`;
   if (gsiTileCache.has(key)) return gsiTileCache.get(key);
   const url = `https://cyberjapandata.gsi.go.jp/xyz/${layer}/${z}/${x}/${y}.geojson`;
@@ -863,34 +1130,81 @@ async function fetchGsiVectorTile(layer, x, y, z = GSI_VECTOR_TILE_ZOOM) {
   return features;
 }
 
-async function lookupGsiVectorLabelCandidates(spot, radius = 1) {
-  const center = lonLatToTile(spot.lng, spot.lat, GSI_VECTOR_TILE_ZOOM);
-  const candidates = [];
-  for (const layer of GSI_VECTOR_TILE_LAYERS) {
-    for (let dx = -radius; dx <= radius; dx += 1) {
-      for (let dy = -radius; dy <= radius; dy += 1) {
-        const features = await fetchGsiVectorTile(layer, center.x + dx, center.y + dy);
-        candidates.push(...candidatesFromFeatures(spot, features, "国土地理院地図注記"));
+function tileOffsetsByRadius(radius) {
+  const offsets = [];
+  for (let ring = 0; ring <= radius; ring += 1) {
+    for (let dx = -ring; dx <= ring; dx += 1) {
+      for (let dy = -ring; dy <= ring; dy += 1) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) === ring) offsets.push([dx, dy]);
       }
     }
-    if (candidates.some((candidate) => candidate.score >= 105)) break;
   }
+  return offsets;
+}
+
+function vectorSearchRadiusForZoom(zoom, thorough) {
+  if (thorough) {
+    if (zoom >= 17) return 12;
+    if (zoom === 16) return 8;
+    if (zoom === 15) return 6;
+    return 4;
+  }
+  if (zoom >= 17) return 5;
+  if (zoom === 16) return 4;
+  if (zoom === 15) return 3;
+  return 2;
+}
+
+async function lookupGsiVectorLabelCandidates(spot, thorough = false) {
+  const candidates = [];
+
+  // 地理院の注記・地名タイルは主に z15 で提供されているため、
+  // 存在しないズームを大量に探して補正が進まない問題を避けます。
+  for (const zoom of GSI_VECTOR_TILE_ZOOMS) {
+    const center = lonLatToTile(spot.lng, spot.lat, zoom);
+    const tileOffsets = tileOffsetsByRadius(vectorSearchRadiusForZoom(zoom, thorough));
+
+    for (const layer of GSI_VECTOR_TILE_LAYERS) {
+      for (const [dx, dy] of tileOffsets) {
+        const features = await fetchGsiVectorTile(layer.id, center.x + dx, center.y + dy, zoom);
+        candidates.push(...candidatesFromFeatures(spot, features, layer.source));
+        if (candidates.some((candidate) => candidate.score >= 150)) {
+          return candidates.sort((a, b) => b.score - a.score || a.distance - b.distance);
+        }
+      }
+    }
+  }
+
   return candidates.sort((a, b) => b.score - a.score || a.distance - b.distance);
 }
 
 async function findGsiLabelPosition(spot, thorough = false) {
-  const candidates = await lookupGsiNameSearchCandidates(spot, thorough);
-  if (thorough) {
-    candidates.push(...await lookupGsiVectorLabelCandidates(spot, 2));
-  }
-  return candidates.sort((a, b) => b.score - a.score || a.distance - b.distance)[0] || null;
+  // 「地図に表記されている名前」へ合わせるので、住所検索よりも地図注記タイルを優先します。
+  // 住所検索は水面・港全体の代表点になりやすく、ラベル文字からズレる原因になるため最後の保険です。
+  const vectorCandidates = await lookupGsiVectorLabelCandidates(spot, thorough);
+  const strongVector = vectorCandidates.find((candidate) => candidate.score >= 90);
+  if (strongVector) return strongVector;
+
+  const nameSearchCandidates = await lookupGsiNameSearchCandidates(spot, thorough);
+  return [...vectorCandidates, ...nameSearchCandidates]
+    .sort((a, b) => b.score - a.score || a.distance - b.distance)[0] || null;
+}
+
+function isManualPositionOverride(spotId) {
+  return positionOverrides[spotId]?.source === "手動補正";
+}
+
+function baseSpotForAlignment(spot) {
+  const base = defaultSpotPositions.get(spot.id);
+  return base ? { ...spot, lat: base.lat, lng: base.lng } : spot;
 }
 
 function applyAutoAlignedPosition(spot, candidate) {
   const moved = distanceKm(spot.lat, spot.lng, candidate.lat, candidate.lng);
-  if (moved < 0.03) return false;
   const nextLat = Number(candidate.lat.toFixed(6));
   const nextLng = Number(candidate.lng.toFixed(6));
+  const currentOverride = positionOverrides[spot.id];
+  if (moved < 0.03 && currentOverride?.source === candidate.source && currentOverride?.label === candidate.label) return false;
   positionOverrides[spot.id] = {
     lat: nextLat,
     lng: nextLng,
@@ -924,29 +1238,49 @@ async function autoAlignSpotPositions(options = {}) {
     autoAlignPositionsButton.textContent = "位置補正中…";
   }
 
-  const targets = spots.filter((spot) => !spot.custom && (force || !positionOverrides[spot.id]));
+  const targets = spots.filter((spot) => (
+    !spot.custom
+      && !isManualPositionOverride(spot.id)
+      && (force || !positionOverrides[spot.id])
+  ));
   let checked = 0;
   let adjusted = 0;
 
   try {
     for (const spot of targets) {
       checked += 1;
+      const searchSpot = baseSpotForAlignment(spot);
       if (!silent) dataStatus.textContent = `地図上の名称に合わせて補正中 ${checked}/${targets.length}: ${spot.name}`;
-      const candidate = await findGsiLabelPosition(spot, thorough);
-      if (candidate && applyAutoAlignedPosition(spot, candidate)) adjusted += 1;
+      const candidate = await findGsiLabelPosition(searchSpot, thorough);
+      if (candidate && applyAutoAlignedPosition(spot, candidate)) {
+        adjusted += 1;
+      } else if (force && positionOverrides[spot.id] && !isManualPositionOverride(spot.id)) {
+        delete positionOverrides[spot.id];
+        const base = defaultSpotPositions.get(spot.id);
+        if (base) {
+          spots = spots.map((item) => (
+            item.id === spot.id
+              ? { ...item, lat: base.lat, lng: base.lng, positionAdjusted: false, positionSource: "", positionLabel: "" }
+              : item
+          ));
+          const resetSpot = spots.find((item) => item.id === spot.id);
+          if (resetSpot) updateSpotMarkerPosition(resetSpot);
+        }
+      }
     }
+
+    persistPositionOverrides();
+    renderList();
+    const current = spots.find((spot) => spot.id === selectedId);
+    if (current) updateSpotCard(current);
 
     if (adjusted > 0) {
-      persistPositionOverrides();
-      renderList();
-      const current = spots.find((spot) => spot.id === selectedId);
-      if (current) updateSpotCard(current);
       dataStatus.textContent = `地図上の名称に合わせて${adjusted}件のピン位置を補正しました`;
     } else if (!silent) {
-      dataStatus.textContent = "地図上の名称と一致する補正候補が見つかりませんでした。必要な場所は詳細カードの『位置を修正』で手動補正してください。";
+      dataStatus.textContent = "地図上の名称と一致する候補が見つからなかった場所は、初期位置に戻しました。必要な場所は詳細カードの『位置を修正』で手動補正してください。";
     }
 
-    if (!thorough && !force) {
+    if (!force) {
       localStorage.setItem(AUTO_ALIGN_STORAGE_KEY, GSI_AUTO_ALIGN_VERSION);
     }
   } finally {
@@ -961,8 +1295,27 @@ async function autoAlignSpotPositions(options = {}) {
 function scheduleInitialAutoAlign() {
   if (localStorage.getItem(AUTO_ALIGN_STORAGE_KEY) === GSI_AUTO_ALIGN_VERSION) return;
   window.setTimeout(() => {
-    autoAlignSpotPositions({ thorough: false, silent: true, force: false });
+    autoAlignSpotPositions({ thorough: true, silent: true, force: false });
   }, 1200);
+}
+
+async function alignSingleSpotPosition(spotId) {
+  const spot = spots.find((item) => item.id === spotId);
+  if (!spot || spot.custom || isManualPositionOverride(spot.id) || positionOverrides[spot.id]) return;
+
+  const candidate = await findGsiLabelPosition(baseSpotForAlignment(spot), true);
+  if (!candidate) return;
+  if (!applyAutoAlignedPosition(spot, candidate)) return;
+
+  persistPositionOverrides();
+  renderList();
+  const updated = spots.find((item) => item.id === spotId);
+  if (!updated) return;
+  if (selectedId === spotId) {
+    updateSpotCard(updated);
+    moveMapTo(updated.lat, updated.lng, updated.zoom);
+    dataStatus.textContent = `${updated.name} を地図上の名称位置へ補正しました`;
+  }
 }
 
 function updateSpotMarkerPosition(spot) {
@@ -1266,7 +1619,7 @@ function showCatchPhoto(value) {
   if (photo) catchPhotoImage.src = photo;
   catchPhotoStatus.textContent = photo
     ? "写真を添付します"
-    : "写真フォルダーから選ぶか、カメラで撮影すると、圧縮してこの端末に保存します";
+    : "写真フォルダーから選ぶか、カメラで撮影すると、現在地の記録に添付してこの端末に保存します";
 }
 
 function compressCatchPhoto(file) {
@@ -1285,13 +1638,15 @@ function closeSpotPanel() {
   spotForm.reset();
 }
 
-function openCatchPanel(catchLog = null, latLng = null) {
+function openCatchPanel(catchLog = null, latLng = null, options = {}) {
   editingCatchId = catchLog?.id || null;
 
   const lat = catchLog?.lat ?? latLng?.lat;
   const lng = catchLog?.lng ?? latLng?.lng;
-  catchLat.value = lat;
-  catchLng.value = lng;
+  catchLat.value = Number.isFinite(Number(lat)) ? Number(lat) : "";
+  catchLng.value = Number.isFinite(Number(lng)) ? Number(lng) : "";
+  const locationSource = options.source || (catchLog ? "保存済み記録" : "記録位置");
+  setCatchLocationStatus(lat, lng, locationSource, options.accuracy);
   catchSpot.value = catchLog?.spotId || nearestSpotId(lat, lng);
   catchTime.value = catchLog?.time || formatDateTimeForInput();
   catchBait.value = catchLog?.bait || "";
@@ -1405,6 +1760,7 @@ function selectSpot(id) {
   updateSpotCard(spot);
   renderList();
   scrollSelectedSpotIntoView();
+  alignSingleSpotPosition(id);
   if (isMobileMapView()) closeMobileMenu();
 }
 
@@ -1781,9 +2137,11 @@ document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") closeMobileMenu();
 });
 
+if (locateCatchButton) locateCatchButton.addEventListener("click", () => useCurrentLocationForCatch({ openPanel: true, button: locateCatchButton }));
 addCatchModeButton.addEventListener("click", () => setCatchMode(!catchMode));
 addSpotModeButton.addEventListener("click", () => setSpotMode(!spotMode));
 closeCatchPanelButton.addEventListener("click", closeCatchPanel);
+if (useCurrentLocationButton) useCurrentLocationButton.addEventListener("click", () => useCurrentLocationForCatch({ openPanel: false, button: useCurrentLocationButton }));
 closeSpotPanelButton.addEventListener("click", closeSpotPanel);
 changeBackgroundButton.addEventListener("click", openBackgroundPanel);
 closeBackgroundPanelButton.addEventListener("click", closeBackgroundPanel);
@@ -1905,6 +2263,14 @@ spotForm.addEventListener("submit", (event) => {
 catchForm.addEventListener("submit", (event) => {
   event.preventDefault();
 
+  const catchLatValue = Number.parseFloat(catchLat.value);
+  const catchLngValue = Number.parseFloat(catchLng.value);
+  if (!Number.isFinite(catchLatValue) || !Number.isFinite(catchLngValue)) {
+    setCatchLocationStatus(null, null);
+    if (catchLocationStatus) catchLocationStatus.textContent = "記録位置がありません。地図をタップするか、現在地を使ってください。";
+    return;
+  }
+
   const catchLog = {
     id: editingCatchId || `catch-${Date.now()}`,
     spotId: catchSpot.value,
@@ -1916,8 +2282,8 @@ catchForm.addEventListener("submit", (event) => {
     size: catchSize.value,
     memo: catchMemo.value.trim(),
     photo: pendingCatchPhoto,
-    lat: Number(catchLat.value),
-    lng: Number(catchLng.value)
+    lat: catchLatValue,
+    lng: catchLngValue
   };
 
   const previousCatches = catches;
@@ -1996,9 +2362,25 @@ updateInstallStatus();
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js")
+    navigator.serviceWorker.register("./sw.js?v=38", { updateViaCache: "none" })
       .then((registration) => {
         console.log("Service worker registered:", registration.scope);
+        registration.update().catch(() => {});
+
+        if (registration.waiting) {
+          registration.waiting.postMessage({ type: "SKIP_WAITING" });
+        }
+
+        registration.addEventListener("updatefound", () => {
+          const nextWorker = registration.installing;
+          if (!nextWorker) return;
+          nextWorker.addEventListener("statechange", () => {
+            if (nextWorker.state === "installed" && navigator.serviceWorker.controller) {
+              if (dataStatus) dataStatus.textContent = "新しい版を読み込みました。画面を更新します…";
+              window.setTimeout(() => window.location.reload(), 500);
+            }
+          });
+        });
       })
       .catch((error) => {
         console.log("Service worker registration failed:", error);

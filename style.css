@@ -190,11 +190,12 @@ h1 {
 
 .filter-row {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 6px;
 }
 
 .filter-chip {
+  min-width: 0;
   height: 31px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -850,6 +851,7 @@ h1 {
 
 .spot-mode-button,
 .catch-mode-button,
+.locate-button,
 .save-button,
 .delete-button {
   min-height: 42px;
@@ -858,6 +860,17 @@ h1 {
   padding: 0 16px;
   font-weight: 800;
   cursor: pointer;
+}
+
+.locate-button {
+  color: #fff;
+  background: var(--water);
+  box-shadow: var(--shadow);
+}
+
+.locate-button:disabled {
+  cursor: wait;
+  opacity: 0.76;
 }
 
 .spot-mode-button {
@@ -897,6 +910,32 @@ h1 {
 
 .catch-marker span {
   transform: rotate(45deg);
+}
+
+.current-location-marker {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: var(--water);
+  box-shadow: 0 0 0 4px rgba(52, 120, 168, 0.22), 0 7px 18px rgba(23, 32, 28, 0.28);
+}
+
+.current-location-marker span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.current-location-accuracy {
+  stroke: var(--water);
+  stroke-width: 1.5;
+  fill: var(--water);
+  fill-opacity: 0.10;
 }
 
 .catch-panel {
@@ -959,6 +998,38 @@ h1 {
 }
 
 .form-grid .full-width,
+.catch-location-box {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding: 10px;
+  border: 1px solid rgba(52, 120, 168, 0.24);
+  border-radius: 8px;
+  background: rgba(236, 246, 252, 0.9);
+}
+
+.catch-location-status {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.location-inline-button {
+  min-height: 36px;
+  border: 1px solid rgba(52, 120, 168, 0.35);
+  border-radius: 8px;
+  color: #fff;
+  font-weight: 800;
+  background: var(--water);
+  cursor: pointer;
+}
+
+.location-inline-button:disabled {
+  cursor: wait;
+  opacity: 0.76;
+}
+
 .catch-photo-field {
   grid-column: 1 / -1;
 }
@@ -1311,6 +1382,10 @@ h1 {
   background: #c06d1f;
 }
 
+.custom-marker.marina {
+  background: #5f4bb6;
+}
+
 .custom-marker.pond {
   background: var(--accent);
 }
@@ -1525,7 +1600,8 @@ h1 {
   }
 
   .spot-mode-button,
-  .catch-mode-button {
+  .catch-mode-button,
+  .locate-button {
     min-height: 40px;
     padding: 0 13px;
   }
@@ -1867,7 +1943,8 @@ h1 {
   }
 
   .spot-mode-button,
-  .catch-mode-button {
+  .catch-mode-button,
+  .locate-button {
     min-height: 36px;
     padding: 0 10px;
     font-size: 13px;

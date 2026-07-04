@@ -1,9 +1,9 @@
-const CACHE_NAME = "bass-spot-log-v31";
+const CACHE_NAME = "bass-spot-log-v39";
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./style.css?v=31",
-  "./app.js?v=31",
+  "./style.css?v=39",
+  "./app.js?v=39",
   "./manifest.json",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
@@ -33,6 +33,16 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+
+  const requestUrl = new URL(event.request.url);
+  const scopeUrl = new URL(self.registration.scope);
+
+  // 地図タイル・地名タイルなどの外部データはアプリのキャッシュに入れません。
+  // ここをキャッシュすると、古い地図名データや大量のタイルが残って位置補正が遅くなるためです。
+  if (requestUrl.origin !== scopeUrl.origin) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
 
   event.respondWith(
     caches.match(event.request)
