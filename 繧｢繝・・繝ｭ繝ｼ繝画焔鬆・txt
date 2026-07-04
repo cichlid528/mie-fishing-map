@@ -1,0 +1,14 @@
+このZIPは、壊れた可能性のあるGitHub上の index.html / app.js / style.css / sw.js を安全に戻すための最小修正版です。
+
+GitHubで「ファイルを追加」→「ファイルをアップロード」を開き、このZIPを解凍した中身をアップロードしてください。
+アップロードするファイル:
+- index.html
+- app.js
+- style.css
+- sw.js
+- manifest.json
+
+ZIPのままアップロードしないでください。
+アップロード後、Commit changes を押してください。
+コミット名: 壊れたファイルを修正してスマホ表示を復旧
+確認URL: https://cichlid528.github.io/mie-fishing-map/?v=16
