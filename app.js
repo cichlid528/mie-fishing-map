@@ -2,6 +2,7 @@ const STORAGE_KEY = "mie-bass-map-v1";
 const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
 const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
 const BACKGROUND_STORAGE_KEY = "mie-fishing-map-sidebar-background-v1";
+const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v1";
 
 // 国土地理院の名称検索で同名地点を確認できた座標に合わせています。
 const seedSpots = [
@@ -135,7 +136,33 @@ const fishSpeciesGroups = [
 ];
 
 let customSpots = JSON.parse(localStorage.getItem(CUSTOM_SPOT_STORAGE_KEY) || "[]");
-let spots = [...seedSpots, ...portSpots, ...customSpots];
+let positionOverrides = JSON.parse(localStorage.getItem(POSITION_STORAGE_KEY) || "{}");
+const defaultSpotPositions = new Map(
+  [...seedSpots, ...portSpots].map((spot) => [spot.id, { lat: spot.lat, lng: spot.lng }])
+);
+
+function validPosition(value) {
+  return value
+    && Number.isFinite(Number(value.lat))
+    && Number.isFinite(Number(value.lng))
+    && Number(value.lat) >= 33
+    && Number(value.lat) <= 36
+    && Number(value.lng) >= 135
+    && Number(value.lng) <= 138;
+}
+
+function applyPositionOverride(spot) {
+  const override = positionOverrides[spot.id];
+  if (!validPosition(override)) return spot;
+  return {
+    ...spot,
+    lat: Number(override.lat),
+    lng: Number(override.lng),
+    positionAdjusted: true
+  };
+}
+
+let spots = [...seedSpots, ...portSpots].map(applyPositionOverride).concat(customSpots);
 
 const map = L.map("map", {
   zoomControl: true,
@@ -261,8 +288,9 @@ let editingSpotId = null;
 let catchMode = false;
 let editingCatchId = null;
 let pendingCatchPhoto = "";
+let moveSpotModeId = null;
 
-dataStatus.textContent = `池${seedSpots.filter((spot) => spot.type === "池").length}件、港・漁港${portSpots.length}件を表示中（位置は代表地点です）`;
+dataStatus.textContent = `池${seedSpots.filter((spot) => spot.type === "池").length}件、港・漁港${portSpots.length}件を表示中（港ピンは詳細カードから位置補正できます）`;
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -313,6 +341,7 @@ function buildBackupData() {
     savedState,
     customSpots,
     catches,
+    positionOverrides,
     backgroundImage: localStorage.getItem(BACKGROUND_STORAGE_KEY) || ""
   };
 }
@@ -354,11 +383,13 @@ function applyImportedBackup(data) {
   const nextState = isPlainObject(data.savedState) ? data.savedState : {};
   const nextCustomSpots = Array.isArray(data.customSpots) ? data.customSpots : [];
   const nextCatches = Array.isArray(data.catches) ? data.catches : [];
+  const nextPositionOverrides = isPlainObject(data.positionOverrides) ? data.positionOverrides : {};
   const nextBackground = validImageDataUrl(data.backgroundImage) ? data.backgroundImage : "";
 
   localStorage.setItem(STORAGE_KEY, JSON.stringify(nextState));
   localStorage.setItem(CUSTOM_SPOT_STORAGE_KEY, JSON.stringify(nextCustomSpots));
   localStorage.setItem(CATCH_STORAGE_KEY, JSON.stringify(nextCatches));
+  localStorage.setItem(POSITION_STORAGE_KEY, JSON.stringify(nextPositionOverrides));
   if (nextBackground) {
     localStorage.setItem(BACKGROUND_STORAGE_KEY, nextBackground);
   } else {
@@ -544,6 +575,90 @@ function persistCustomSpots() {
   localStorage.setItem(CUSTOM_SPOT_STORAGE_KEY, JSON.stringify(customSpots));
 }
 
+function persistPositionOverrides() {
+  localStorage.setItem(POSITION_STORAGE_KEY, JSON.stringify(positionOverrides));
+}
+
+function updateSpotMarkerPosition(spot) {
+  const marker = markers.get(spot.id);
+  if (!marker) return;
+  marker.setLatLng([spot.lat, spot.lng]);
+  marker.setPopupContent(`<strong>${spot.name}</strong><br>${spot.type} / ${spot.area}`);
+}
+
+function setSpotPosition(spotId, lat, lng) {
+  const nextLat = Number(lat);
+  const nextLng = Number(lng);
+  spots = spots.map((spot) => {
+    if (spot.id !== spotId) return spot;
+    return {
+      ...spot,
+      lat: nextLat,
+      lng: nextLng,
+      positionAdjusted: !spot.custom
+    };
+  });
+
+  const updated = spots.find((spot) => spot.id === spotId);
+  if (!updated) return;
+
+  if (updated.custom) {
+    persistCustomSpots();
+  } else {
+    positionOverrides[spotId] = { lat: nextLat, lng: nextLng };
+    persistPositionOverrides();
+  }
+
+  updateSpotMarkerPosition(updated);
+  renderList();
+  updateSpotCard(updated);
+  moveMapTo(nextLat, nextLng, Math.max(updated.zoom || 16, 16));
+  dataStatus.textContent = `${updated.name} のピン位置を補正しました`;
+}
+
+function resetSpotPosition(spotId) {
+  const base = defaultSpotPositions.get(spotId);
+  if (!base) return;
+  delete positionOverrides[spotId];
+  persistPositionOverrides();
+  spots = spots.map((spot) => (
+    spot.id === spotId ? { ...spot, lat: base.lat, lng: base.lng, positionAdjusted: false } : spot
+  ));
+  const updated = spots.find((spot) => spot.id === spotId);
+  if (!updated) return;
+  updateSpotMarkerPosition(updated);
+  renderList();
+  updateSpotCard(updated);
+  moveMapTo(updated.lat, updated.lng, updated.zoom || 16);
+  dataStatus.textContent = `${updated.name} のピン位置を初期位置に戻しました`;
+}
+
+function setMoveSpotMode(spotId) {
+  const spot = spots.find((item) => item.id === spotId);
+  if (!spot) return;
+  setSpotMode(false);
+  setCatchMode(false);
+  moveSpotModeId = spotId;
+  map.closePopup();
+  map.getContainer().style.cursor = "crosshair";
+  dataStatus.textContent = `${spot.name} の正しい位置を地図でタップしてください`;
+  showSpotCard(`
+    <p class="spot-card-type">位置修正中</p>
+    <h2>${escapeHtml(spot.name)}</h2>
+    <p>地図上で正しい港・堤防付近をタップすると、このピン位置を保存します。</p>
+    <div class="spot-card-actions">
+      <button class="delete-spot-button" type="button" id="cancelMoveSpot">キャンセル</button>
+    </div>
+  `);
+  const cancelButton = document.querySelector("#cancelMoveSpot");
+  if (cancelButton) cancelButton.addEventListener("click", () => {
+    moveSpotModeId = null;
+    map.getContainer().style.cursor = "";
+    dataStatus.textContent = "位置修正をキャンセルしました";
+    updateSpotCard(spot);
+  });
+}
+
 function persistCatches() {
   try {
     localStorage.setItem(CATCH_STORAGE_KEY, JSON.stringify(catches));
@@ -718,7 +833,10 @@ function populateCatchSpots() {
 
 function setCatchMode(active) {
   catchMode = active;
-  if (active) setSpotMode(false);
+  if (active) {
+    moveSpotModeId = null;
+    setSpotMode(false);
+  }
   addCatchModeButton.classList.toggle("is-active", active);
   addCatchModeButton.textContent = active ? "地図をタップ" : "釣果ピン追加";
   map.getContainer().style.cursor = active ? "crosshair" : "";
@@ -726,7 +844,10 @@ function setCatchMode(active) {
 
 function setSpotMode(active) {
   spotMode = active;
-  if (active) setCatchMode(false);
+  if (active) {
+    moveSpotModeId = null;
+    setCatchMode(false);
+  }
   addSpotModeButton.classList.toggle("is-active", active);
   addSpotModeButton.textContent = active ? "地図をタップ" : "釣り場追加";
   map.getContainer().style.cursor = active ? "crosshair" : "";
@@ -973,20 +1094,28 @@ function clearFishSelection() {
 
 function updateSpotCard(spot) {
   const fishSummary = getFishSummary(spot.id);
+  const hasDefaultPosition = defaultSpotPositions.has(spot.id);
+  const positionText = spot.positionAdjusted ? "補正済み" : "初期位置";
   showSpotCard(`
     <p class="spot-card-type">${escapeHtml(spot.type)} / ${escapeHtml(spot.area)}</p>
     <h2>${escapeHtml(spot.name)}</h2>
     <p>掲載は釣り許可を意味しません。現地看板・管理者・自治体・漁協の最新情報を必ず確認してください。</p>
     <p>左のチェックで「釣れた魚種」「釣り禁止」「駐車」を記録できます。</p>
     <p class="spot-source">記録魚種: ${escapeHtml(fishSummary)}</p>
-    ${spot.source ? `<p class="spot-source">位置情報: ${escapeHtml(spot.source)}（掲載は立入・釣り許可を意味しません）</p>` : ""}
-    ${spot.custom ? `
-      <div class="spot-card-actions">
+    ${spot.source ? `<p class="spot-source">位置情報: ${escapeHtml(spot.source)} / ${positionText}（掲載は立入・釣り許可を意味しません）</p>` : `<p class="spot-source">位置情報: ${positionText}</p>`}
+    <div class="spot-card-actions">
+      <button class="edit-spot-button" type="button" id="moveSpotPosition">位置を修正</button>
+      ${spot.positionAdjusted && hasDefaultPosition ? `<button class="edit-spot-button" type="button" id="resetSpotPosition">初期位置に戻す</button>` : ""}
+      ${spot.custom ? `
         <button class="edit-spot-button" type="button" id="editCustomSpot">編集</button>
         <button class="delete-spot-button" type="button" id="deleteCustomSpotCard">削除</button>
-      </div>
-    ` : ""}
+      ` : ""}
+    </div>
   `);
+  const moveButton = document.querySelector("#moveSpotPosition");
+  if (moveButton) moveButton.addEventListener("click", () => setMoveSpotMode(spot.id));
+  const resetButton = document.querySelector("#resetSpotPosition");
+  if (resetButton) resetButton.addEventListener("click", () => resetSpotPosition(spot.id));
   const editButton = document.querySelector("#editCustomSpot");
   if (editButton) editButton.addEventListener("click", () => openSpotPanel(spot));
   const deleteButton = document.querySelector("#deleteCustomSpotCard");
@@ -1103,6 +1232,8 @@ filterButtons.forEach((button) => {
 });
 
 document.querySelector("#resetView").addEventListener("click", () => {
+  moveSpotModeId = null;
+  map.getContainer().style.cursor = "";
   selectedId = null;
   moveMapTo(34.6761, 136.5086, 9);
   hideSpotCard();
@@ -1253,6 +1384,21 @@ catchForm.addEventListener("submit", (event) => {
 });
 
 function handleMapTap(latlng) {
+  if (moveSpotModeId) {
+    const target = spots.find((spot) => spot.id === moveSpotModeId);
+    if (!target) {
+      moveSpotModeId = null;
+      map.getContainer().style.cursor = "";
+      return;
+    }
+    const ok = window.confirm(`${target.name} のピン位置をここに変更しますか？`);
+    if (!ok) return;
+    const targetId = moveSpotModeId;
+    moveSpotModeId = null;
+    map.getContainer().style.cursor = "";
+    setSpotPosition(targetId, latlng.lat, latlng.lng);
+    return;
+  }
   if (spotMode) {
     openSpotPanel(null, latlng);
     return;
