@@ -1,0 +1,13 @@
+GitHubアップロード手順
+1. このZIPを解凍します。
+2. index.html / app.js / style.css / sw.js / manifest.json / icons フォルダーを、GitHubの mie-fishing-map リポジトリへ上書きアップロードします。
+3. GitHub Pagesの反映後、次のURLで確認します。
+   https://cichlid528.github.io/mie-fishing-map/?v=37
+4. 画面が古い場合は、ブラウザの再読み込み、またはアプリを一度閉じて開き直してください。
+
+追加内容
+- 地図下に「現在地で記録」ボタンを追加。
+- 釣果・現在地記録フォーム内に「現在地を使う」ボタンを追加。
+- 現在地の緯度経度とGPS誤差を表示。
+- 写真フォルダーからの添付、カメラ撮影添付、備考・メモ欄に対応。
+- 添付画像は圧縮して端末内に保存。
