@@ -216,7 +216,7 @@ function applyPositionOverride(spot) {
 
 let spots = [...seedSpots, ...portSpots, ...marinaSpots].map(applyPositionOverride).concat(customSpots);
 
-const GSI_AUTO_ALIGN_VERSION = "v41";
+const GSI_AUTO_ALIGN_VERSION = "v42";
 const GSI_NAME_SEARCH_ENDPOINT = "https://msearch.gsi.go.jp/address-search/AddressSearch?q=";
 const GSI_VECTOR_TILE_ZOOMS = [15];
 const GSI_VECTOR_TILE_LAYERS = [
@@ -234,6 +234,14 @@ let autoAlignRunning = false;
 let zoomLabelAlignRunning = false;
 let zoomLabelAlignTimer = null;
 
+// v42: スマホ操作時のカクつきを抑えるため、重い自動位置補正は通常操作中に走らせません。
+// 位置補正は「地図名へ位置補正」ボタン、または詳細カードの手動補正で行います。
+const MOBILE_PERFORMANCE_MODE = window.matchMedia?.("(max-width: 820px), (pointer: coarse)")?.matches || window.innerWidth <= 820;
+const ENABLE_INITIAL_AUTO_ALIGN = false;
+const ENABLE_ZOOM_AUTO_ALIGN = false;
+const MAP_TILE_KEEP_BUFFER = MOBILE_PERFORMANCE_MODE ? 1 : 2;
+const MAP_TILE_UPDATE_INTERVAL = MOBILE_PERFORMANCE_MODE ? 350 : 200;
+
 const map = L.map("map", {
   zoomControl: true,
   preferCanvas: true,
@@ -247,17 +255,19 @@ map.attributionControl.setPosition("topright");
 
 const standardMap = L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png", {
   maxZoom: 18,
-  keepBuffer: 4,
-  updateWhenIdle: false,
+  keepBuffer: MAP_TILE_KEEP_BUFFER,
+  updateWhenIdle: MOBILE_PERFORMANCE_MODE,
   updateWhenZooming: false,
+  updateInterval: MAP_TILE_UPDATE_INTERVAL,
   attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noopener">国土地理院</a>'
 }).addTo(map);
 
 const aerialMap = L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg", {
   maxZoom: 18,
-  keepBuffer: 4,
-  updateWhenIdle: false,
+  keepBuffer: MAP_TILE_KEEP_BUFFER,
+  updateWhenIdle: MOBILE_PERFORMANCE_MODE,
   updateWhenZooming: false,
+  updateInterval: MAP_TILE_UPDATE_INTERVAL,
   attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noopener">国土地理院</a>'
 });
 
@@ -1083,7 +1093,7 @@ async function fetchJsonWithTimeout(url, timeout = 7500) {
   const controller = new AbortController();
   const timeoutId = window.setTimeout(() => controller.abort(), timeout);
   try {
-    const response = await fetch(url, { signal: controller.signal, cache: "force-cache" });
+    const response = await fetch(url, { signal: controller.signal, cache: "default" });
     if (!response.ok) return null;
     return await response.json();
   } catch (error) {
@@ -1310,6 +1320,7 @@ async function alignVisibleSpotsToZoomLabels() {
 }
 
 function scheduleZoomLabelAlign() {
+  if (!ENABLE_ZOOM_AUTO_ALIGN) return;
   if (map.getZoom() < ZOOM_LABEL_ALIGN_MIN_ZOOM) return;
   window.clearTimeout(zoomLabelAlignTimer);
   zoomLabelAlignTimer = window.setTimeout(() => {
@@ -1434,6 +1445,7 @@ async function autoAlignSpotPositions(options = {}) {
 }
 
 function scheduleInitialAutoAlign() {
+  if (!ENABLE_INITIAL_AUTO_ALIGN) return;
   if (localStorage.getItem(AUTO_ALIGN_STORAGE_KEY) === GSI_AUTO_ALIGN_VERSION) return;
   window.setTimeout(() => {
     autoAlignSpotPositions({ thorough: true, silent: true, force: false });
@@ -1906,8 +1918,7 @@ function selectSpot(id) {
   updateSpotCard(spot);
   renderList();
   scrollSelectedSpotIntoView();
-  alignSingleSpotPosition(id);
-  window.setTimeout(scheduleZoomLabelAlign, 700);
+  // v42: 選択するたびに地名タイル検索を走らせるとスマホでカクつくため、自動補正は行いません。
   if (isMobileMapView()) closeMobileMenu();
 }
 
@@ -2188,6 +2199,7 @@ function renderList() {
   });
 
   spotList.replaceChildren();
+  const listFragment = document.createDocumentFragment();
 
   filtered.forEach((spot) => {
     const row = document.createElement("article");
@@ -2229,12 +2241,23 @@ function renderList() {
       row.append(cell);
     });
 
-    spotList.append(row);
+    listFragment.append(row);
   });
+
+  spotList.append(listFragment);
 
   if (activeList === "spots") {
     visibleCount.textContent = `${filtered.length}件`;
   }
+}
+
+let renderListFrame = null;
+function scheduleRenderList() {
+  if (renderListFrame) window.cancelAnimationFrame(renderListFrame);
+  renderListFrame = window.requestAnimationFrame(() => {
+    renderListFrame = null;
+    renderList();
+  });
 }
 
 spots.forEach(addMarker);
@@ -2242,7 +2265,7 @@ populateCatchSpots();
 renderCatchMarkers();
 renderCatchList();
 
-searchInput.addEventListener("input", renderList);
+searchInput.addEventListener("input", scheduleRenderList);
 
 spotTab.addEventListener("click", () => {
   renderList();
