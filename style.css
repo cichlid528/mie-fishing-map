@@ -912,6 +912,29 @@ h1 {
   transform: rotate(45deg);
 }
 
+.place-record-marker {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 2px solid #fff;
+  border-radius: 50% 50% 50% 0;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
+  background: var(--water);
+  box-shadow: 0 7px 18px rgba(20, 73, 106, 0.32);
+  transform: rotate(-45deg);
+}
+
+.place-record-marker span {
+  transform: rotate(45deg);
+}
+
+.catch-panel.is-note-mode .fishing-field {
+  display: none;
+}
+
 .current-location-marker {
   position: relative;
   display: grid;

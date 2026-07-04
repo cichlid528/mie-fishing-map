@@ -369,6 +369,9 @@ const deleteSpotButton = document.querySelector("#deleteSpot");
 const closeSpotPanelButton = document.querySelector("#closeSpotPanel");
 const catchPanel = document.querySelector("#catchPanel");
 const catchForm = document.querySelector("#catchForm");
+const catchRecordType = document.querySelector("#catchRecordType");
+const catchPlaceKind = document.querySelector("#catchPlaceKind");
+const catchPlaceName = document.querySelector("#catchPlaceName");
 const catchSpot = document.querySelector("#catchSpot");
 const catchTime = document.querySelector("#catchTime");
 const catchLat = document.querySelector("#catchLat");
@@ -700,10 +703,13 @@ function makeIcon(spot) {
   });
 }
 
-function makeCatchIcon(number) {
+function makeCatchIcon(number, record = null) {
+  const isNote = recordTypeOf(record) === "note";
   return L.divIcon({
     className: "",
-    html: `<div class="catch-marker"><span>${number}</span></div>`,
+    html: isNote
+      ? '<div class="place-record-marker"><span>メ</span></div>'
+      : `<div class="catch-marker"><span>${number}</span></div>`,
     iconSize: [30, 30],
     iconAnchor: [15, 30],
     popupAnchor: [0, -28]
@@ -809,7 +815,7 @@ async function useCurrentLocationForCatch(options = {}) {
     moveMapTo(latitude, longitude, Math.max(map.getZoom(), 17));
 
     if (openPanel) {
-      openCatchPanel(null, latLng, { source: "現在地", accuracy });
+      openCatchPanel(null, latLng, { source: "現在地", accuracy, recordType: "note" });
       closeMobileMenu();
     } else {
       catchLat.value = latitude;
@@ -826,7 +832,7 @@ async function useCurrentLocationForCatch(options = {}) {
   } finally {
     if (targetButton) {
       targetButton.disabled = false;
-      targetButton.textContent = previousText || "現在地で記録";
+      targetButton.textContent = previousText || "現在地メモ登録";
     }
   }
 }
@@ -1603,38 +1609,81 @@ function nearestSpotId(lat, lng) {
   return nearest;
 }
 
+function recordTypeOf(catchLog) {
+  return catchLog?.recordType === "note" ? "note" : "catch";
+}
+
+function isLocationNote(catchLog) {
+  return recordTypeOf(catchLog) === "note";
+}
+
+function recordDisplayTitle(catchLog, spot = null) {
+  if (isLocationNote(catchLog)) {
+    return catchLog.placeName || catchLog.placeKind || "現地メモ";
+  }
+  return spot?.name || "未選択";
+}
+
+function recordDisplayKind(catchLog) {
+  if (isLocationNote(catchLog)) return catchLog.placeKind || "現地メモ";
+  return "釣果";
+}
+
+function updateRecordFormMode() {
+  if (!catchPanel || !catchRecordType) return;
+  const isNote = catchRecordType.value === "note";
+  catchPanel.classList.toggle("is-note-mode", isNote);
+  if (catchPlaceKind) catchPlaceKind.closest("label")?.classList.toggle("is-hidden", !isNote);
+  if (catchPlaceName) catchPlaceName.closest("label")?.classList.toggle("is-hidden", !isNote);
+  if (catchPhotoStatus) {
+    catchPhotoStatus.textContent = isNote
+      ? "写真フォルダーから選ぶか、カメラで撮影すると、この場所の記録に添付してこの端末に保存します"
+      : "写真フォルダーから選ぶか、カメラで撮影すると、釣果記録に添付してこの端末に保存します";
+  }
+}
+
 function catchPopupHtml(catchLog) {
   const spot = spots.find((item) => item.id === catchLog.spotId);
   const number = catches.findIndex((item) => item.id === catchLog.id) + 1;
-  const rows = [
-    ["No.", number || "-"],
-    ["場所", spot?.name || "未選択"],
-    ["日時", formatCatchTime(catchLog.time)],
-    ["ルアー", catchLog.bait || "未入力"],
-    ["天気", catchLog.weather || "未入力"],
-    ["風", catchLog.wind || "未入力"],
-    ["水", catchLog.water || "未入力"],
-    ["サイズ", catchLog.size || "未入力"]
-  ];
+  const isNote = isLocationNote(catchLog);
+  const titleText = isNote ? recordDisplayTitle(catchLog, spot) : "釣果記録";
+  const rows = isNote
+    ? [
+        ["No.", number || "-"],
+        ["種別", catchLog.placeKind || "未入力"],
+        ["内容", catchLog.placeName || "未入力"],
+        ["近くの釣り場", spot?.name || "未選択"],
+        ["日時", formatCatchTime(catchLog.time)],
+        ["位置", formatLatLng(catchLog.lat, catchLog.lng)]
+      ]
+    : [
+        ["No.", number || "-"],
+        ["場所", spot?.name || "未選択"],
+        ["日時", formatCatchTime(catchLog.time)],
+        ["ルアー", catchLog.bait || "未入力"],
+        ["天気", catchLog.weather || "未入力"],
+        ["風", catchLog.wind || "未入力"],
+        ["水", catchLog.water || "未入力"],
+        ["サイズ", catchLog.size || "未入力"]
+      ];
 
   const detailRows = rows
-    .map(([label, value]) => `<dt>${label}</dt><dd>${value}</dd>`)
+    .map(([label, value]) => `<dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd>`)
     .join("");
 
   return `
-    <div class="catch-popup">
-      <strong>釣果記録</strong>
-      ${validCatchPhoto(catchLog.photo) ? `<img class="catch-popup-photo" src="${catchLog.photo}" alt="釣果写真">` : ""}
+    <div class="catch-popup ${isNote ? "is-note-popup" : ""}">
+      <strong>${escapeHtml(titleText)}</strong>
+      ${validCatchPhoto(catchLog.photo) ? `<img class="catch-popup-photo" src="${catchLog.photo}" alt="添付写真">` : ""}
       <dl>${detailRows}</dl>
-      ${catchLog.memo ? `<p>${catchLog.memo}</p>` : ""}
-      <button class="popup-edit-button" type="button" data-catch-id="${catchLog.id}">編集</button>
+      ${catchLog.memo ? `<p>${escapeHtml(catchLog.memo)}</p>` : ""}
+      <button class="popup-edit-button" type="button" data-catch-id="${escapeHtml(catchLog.id)}">編集</button>
     </div>
   `;
 }
-
 function addCatchMarker(catchLog) {
   const number = catches.findIndex((item) => item.id === catchLog.id) + 1;
-  const marker = L.marker([catchLog.lat, catchLog.lng], { icon: makeCatchIcon(number) })
+  const marker = L.marker([catchLog.lat, catchLog.lng], { icon: makeCatchIcon(number, catchLog) })
     .addTo(map)
     .bindPopup(catchPopupHtml(catchLog));
 
@@ -1660,7 +1709,7 @@ function renderCatchList() {
   if (!catches.length) {
     const empty = document.createElement("div");
     empty.className = "empty-list";
-    empty.textContent = "釣果ピンはまだありません";
+    empty.textContent = "現地メモ・釣果記録はまだありません";
     catchList.append(empty);
     return;
   }
@@ -1694,14 +1743,12 @@ function renderCatchList() {
     }
 
     const title = document.createElement("strong");
-    title.textContent = spot?.name || "未選択";
+    title.textContent = recordDisplayTitle(catchLog, spot);
 
     const meta = document.createElement("span");
-    meta.textContent = [
-      formatCatchTime(catchLog.time),
-      catchLog.bait || "未入力",
-      catchLog.weather || "天気未入力"
-    ].join(" / ");
+    meta.textContent = isLocationNote(catchLog)
+      ? [formatCatchTime(catchLog.time), recordDisplayKind(catchLog), spot?.name || "近くの釣り場未選択"].join(" / ")
+      : [formatCatchTime(catchLog.time), catchLog.bait || "未入力", catchLog.weather || "天気未入力"].join(" / ");
 
     summary.append(title, meta);
     row.append(number, summary);
@@ -1742,7 +1789,7 @@ function setCatchMode(active) {
     setSpotMode(false);
   }
   addCatchModeButton.classList.toggle("is-active", active);
-  addCatchModeButton.textContent = active ? "地図をタップ" : "釣果ピン追加";
+  addCatchModeButton.textContent = active ? "地図をタップ" : "記録ピン追加";
   map.getContainer().style.cursor = active ? "crosshair" : "";
 }
 
@@ -1763,6 +1810,8 @@ function closeCatchPanel() {
   editingCatchId = null;
   pendingCatchPhoto = "";
   catchForm.reset();
+  if (catchRecordType) catchRecordType.value = "note";
+  updateRecordFormMode();
   showCatchPhoto("");
 }
 
@@ -1777,7 +1826,9 @@ function showCatchPhoto(value) {
   if (photo) catchPhotoImage.src = photo;
   catchPhotoStatus.textContent = photo
     ? "写真を添付します"
-    : "写真フォルダーから選ぶか、カメラで撮影すると、現在地の記録に添付してこの端末に保存します";
+    : (catchRecordType?.value === "catch"
+        ? "写真フォルダーから選ぶか、カメラで撮影すると、釣果記録に添付してこの端末に保存します"
+        : "写真フォルダーから選ぶか、カメラで撮影すると、この場所の記録に添付してこの端末に保存します");
 }
 
 function compressCatchPhoto(file) {
@@ -1805,6 +1856,10 @@ function openCatchPanel(catchLog = null, latLng = null, options = {}) {
   catchLng.value = Number.isFinite(Number(lng)) ? Number(lng) : "";
   const locationSource = options.source || (catchLog ? "保存済み記録" : "記録位置");
   setCatchLocationStatus(lat, lng, locationSource, options.accuracy);
+  const nextRecordType = catchLog ? recordTypeOf(catchLog) : (options.recordType === "catch" ? "catch" : "note");
+  if (catchRecordType) catchRecordType.value = nextRecordType;
+  if (catchPlaceKind) catchPlaceKind.value = catchLog?.placeKind || "";
+  if (catchPlaceName) catchPlaceName.value = catchLog?.placeName || "";
   catchSpot.value = catchLog?.spotId || nearestSpotId(lat, lng);
   catchTime.value = catchLog?.time || formatDateTimeForInput();
   catchBait.value = catchLog?.bait || "";
@@ -1814,6 +1869,7 @@ function openCatchPanel(catchLog = null, latLng = null, options = {}) {
   catchSize.value = catchLog?.size || "";
   catchMemo.value = catchLog?.memo || "";
   pendingCatchPhoto = validCatchPhoto(catchLog?.photo) ? catchLog.photo : "";
+  updateRecordFormMode();
   showCatchPhoto(pendingCatchPhoto);
   deleteCatchButton.classList.toggle("is-hidden", !editingCatchId);
 
@@ -2395,6 +2451,11 @@ removeCatchPhotoButton.addEventListener("click", () => {
   showCatchPhoto("");
 });
 
+if (catchRecordType) {
+  catchRecordType.addEventListener("change", updateRecordFormMode);
+}
+updateRecordFormMode();
+
 spotForm.addEventListener("submit", (event) => {
   event.preventDefault();
 
@@ -2445,6 +2506,9 @@ catchForm.addEventListener("submit", (event) => {
 
   const catchLog = {
     id: editingCatchId || `catch-${Date.now()}`,
+    recordType: catchRecordType?.value === "catch" ? "catch" : "note",
+    placeKind: catchPlaceKind?.value || "",
+    placeName: catchPlaceName?.value.trim() || "",
     spotId: catchSpot.value,
     time: catchTime.value,
     bait: catchBait.value,
@@ -2499,7 +2563,7 @@ function handleMapTap(latlng) {
     return;
   }
   if (!catchMode) return;
-  openCatchPanel(null, latlng);
+  openCatchPanel(null, latlng, { recordType: "note" });
 }
 
 map.on("click", (event) => {
@@ -2534,7 +2598,7 @@ updateInstallStatus();
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js?v=41", { updateViaCache: "none" })
+    navigator.serviceWorker.register("./sw.js?v=43", { updateViaCache: "none" })
       .then((registration) => {
         console.log("Service worker registered:", registration.scope);
         registration.update().catch(() => {});
