@@ -2,14 +2,16 @@ const STORAGE_KEY = "mie-bass-map-v1";
 const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
 const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
 const BACKGROUND_STORAGE_KEY = "mie-fishing-map-sidebar-background-v1";
-const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v5";
+const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v7";
 const PREVIOUS_POSITION_STORAGE_KEYS = [
+  "mie-fishing-map-position-overrides-v6",
+  "mie-fishing-map-position-overrides-v5",
   "mie-fishing-map-position-overrides-v4",
   "mie-fishing-map-position-overrides-v3",
   "mie-fishing-map-position-overrides-v2",
   "mie-fishing-map-position-overrides-v1"
 ];
-const AUTO_ALIGN_STORAGE_KEY = "mie-fishing-map-auto-align-v5";
+const AUTO_ALIGN_STORAGE_KEY = "mie-fishing-map-auto-align-v7";
 
 // 国土地理院の名称検索で同名地点を確認できた座標に合わせています。
 const seedSpots = [
@@ -168,7 +170,7 @@ function loadPositionOverrides() {
   const current = safeParseJson(localStorage.getItem(POSITION_STORAGE_KEY), {});
   if (Object.keys(current).length > 0) return current;
 
-  // v34 以前の自動補正は、表記と違う候補を保存してしまうことがあったため引き継ぎません。
+  // v39 以前の自動補正は、拡大時の地図表記からズレる候補が残ることがあったため引き継ぎません。
   // 詳細カードから手で直した位置だけ、新しい保存先へ移します。
   const manualOnly = {};
   PREVIOUS_POSITION_STORAGE_KEYS.forEach((key) => {
@@ -214,7 +216,7 @@ function applyPositionOverride(spot) {
 
 let spots = [...seedSpots, ...portSpots, ...marinaSpots].map(applyPositionOverride).concat(customSpots);
 
-const GSI_AUTO_ALIGN_VERSION = "v36";
+const GSI_AUTO_ALIGN_VERSION = "v41";
 const GSI_NAME_SEARCH_ENDPOINT = "https://msearch.gsi.go.jp/address-search/AddressSearch?q=";
 const GSI_VECTOR_TILE_ZOOMS = [15];
 const GSI_VECTOR_TILE_LAYERS = [
@@ -224,7 +226,13 @@ const GSI_VECTOR_TILE_LAYERS = [
   { id: "experimental_nrpt", source: "国土地理院居住地名" }
 ];
 const gsiTileCache = new Map();
+const ZOOM_LABEL_ALIGN_MIN_ZOOM = 16;
+const ZOOM_LABEL_ALIGN_MAX_TARGETS = 28;
+const ZOOM_LABEL_ALIGN_THROTTLE_MS = 650;
+const zoomLabelAlignAttempts = new Set();
 let autoAlignRunning = false;
+let zoomLabelAlignRunning = false;
+let zoomLabelAlignTimer = null;
 
 const map = L.map("map", {
   zoomControl: true,
@@ -1178,6 +1186,137 @@ async function lookupGsiVectorLabelCandidates(spot, thorough = false) {
   return candidates.sort((a, b) => b.score - a.score || a.distance - b.distance);
 }
 
+function tileRangeForMapBounds(bounds, zoom, padding = 1) {
+  const northWest = lonLatToTile(bounds.getWest(), bounds.getNorth(), zoom);
+  const southEast = lonLatToTile(bounds.getEast(), bounds.getSouth(), zoom);
+  const max = (2 ** zoom) - 1;
+  const minX = Math.max(0, Math.min(northWest.x, southEast.x) - padding);
+  const maxX = Math.min(max, Math.max(northWest.x, southEast.x) + padding);
+  const minY = Math.max(0, Math.min(northWest.y, southEast.y) - padding);
+  const maxY = Math.min(max, Math.max(northWest.y, southEast.y) + padding);
+  const tiles = [];
+  for (let x = minX; x <= maxX; x += 1) {
+    for (let y = minY; y <= maxY; y += 1) {
+      tiles.push({ x, y });
+    }
+  }
+  return tiles;
+}
+
+function candidatePixelDistanceFromMapCenter(candidate) {
+  try {
+    const point = map.latLngToContainerPoint([candidate.lat, candidate.lng]);
+    const size = map.getSize();
+    const center = L.point(size.x / 2, size.y / 2);
+    return point.distanceTo(center);
+  } catch (error) {
+    return 9999;
+  }
+}
+
+function rankViewportCandidate(candidate) {
+  const pixelDistance = candidate.pixelDistance ?? candidatePixelDistanceFromMapCenter(candidate);
+  const currentDistance = Number(candidate.distance) || 0;
+  const exactBonus = normalizePlaceText(candidate.label) === normalizePlaceText(candidate.spotName || "") ? 40 : 0;
+  const visibleLabelBonus = String(candidate.source || "").includes("地図表示名") ? 28 : 0;
+  // 拡大時は「今見えている地図ラベルに合わせる」ことを優先します。
+  // 距離だけで選ぶと、川・港などの代表点に戻ってしまい、ラベルからズレて見えるためです。
+  return candidate.score + exactBonus + visibleLabelBonus - Math.min(currentDistance, 10) * 1.2 - Math.min(pixelDistance, 1200) / 18;
+}
+
+async function lookupVisibleGsiLabelCandidate(spot) {
+  if (map.getZoom() < ZOOM_LABEL_ALIGN_MIN_ZOOM) return null;
+  // ラベルが見えているのに現在のピンだけがズレて画面外にある場合でも拾えるよう、
+  // 表示範囲を大きめに広げて「水辺名・港名・マリーナ名」の注記を探します。
+  const bounds = map.getBounds().pad(0.9);
+  const base = baseSpotForAlignment(spot);
+  const candidates = [];
+
+  for (const zoom of GSI_VECTOR_TILE_ZOOMS) {
+    const tiles = tileRangeForMapBounds(bounds, zoom, 2);
+    for (const layer of GSI_VECTOR_TILE_LAYERS) {
+      for (const tile of tiles) {
+        const features = await fetchGsiVectorTile(layer.id, tile.x, tile.y, zoom);
+        candidates.push(...candidatesFromFeatures(base, features, `地図表示名・拡大補正/${layer.source}`));
+      }
+    }
+  }
+
+  return candidates
+    .filter((candidate) => bounds.contains([candidate.lat, candidate.lng]))
+    .map((candidate) => ({
+      ...candidate,
+      spotName: spot.name,
+      pixelDistance: candidatePixelDistanceFromMapCenter(candidate)
+    }))
+    .sort((a, b) => rankViewportCandidate(b) - rankViewportCandidate(a) || a.pixelDistance - b.pixelDistance)[0] || null;
+}
+
+function markSpotForZoomLabelAlignRetry(spotId) {
+  [...zoomLabelAlignAttempts].forEach((key) => {
+    if (key.startsWith(`${spotId}:`)) zoomLabelAlignAttempts.delete(key);
+  });
+}
+
+async function alignVisibleSpotsToZoomLabels() {
+  if (zoomLabelAlignRunning || autoAlignRunning || map.getZoom() < ZOOM_LABEL_ALIGN_MIN_ZOOM) return;
+  zoomLabelAlignRunning = true;
+
+  const bounds = map.getBounds().pad(0.95);
+  const center = map.getCenter();
+  const selectedSpot = spots.find((spot) => spot.id === selectedId);
+  const targets = spots
+    .filter((spot) => {
+      if (spot.custom || isManualPositionOverride(spot.id)) return false;
+      if (spot.id === selectedId) return true;
+      const base = defaultSpotPositions.get(spot.id);
+      return bounds.contains([spot.lat, spot.lng]) || (base && bounds.contains([base.lat, base.lng]));
+    })
+    .sort((a, b) => {
+      if (a.id === selectedId) return -1;
+      if (b.id === selectedId) return 1;
+      const baseA = defaultSpotPositions.get(a.id) || a;
+      const baseB = defaultSpotPositions.get(b.id) || b;
+      return distanceKm(center.lat, center.lng, baseA.lat, baseA.lng)
+        - distanceKm(center.lat, center.lng, baseB.lat, baseB.lng);
+    })
+    .slice(0, selectedSpot ? ZOOM_LABEL_ALIGN_MAX_TARGETS : Math.min(16, ZOOM_LABEL_ALIGN_MAX_TARGETS));
+
+  let adjusted = 0;
+  try {
+    for (const spot of targets) {
+      const zoomBucket = Math.min(18, Math.max(ZOOM_LABEL_ALIGN_MIN_ZOOM, Math.floor(map.getZoom())));
+      const attemptKey = `${spot.id}:${zoomBucket}:${map.getCenter().lat.toFixed(4)},${map.getCenter().lng.toFixed(4)}`;
+      if (zoomLabelAlignAttempts.has(attemptKey) && spot.id !== selectedId) continue;
+      zoomLabelAlignAttempts.add(attemptKey);
+
+      const candidate = await lookupVisibleGsiLabelCandidate(spot);
+      if (candidate && applyAutoAlignedPosition(spot, candidate)) {
+        adjusted += 1;
+        markSpotForZoomLabelAlignRetry(spot.id);
+      }
+    }
+
+    if (adjusted > 0) {
+      persistPositionOverrides();
+      renderList();
+      const current = spots.find((spot) => spot.id === selectedId);
+      if (current) updateSpotCard(current);
+      if (dataStatus) dataStatus.textContent = `水辺に表示されている地図名へ${adjusted}件のピンを合わせました`;
+    }
+  } finally {
+    zoomLabelAlignRunning = false;
+  }
+}
+
+function scheduleZoomLabelAlign() {
+  if (map.getZoom() < ZOOM_LABEL_ALIGN_MIN_ZOOM) return;
+  window.clearTimeout(zoomLabelAlignTimer);
+  zoomLabelAlignTimer = window.setTimeout(() => {
+    alignVisibleSpotsToZoomLabels();
+  }, ZOOM_LABEL_ALIGN_THROTTLE_MS);
+}
+
 async function findGsiLabelPosition(spot, thorough = false) {
   // 「地図に表記されている名前」へ合わせるので、住所検索よりも地図注記タイルを優先します。
   // 住所検索は水面・港全体の代表点になりやすく、ラベル文字からズレる原因になるため最後の保険です。
@@ -1204,7 +1343,8 @@ function applyAutoAlignedPosition(spot, candidate) {
   const nextLat = Number(candidate.lat.toFixed(6));
   const nextLng = Number(candidate.lng.toFixed(6));
   const currentOverride = positionOverrides[spot.id];
-  if (moved < 0.03 && currentOverride?.source === candidate.source && currentOverride?.label === candidate.label) return false;
+  // 30m未満のズレでも拡大するとかなり目立つため、3m未満まで詰めます。
+  if (moved < 0.003 && currentOverride?.source === candidate.source && currentOverride?.label === candidate.label) return false;
   positionOverrides[spot.id] = {
     lat: nextLat,
     lng: nextLng,
@@ -1226,6 +1366,7 @@ function applyAutoAlignedPosition(spot, candidate) {
   ));
   const updated = spots.find((item) => item.id === spot.id);
   if (updated) updateSpotMarkerPosition(updated);
+  markSpotForZoomLabelAlignRetry(spot.id);
   return true;
 }
 
@@ -1301,9 +1442,12 @@ function scheduleInitialAutoAlign() {
 
 async function alignSingleSpotPosition(spotId) {
   const spot = spots.find((item) => item.id === spotId);
-  if (!spot || spot.custom || isManualPositionOverride(spot.id) || positionOverrides[spot.id]) return;
+  if (!spot || spot.custom || isManualPositionOverride(spot.id)) return;
 
-  const candidate = await findGsiLabelPosition(baseSpotForAlignment(spot), true);
+  const visibleCandidate = map.getZoom() >= ZOOM_LABEL_ALIGN_MIN_ZOOM
+    ? await lookupVisibleGsiLabelCandidate(spot)
+    : null;
+  const candidate = visibleCandidate || await findGsiLabelPosition(baseSpotForAlignment(spot), true);
   if (!candidate) return;
   if (!applyAutoAlignedPosition(spot, candidate)) return;
 
@@ -1358,6 +1502,7 @@ function setSpotPosition(spotId, lat, lng) {
   renderList();
   updateSpotCard(updated);
   moveMapTo(nextLat, nextLng, Math.max(updated.zoom || 16, 16));
+  markSpotForZoomLabelAlignRetry(spotId);
   dataStatus.textContent = `${updated.name} のピン位置を補正しました`;
 }
 
@@ -1375,6 +1520,7 @@ function resetSpotPosition(spotId) {
   renderList();
   updateSpotCard(updated);
   moveMapTo(updated.lat, updated.lng, updated.zoom || 16);
+  markSpotForZoomLabelAlignRetry(spotId);
   dataStatus.textContent = `${updated.name} のピン位置を初期位置に戻しました`;
 }
 
@@ -1761,6 +1907,7 @@ function selectSpot(id) {
   renderList();
   scrollSelectedSpotIntoView();
   alignSingleSpotPosition(id);
+  window.setTimeout(scheduleZoomLabelAlign, 700);
   if (isMobileMapView()) closeMobileMenu();
 }
 
@@ -2171,9 +2318,11 @@ importDataFile.addEventListener("change", () => {
 });
 if (autoAlignPositionsButton) {
   autoAlignPositionsButton.addEventListener("click", () => {
+    zoomLabelAlignAttempts.clear();
     autoAlignSpotPositions({ thorough: true, silent: false, force: true });
   });
 }
+map.on("zoomend moveend", scheduleZoomLabelAlign);
 fishForm.addEventListener("submit", (event) => {
   event.preventDefault();
   saveFishSelection();
@@ -2362,7 +2511,7 @@ updateInstallStatus();
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js?v=38", { updateViaCache: "none" })
+    navigator.serviceWorker.register("./sw.js?v=41", { updateViaCache: "none" })
       .then((registration) => {
         console.log("Service worker registered:", registration.scope);
         registration.update().catch(() => {});
