@@ -298,6 +298,7 @@ const catchWater = document.querySelector("#catchWater");
 const catchSize = document.querySelector("#catchSize");
 const catchMemo = document.querySelector("#catchMemo");
 const catchPhoto = document.querySelector("#catchPhoto");
+const catchCamera = document.querySelector("#catchCamera");
 const catchPhotoPreview = document.querySelector("#catchPhotoPreview");
 const catchPhotoImage = document.querySelector("#catchPhotoImage");
 const removeCatchPhotoButton = document.querySelector("#removeCatchPhoto");
@@ -964,7 +965,7 @@ function showCatchPhoto(value) {
   if (photo) catchPhotoImage.src = photo;
   catchPhotoStatus.textContent = photo
     ? "写真を添付します"
-    : "写真フォルダーから選ぶと、圧縮してこの端末に保存します";
+    : "写真フォルダーから選ぶか、カメラで撮影すると、圧縮してこの端末に保存します";
 }
 
 function compressCatchPhoto(file) {
@@ -1528,10 +1529,10 @@ deleteCatchButton.addEventListener("click", () => {
   closeCatchPanel();
 });
 
-catchPhoto.addEventListener("change", async () => {
-  const [file] = catchPhoto.files;
+async function handleCatchPhotoChange(input, label = "写真") {
+  const [file] = input.files || [];
   if (!file) return;
-  catchPhotoStatus.textContent = "写真を圧縮しています…";
+  catchPhotoStatus.textContent = `${label}を圧縮しています…`;
   try {
     pendingCatchPhoto = await compressCatchPhoto(file);
     showCatchPhoto(pendingCatchPhoto);
@@ -1539,12 +1540,20 @@ catchPhoto.addEventListener("change", async () => {
     pendingCatchPhoto = "";
     showCatchPhoto("");
     catchPhotoStatus.textContent = error.message;
+  } finally {
+    input.value = "";
   }
-});
+}
+
+catchPhoto.addEventListener("change", () => handleCatchPhotoChange(catchPhoto, "選択した写真"));
+if (catchCamera) {
+  catchCamera.addEventListener("change", () => handleCatchPhotoChange(catchCamera, "撮影した写真"));
+}
 
 removeCatchPhotoButton.addEventListener("click", () => {
   pendingCatchPhoto = "";
   catchPhoto.value = "";
+  if (catchCamera) catchCamera.value = "";
   showCatchPhoto("");
 });
 
