@@ -1001,14 +1001,42 @@ function openSpotPanel(spot = null, latLng = null) {
   setSpotMode(false);
 }
 
-function moveMapTo(lat, lng, zoom) {
+function isMobileMapView() {
+  return window.matchMedia("(max-width: 820px)").matches || window.innerWidth <= 820;
+}
+
+function targetZoomForSpot(zoom, options = {}) {
+  const requestedZoom = Number(zoom) || 15;
+  // スマートフォンでは、釣り場をタップした時にしっかり寄って見えるようにする。
+  // 三重県全体に戻す操作だけは、広域ズームを維持する。
+  if (isMobileMapView() && options.mobileMinZoom !== false) {
+    return Math.max(requestedZoom, Number(options.mobileMinZoom) || 16);
+  }
+  return requestedZoom;
+}
+
+function moveMapTo(lat, lng, zoom, options = {}) {
+  const nextLat = Number(lat);
+  const nextLng = Number(lng);
+  if (!Number.isFinite(nextLat) || !Number.isFinite(nextLng)) return;
+
+  const nextZoom = targetZoomForSpot(zoom, options);
+  const target = L.latLng(nextLat, nextLng);
+
   map.closePopup();
   map.invalidateSize({ pan: false });
-  map.setView([lat, lng], zoom, { animate: false });
+  map.setView(target, nextZoom, { animate: !isMobileMapView(), duration: 0.25 });
 
-  requestAnimationFrame(() => {
+  // iPhone/Androidでは、レイアウト確定前にsetViewすると移動・ズームが反映されないことがあるため、少し遅らせて再指定する。
+  window.setTimeout(() => {
     map.invalidateSize({ pan: false });
-  });
+    map.setView(target, nextZoom, { animate: false });
+  }, 80);
+
+  window.setTimeout(() => {
+    map.invalidateSize({ pan: false });
+    map.panTo(target, { animate: false });
+  }, 220);
 }
 
 function selectSpot(id) {
@@ -1302,7 +1330,7 @@ document.querySelector("#resetView").addEventListener("click", () => {
   moveSpotModeId = null;
   map.getContainer().style.cursor = "";
   selectedId = null;
-  moveMapTo(34.6761, 136.5086, 9);
+  moveMapTo(34.6761, 136.5086, 9, { mobileMinZoom: false });
   hideSpotCard();
   renderList();
 });

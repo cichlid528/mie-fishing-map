@@ -1,7 +1,7 @@
 {
-  "name": "Bass Spot Log",
-  "short_name": "釣り場ログ",
-  "description": "三重県のブラックバス釣り場と釣果を記録するアプリ",
+  "name": "三重県釣りマップ",
+  "short_name": "釣りマップ",
+  "description": "三重県の釣り場と釣果を記録するアプリ",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
