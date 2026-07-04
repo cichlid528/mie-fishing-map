@@ -1,9 +1,9 @@
-const CACHE_NAME = "bass-spot-log-v29";
+const CACHE_NAME = "bass-spot-log-v31";
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./style.css?v=29",
-  "./app.js?v=29",
+  "./style.css?v=31",
+  "./app.js?v=31",
   "./manifest.json",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
