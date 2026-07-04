@@ -16,7 +16,7 @@
       integrity="sha256-p4NxAoJBhIINfQDP4nD8xQV9qVtAkM5M5OgFHJt0f9I="
       crossorigin=""
     >
-    <link rel="stylesheet" href="style.css?v=11">
+    <link rel="stylesheet" href="style.css?v=12">
   </head>
   <body>
     <main class="app-shell">
@@ -50,6 +50,7 @@
             <button id="catchTab" class="list-tab" type="button" aria-selected="false">釣果</button>
           </div>
           <div class="settings-row" aria-label="設定">
+            <button id="installAppButton" class="data-button install-button" type="button">アプリをダウンロード</button>
             <button id="openInfoPanel" class="data-button" type="button">注意・規約</button>
             <button id="changeBackgroundButton" class="data-button" type="button">背景画像を変更</button>
             <button id="exportDataButton" class="data-button" type="button">バックアップ保存</button>
@@ -308,6 +309,47 @@
     </section>
 
 
+    <section id="installPanel" class="catch-panel" aria-label="アプリのダウンロード" aria-hidden="true">
+      <form class="catch-form info-form">
+        <header class="catch-form-header">
+          <div>
+            <p class="kicker">Install App</p>
+            <h2>アプリをダウンロード</h2>
+          </div>
+          <button id="closeInstallPanel" class="icon-button" type="button" title="閉じる" aria-label="閉じる">×</button>
+        </header>
+
+        <div class="info-content install-content">
+          <section>
+            <h3>Android / Chrome</h3>
+            <p>この画面の「アプリをダウンロード」ボタンでインストール画面が出る場合は、そのまま進めてください。</p>
+            <p>出ない場合は、Chrome右上の「︙」から「アプリをインストール」または「ホーム画面に追加」を選んでください。</p>
+          </section>
+
+          <section>
+            <h3>iPhone / Safari</h3>
+            <p>iPhoneでは自動のインストール画面が出にくいです。Safariで開いて、共有ボタンから「ホーム画面に追加」を選んでください。</p>
+            <ol class="install-steps">
+              <li>Safariでこのアプリを開く</li>
+              <li>下の共有ボタンを押す</li>
+              <li>「ホーム画面に追加」を押す</li>
+              <li>右上の「追加」を押す</li>
+            </ol>
+          </section>
+
+          <section>
+            <h3>現在の状態</h3>
+            <p id="installStatus" class="catch-photo-status" aria-live="polite">端末の状態を確認しています。</p>
+          </section>
+        </div>
+
+        <div class="catch-actions">
+          <button class="save-button" type="button" id="closeInstallDone">閉じる</button>
+        </div>
+      </form>
+    </section>
+
+
     <section id="infoPanel" class="catch-panel" aria-label="注意・利用規約・プライバシー" aria-hidden="true">
       <form class="catch-form info-form">
         <header class="catch-form-header">
@@ -355,6 +397,6 @@
       integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
       crossorigin=""
     ></script>
-    <script src="app.js?v=11"></script>
+    <script src="app.js?v=12"></script>
   </body>
 </html>

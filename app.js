@@ -229,6 +229,12 @@ const closeInfoDoneButton = document.querySelector("#closeInfoDone");
 const exportDataButton = document.querySelector("#exportDataButton");
 const importDataFile = document.querySelector("#importDataFile");
 const backupStatus = document.querySelector("#backupStatus");
+const installAppButton = document.querySelector("#installAppButton");
+const installPanel = document.querySelector("#installPanel");
+const closeInstallPanelButton = document.querySelector("#closeInstallPanel");
+const closeInstallDoneButton = document.querySelector("#closeInstallDone");
+const installStatus = document.querySelector("#installStatus");
+let deferredInstallPrompt = null;
 let editingFishSpotId = null;
 
 function showSpotCard(html) {
@@ -327,6 +333,67 @@ function openInfoPanel() {
 function closeInfoPanel() {
   infoPanel.classList.remove("is-open");
   infoPanel.setAttribute("aria-hidden", "true");
+}
+
+function isAppStandalone() {
+  return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+}
+
+function isIOSDevice() {
+  return /iphone|ipad|ipod/i.test(window.navigator.userAgent || "");
+}
+
+function updateInstallStatus(message = "") {
+  if (!installStatus) return;
+  if (message) {
+    installStatus.textContent = message;
+    return;
+  }
+  if (isAppStandalone()) {
+    installStatus.textContent = "すでにホーム画面のアイコンからアプリとして起動しています。";
+  } else if (deferredInstallPrompt) {
+    installStatus.textContent = "この端末では、左メニューの『アプリをダウンロード』からインストールできます。";
+  } else if (isIOSDevice()) {
+    installStatus.textContent = "iPhoneではSafariの共有ボタンから『ホーム画面に追加』を選んでください。";
+  } else {
+    installStatus.textContent = "ブラウザのメニューから『アプリをインストール』または『ホーム画面に追加』を選んでください。";
+  }
+}
+
+function openInstallPanel(message = "") {
+  updateInstallStatus(message);
+  installPanel.classList.add("is-open");
+  installPanel.setAttribute("aria-hidden", "false");
+}
+
+function closeInstallPanel() {
+  installPanel.classList.remove("is-open");
+  installPanel.setAttribute("aria-hidden", "true");
+}
+
+async function handleInstallAppClick() {
+  if (isAppStandalone()) {
+    openInstallPanel("すでにアプリとして起動しています。");
+    return;
+  }
+
+  if (!deferredInstallPrompt) {
+    openInstallPanel();
+    return;
+  }
+
+  try {
+    deferredInstallPrompt.prompt();
+    const choice = await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+    if (choice?.outcome === "accepted") {
+      openInstallPanel("インストールを開始しました。ホーム画面のアイコンを確認してください。");
+    } else {
+      openInstallPanel("インストールはキャンセルされました。必要なときにもう一度押してください。");
+    }
+  } catch (error) {
+    openInstallPanel("自動インストール画面を開けませんでした。ブラウザのメニューからホーム画面に追加してください。");
+  }
 }
 
 function setBackupStatus(message) {
@@ -1256,6 +1323,9 @@ resetBackgroundButton.addEventListener("click", () => {
   backgroundStatus.textContent = "初期背景に戻しました";
 });
 closeFishPanelButton.addEventListener("click", closeFishPanel);
+installAppButton.addEventListener("click", handleInstallAppClick);
+closeInstallPanelButton.addEventListener("click", closeInstallPanel);
+closeInstallDoneButton.addEventListener("click", closeInstallPanel);
 openInfoPanelButton.addEventListener("click", openInfoPanel);
 closeInfoPanelButton.addEventListener("click", closeInfoPanel);
 closeInfoDoneButton.addEventListener("click", closeInfoPanel);
@@ -1418,6 +1488,23 @@ loadSavedBackground();
 
 renderList();
 setActiveList("spots");
+
+window.addEventListener("beforeinstallprompt", (event) => {
+  event.preventDefault();
+  deferredInstallPrompt = event;
+  if (installAppButton && !isAppStandalone()) {
+    installAppButton.textContent = "アプリをダウンロード";
+    installAppButton.disabled = false;
+  }
+  updateInstallStatus();
+});
+
+window.addEventListener("appinstalled", () => {
+  deferredInstallPrompt = null;
+  updateInstallStatus("インストールが完了しました。ホーム画面のアイコンから起動できます。");
+});
+
+updateInstallStatus();
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {

@@ -1269,3 +1269,35 @@ h1 {
     grid-template-columns: 1fr;
   }
 }
+
+
+.install-button {
+  grid-column: 1 / -1;
+  min-height: 40px;
+  color: #fff;
+  border-color: var(--accent);
+  background: var(--accent);
+  font-weight: 900;
+}
+
+.install-button:hover {
+  background: var(--accent-dark);
+}
+
+.sidebar.has-custom-bg .install-button {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.42);
+  background: rgba(15, 123, 99, 0.96);
+}
+
+.install-content section {
+  gap: 8px;
+}
+
+.install-steps {
+  margin: 0;
+  padding-left: 1.25em;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.65;
+}
