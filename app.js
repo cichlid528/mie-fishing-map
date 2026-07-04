@@ -1039,6 +1039,15 @@ function moveMapTo(lat, lng, zoom, options = {}) {
   }, 220);
 }
 
+function scrollSelectedSpotIntoView() {
+  if (!isMobileMapView()) return;
+  const row = spotList.querySelector(".spot-row.is-selected");
+  if (!row) return;
+  window.setTimeout(() => {
+    row.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" });
+  }, 120);
+}
+
 function selectSpot(id) {
   const spot = spots.find((item) => item.id === id);
   if (!spot) return;
@@ -1050,6 +1059,7 @@ function selectSpot(id) {
 
   updateSpotCard(spot);
   renderList();
+  scrollSelectedSpotIntoView();
 }
 
 function getSpotState(spotId) {
