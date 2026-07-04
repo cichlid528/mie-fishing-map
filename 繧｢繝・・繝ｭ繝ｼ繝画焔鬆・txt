@@ -1,17 +1,8 @@
-v24: メニューのチェック状態を詳細カードに反映し、メニュー全体のスクロールをなくしました。
+三重県釣りマップ v26 アップロード手順
 
-GitHubにアップロードするもの:
-- index.html
-- app.js
-- style.css
-- sw.js
-- manifest.json
-- icons フォルダー内の4つのPNG画像
-
-ZIPのままではなく、解凍した中身をアップロードしてください。
-
-コミット名の例:
-チェック状態を詳細カードに反映してメニュー表示を調整
-
-確認URL:
-https://cichlid528.github.io/mie-fishing-map/?v=24
+1. このZIPを右クリックして「すべて展開」します。
+2. GitHub の cichlid528/mie-fishing-map を開きます。
+3. 「Add file」→「Upload files」を押します。
+4. ZIPそのものではなく、解凍した中のファイルをアップロードします。
+5. Commit changes を押します。
+6. https://cichlid528.github.io/mie-fishing-map/?v=26 で確認します。

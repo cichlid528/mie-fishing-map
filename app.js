@@ -1241,6 +1241,23 @@ function clearFishSelection() {
   closeFishPanel();
 }
 
+function setSpotStateFromCard(spotId, kind, checked) {
+  const current = spots.find((item) => item.id === spotId);
+  if (!current) return;
+
+  selectedId = spotId;
+  if (kind === "hasBass") {
+    setCaughtState(spotId, checked);
+  } else {
+    const state = getSpotState(spotId);
+    state[kind] = checked;
+    persist();
+  }
+
+  renderList();
+  updateSpotCard(current);
+}
+
 function updateSpotCard(spot) {
   const state = getSpotState(spot.id);
   const fishSummary = getFishSummary(spot.id);
@@ -1276,9 +1293,26 @@ function updateSpotCard(spot) {
       </div>
     </div>
     <div class="spot-status-row" aria-label="チェック状態">${statusHtml}</div>
+    <div class="spot-card-control-grid" aria-label="詳細カードでチェック">
+      <label class="spot-card-check-control">
+        <input id="spotCardCaught" type="checkbox" ${hasCaught ? "checked" : ""}>
+        <span>釣れた</span>
+      </label>
+      <button class="spot-card-fish-control ${fishSummary !== "未選択" ? "has-species" : ""}" type="button" id="spotCardFishButton">
+        <small>魚種</small><strong>${escapeHtml(fishSummary === "未選択" ? "選択" : fishSummary)}</strong>
+      </button>
+      <label class="spot-card-check-control is-alert-control">
+        <input id="spotCardBanned" type="checkbox" ${isBanned ? "checked" : ""}>
+        <span>禁止</span>
+      </label>
+      <label class="spot-card-check-control">
+        <input id="spotCardParking" type="checkbox" ${hasParking ? "checked" : ""}>
+        <span>駐車</span>
+      </label>
+    </div>
     <div class="spot-card-body">
       <p class="spot-card-note spot-card-safety">掲載は釣り許可を意味しません。現地看板・管理者・自治体・漁協の最新情報を必ず確認してください。</p>
-      <p class="spot-card-note spot-card-check-note">メニューのチェック内容がこのカードにも反映されます。</p>
+      <p class="spot-card-note spot-card-check-note">このカードでもチェック・魚種選択を変更できます。</p>
       ${sourceHtml}
     </div>
     <div class="spot-card-actions">
@@ -1298,6 +1332,14 @@ function updateSpotCard(spot) {
   if (maximizeButton) maximizeButton.addEventListener("click", () => applySpotCardSize("expanded"));
   const minimizeButton = spotCard.querySelector("#minimizeSpotCard");
   if (minimizeButton) minimizeButton.addEventListener("click", () => applySpotCardSize("compact"));
+  const caughtInput = spotCard.querySelector("#spotCardCaught");
+  if (caughtInput) caughtInput.addEventListener("change", (event) => setSpotStateFromCard(spot.id, "hasBass", event.target.checked));
+  const bannedInput = spotCard.querySelector("#spotCardBanned");
+  if (bannedInput) bannedInput.addEventListener("change", (event) => setSpotStateFromCard(spot.id, "banned", event.target.checked));
+  const parkingInput = spotCard.querySelector("#spotCardParking");
+  if (parkingInput) parkingInput.addEventListener("change", (event) => setSpotStateFromCard(spot.id, "parking", event.target.checked));
+  const fishButton = spotCard.querySelector("#spotCardFishButton");
+  if (fishButton) fishButton.addEventListener("click", () => openFishPanel(spot));
   const moveButton = spotCard.querySelector("#moveSpotPosition");
   if (moveButton) moveButton.addEventListener("click", () => setMoveSpotMode(spot.id));
   const resetButton = spotCard.querySelector("#resetSpotPosition");
