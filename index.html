@@ -16,7 +16,7 @@
       integrity="sha256-p4NxAoJBhIINfQDP4nD8xQV9qVtAkM5M5OgFHJt0f9I="
       crossorigin=""
     >
-    <link rel="stylesheet" href="style.css?v=7">
+    <link rel="stylesheet" href="style.css?v=8">
   </head>
   <body>
     <main class="app-shell">
@@ -43,12 +43,17 @@
             <button class="filter-chip" type="button" data-filter="ダム">ダム</button>
           </div>
           <p id="dataStatus" class="data-status" aria-live="polite">地理院地図の名称位置に補正済み</p>
+          <p class="notice-banner">掲載情報は釣りの許可を意味しません。現地看板・管理者・自治体・漁協の最新情報を必ず確認してください。</p>
           <div class="list-tabs" role="tablist" aria-label="リスト切り替え">
             <button id="spotTab" class="list-tab is-active" type="button" aria-selected="true">釣り場</button>
             <button id="catchTab" class="list-tab" type="button" aria-selected="false">釣果</button>
           </div>
           <div class="settings-row" aria-label="設定">
+            <button id="openInfoPanel" class="data-button" type="button">注意・規約</button>
             <button id="changeBackgroundButton" class="data-button" type="button">背景画像を変更</button>
+            <button id="exportDataButton" class="data-button" type="button">バックアップ保存</button>
+            <label class="data-button import-data-label" for="importDataFile">バックアップ読込</label>
+            <input id="importDataFile" class="visually-hidden-file" type="file" accept="application/json,.json">
           </div>
         </section>
 
@@ -95,6 +100,8 @@
 
         <input id="spotLat" type="hidden">
         <input id="spotLng" type="hidden">
+
+        <p class="panel-warning">掲載されている場所でも、釣り禁止・立入禁止・私有地の場合があります。登録前と釣行前に現地の看板や管理者情報を確認してください。</p>
 
         <div class="form-grid">
           <label>
@@ -299,11 +306,53 @@
     </section>
 
 
+    <section id="infoPanel" class="catch-panel" aria-label="注意・利用規約・プライバシー" aria-hidden="true">
+      <form class="catch-form info-form">
+        <header class="catch-form-header">
+          <div>
+            <p class="kicker">Safety & Privacy</p>
+            <h2>注意・規約・バックアップ</h2>
+          </div>
+          <button id="closeInfoPanel" class="icon-button" type="button" title="閉じる" aria-label="閉じる">×</button>
+        </header>
+
+        <div class="info-content">
+          <section>
+            <h3>釣行時の注意</h3>
+            <p>掲載されている釣り場情報は、釣りの許可を意味するものではありません。釣行前に、現地の看板・管理者・自治体・漁協などの最新情報を必ず確認してください。</p>
+            <p>私有地への無断立ち入り、迷惑駐車、ゴミの放置は禁止です。禁止・危険・立入制限の表示がある場所では釣りをしないでください。</p>
+          </section>
+
+          <section>
+            <h3>利用規約の要点</h3>
+            <p>このアプリの地図・釣り場・釣果メモは、個人の釣行管理を目的とした参考情報です。実際に釣行するかどうかは、利用者自身で最新情報を確認して判断してください。</p>
+          </section>
+
+          <section>
+            <h3>プライバシー</h3>
+            <p>釣果、写真、追加した釣り場、背景画像、魚種選択は基本的にこの端末内に保存されます。クラウド送信はしていません。</p>
+            <p>写真や位置情報は個人情報につながる場合があります。共有する前に、場所が特定されても問題ないか確認してください。</p>
+          </section>
+
+          <section>
+            <h3>データバックアップ</h3>
+            <p>端末変更、ブラウザのデータ削除、Safari/Chromeの保存領域整理で記録が消えることがあります。大事な記録は「バックアップ保存」でJSONファイルを保管してください。</p>
+            <p id="backupStatus" class="catch-photo-status" aria-live="polite">バックアップの保存・読込結果をここに表示します。</p>
+          </section>
+        </div>
+
+        <div class="catch-actions">
+          <button class="save-button" type="button" id="closeInfoDone">閉じる</button>
+        </div>
+      </form>
+    </section>
+
+
     <script
       src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
       integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
       crossorigin=""
     ></script>
-    <script src="app.js?v=7"></script>
+    <script src="app.js?v=8"></script>
   </body>
 </html>

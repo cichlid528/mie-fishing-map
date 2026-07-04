@@ -1,4 +1,4 @@
-const CACHE_NAME = "bass-spot-log-v7";
+const CACHE_NAME = "bass-spot-log-v8";
 const APP_SHELL = [
   "./",
   "./index.html",

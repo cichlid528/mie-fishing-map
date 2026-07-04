@@ -147,6 +147,13 @@ const fishSpeciesGroupsContainer = document.querySelector("#fishSpeciesGroups");
 const otherFishInput = document.querySelector("#otherFishInput");
 const clearFishSelectionButton = document.querySelector("#clearFishSelection");
 const closeFishPanelButton = document.querySelector("#closeFishPanel");
+const openInfoPanelButton = document.querySelector("#openInfoPanel");
+const infoPanel = document.querySelector("#infoPanel");
+const closeInfoPanelButton = document.querySelector("#closeInfoPanel");
+const closeInfoDoneButton = document.querySelector("#closeInfoDone");
+const exportDataButton = document.querySelector("#exportDataButton");
+const importDataFile = document.querySelector("#importDataFile");
+const backupStatus = document.querySelector("#backupStatus");
 let editingFishSpotId = null;
 
 function showSpotCard(html) {
@@ -234,6 +241,108 @@ function applySidebarBackground(value) {
 
 function loadSavedBackground() {
   applySidebarBackground(localStorage.getItem(BACKGROUND_STORAGE_KEY) || "");
+}
+
+function openInfoPanel() {
+  infoPanel.classList.add("is-open");
+  infoPanel.setAttribute("aria-hidden", "false");
+}
+
+function closeInfoPanel() {
+  infoPanel.classList.remove("is-open");
+  infoPanel.setAttribute("aria-hidden", "true");
+}
+
+function setBackupStatus(message) {
+  if (backupStatus) backupStatus.textContent = message;
+}
+
+function buildBackupData() {
+  return {
+    app: "mie-fishing-map",
+    backupVersion: 1,
+    exportedAt: new Date().toISOString(),
+    savedState,
+    customSpots,
+    catches,
+    backgroundImage: localStorage.getItem(BACKGROUND_STORAGE_KEY) || ""
+  };
+}
+
+function downloadTextFile(filename, content, type = "application/json") {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function exportBackupData() {
+  try {
+    const pad = (value) => String(value).padStart(2, "0");
+    const now = new Date();
+    const date = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
+    const payload = JSON.stringify(buildBackupData(), null, 2);
+    downloadTextFile(`mie-fishing-map-backup-${date}.json`, payload);
+    setBackupStatus("バックアップJSONを書き出しました。ダウンロードフォルダに保存されています。");
+  } catch (error) {
+    setBackupStatus("バックアップ保存に失敗しました。端末の保存設定を確認してください。");
+  }
+}
+
+function isPlainObject(value) {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function applyImportedBackup(data) {
+  if (!isPlainObject(data) || data.app !== "mie-fishing-map") {
+    throw new Error("このアプリのバックアップJSONではありません");
+  }
+
+  const nextState = isPlainObject(data.savedState) ? data.savedState : {};
+  const nextCustomSpots = Array.isArray(data.customSpots) ? data.customSpots : [];
+  const nextCatches = Array.isArray(data.catches) ? data.catches : [];
+  const nextBackground = validImageDataUrl(data.backgroundImage) ? data.backgroundImage : "";
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(nextState));
+  localStorage.setItem(CUSTOM_SPOT_STORAGE_KEY, JSON.stringify(nextCustomSpots));
+  localStorage.setItem(CATCH_STORAGE_KEY, JSON.stringify(nextCatches));
+  if (nextBackground) {
+    localStorage.setItem(BACKGROUND_STORAGE_KEY, nextBackground);
+  } else {
+    localStorage.removeItem(BACKGROUND_STORAGE_KEY);
+  }
+}
+
+function importBackupFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(String(reader.result || ""));
+      const ok = window.confirm("現在の端末内データを、バックアップ内容で上書きします。続けますか？");
+      if (!ok) {
+        setBackupStatus("バックアップ読込をキャンセルしました。");
+        return;
+      }
+      applyImportedBackup(data);
+      setBackupStatus("バックアップを読み込みました。画面を再読み込みします。");
+      window.setTimeout(() => window.location.reload(), 350);
+    } catch (error) {
+      setBackupStatus(`読込できませんでした: ${error.message}`);
+    } finally {
+      importDataFile.value = "";
+    }
+  };
+  reader.onerror = () => {
+    setBackupStatus("ファイルを読み込めませんでした。");
+    importDataFile.value = "";
+  };
+  reader.readAsText(file);
 }
 
 function compressImageFile(file, options = {}) {
@@ -817,7 +926,8 @@ function updateSpotCard(spot) {
   showSpotCard(`
     <p class="spot-card-type">${escapeHtml(spot.type)} / ${escapeHtml(spot.area)}</p>
     <h2>${escapeHtml(spot.name)}</h2>
-    <p>左のチェックで「釣れた魚種」「釣り禁止」「駐車」を記録できます。現地の掲示・管理者情報は必ず確認してください。</p>
+    <p>掲載は釣り許可を意味しません。現地看板・管理者・自治体・漁協の最新情報を必ず確認してください。</p>
+    <p>左のチェックで「釣れた魚種」「釣り禁止」「駐車」を記録できます。</p>
     <p class="spot-source">記録魚種: ${escapeHtml(fishSummary)}</p>
     ${spot.source ? `<p class="spot-source">位置情報: ${escapeHtml(spot.source)}（掲載は立入・釣り許可を意味しません）</p>` : ""}
     ${spot.custom ? `
@@ -965,6 +1075,17 @@ resetBackgroundButton.addEventListener("click", () => {
   backgroundStatus.textContent = "初期背景に戻しました";
 });
 closeFishPanelButton.addEventListener("click", closeFishPanel);
+openInfoPanelButton.addEventListener("click", openInfoPanel);
+closeInfoPanelButton.addEventListener("click", closeInfoPanel);
+closeInfoDoneButton.addEventListener("click", closeInfoPanel);
+exportDataButton.addEventListener("click", () => {
+  openInfoPanel();
+  exportBackupData();
+});
+importDataFile.addEventListener("change", () => {
+  openInfoPanel();
+  importBackupFile(importDataFile.files[0]);
+});
 fishForm.addEventListener("submit", (event) => {
   event.preventDefault();
   saveFishSelection();
