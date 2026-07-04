@@ -772,7 +772,69 @@ h1 {
   background: rgba(255, 255, 255, 0.92);
   box-shadow: var(--shadow);
   z-index: 500;
+  overflow: hidden;
   backdrop-filter: blur(8px);
+}
+
+.spot-card.is-expanded {
+  width: min(420px, calc(100% - 36px));
+}
+
+.spot-card-toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.spot-card-title {
+  min-width: 0;
+}
+
+.spot-card-size-controls {
+  display: flex;
+  gap: 4px;
+  flex: 0 0 auto;
+  align-items: center;
+}
+
+.spot-card-size-button {
+  min-height: 28px;
+  border: 1px solid rgba(15, 123, 99, 0.24);
+  border-radius: 999px;
+  padding: 0 8px;
+  color: var(--accent-dark);
+  font-size: 11px;
+  font-weight: 900;
+  background: rgba(234, 246, 241, 0.92);
+  cursor: pointer;
+}
+
+.spot-card-size-button.is-active {
+  color: #fff;
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.spot-card-body {
+  display: grid;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.spot-card.is-compact .spot-card-body {
+  display: none;
+}
+
+.spot-card.is-compact .spot-card-actions {
+  margin-top: 8px;
+}
+
+.spot-card-note {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--muted);
 }
 
 .map-tools {
@@ -1130,6 +1192,11 @@ h1 {
   color: var(--muted);
 }
 
+.spot-card-body .spot-source {
+  margin: 0;
+  line-height: 1.35;
+}
+
 .custom-marker {
   display: grid;
   place-items: center;
@@ -1333,10 +1400,24 @@ h1 {
     right: 12px;
     bottom: calc(78px + env(safe-area-inset-bottom));
     width: auto;
-    max-height: min(42dvh, 340px);
-    overflow: auto;
+    max-height: none;
+    overflow: hidden;
     padding: 12px;
     z-index: 610;
+  }
+
+  .spot-card.is-expanded {
+    width: auto;
+  }
+
+  .spot-card-toolbar {
+    gap: 8px;
+  }
+
+  .spot-card-size-button {
+    min-height: 27px;
+    padding: 0 7px;
+    font-size: 11px;
   }
 
   .spot-card-actions {
@@ -1674,8 +1755,42 @@ h1 {
     right: 10px;
     bottom: calc(58px + env(safe-area-inset-bottom));
     max-height: none;
+    overflow: hidden;
     padding: 9px 10px;
     border-radius: 12px;
+  }
+
+  .spot-card.is-expanded {
+    bottom: calc(58px + env(safe-area-inset-bottom));
+  }
+
+  .spot-card-toolbar {
+    gap: 6px;
+  }
+
+  .spot-card-size-controls {
+    gap: 3px;
+  }
+
+  .spot-card-size-button {
+    min-height: 25px;
+    padding: 0 6px;
+    font-size: 10px;
+  }
+
+  .spot-card-body {
+    gap: 4px;
+    margin-top: 6px;
+  }
+
+  .spot-card-note,
+  .spot-card-body .spot-source {
+    font-size: 10px;
+    line-height: 1.25;
+  }
+
+  .spot-card.is-expanded .spot-card-check-note {
+    display: none;
   }
 
   .spot-card h2 {
@@ -1689,10 +1804,6 @@ h1 {
     line-height: 1.25;
   }
 
-  .spot-card > p:nth-of-type(2),
-  .spot-card > p:nth-of-type(3) {
-    display: none;
-  }
 
   .spot-card-actions {
     gap: 5px;

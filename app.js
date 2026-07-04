@@ -247,7 +247,26 @@ function showSpotCard(html) {
 
 function hideSpotCard() {
   spotCard.classList.add("is-hidden");
+  spotCard.classList.remove("is-compact", "is-expanded");
   spotCard.replaceChildren();
+}
+
+function defaultSpotCardSize() {
+  return isMobileMapView() ? "compact" : "expanded";
+}
+
+function applySpotCardSize(size = spotCardSize || defaultSpotCardSize()) {
+  const nextSize = size === "expanded" ? "expanded" : "compact";
+  spotCardSize = nextSize;
+  spotCard.classList.toggle("is-expanded", nextSize === "expanded");
+  spotCard.classList.toggle("is-compact", nextSize !== "expanded");
+
+  const maximizeButton = spotCard.querySelector("#maximizeSpotCard");
+  const minimizeButton = spotCard.querySelector("#minimizeSpotCard");
+  if (maximizeButton) maximizeButton.classList.toggle("is-active", nextSize === "expanded");
+  if (minimizeButton) minimizeButton.classList.toggle("is-active", nextSize !== "expanded");
+  if (maximizeButton) maximizeButton.setAttribute("aria-pressed", String(nextSize === "expanded"));
+  if (minimizeButton) minimizeButton.setAttribute("aria-pressed", String(nextSize !== "expanded"));
 }
 const spotTab = document.querySelector("#spotTab");
 const catchTab = document.querySelector("#catchTab");
@@ -298,6 +317,7 @@ let catchMode = false;
 let editingCatchId = null;
 let pendingCatchPhoto = "";
 let moveSpotModeId = null;
+let spotCardSize = null;
 
 dataStatus.textContent = `池${seedSpots.filter((spot) => spot.type === "池").length}件、港・漁港${portSpots.length}件を表示中（港ピン初期位置を補正済み・詳細カードから再補正できます）`;
 
@@ -1225,13 +1245,27 @@ function updateSpotCard(spot) {
   const fishSummary = getFishSummary(spot.id);
   const hasDefaultPosition = defaultSpotPositions.has(spot.id);
   const positionText = spot.positionAdjusted ? "補正済み" : "初期位置";
+  const sourceHtml = spot.source
+    ? `<p class="spot-source">位置情報: ${escapeHtml(spot.source)} / ${positionText}（掲載は立入・釣り許可を意味しません）</p>`
+    : `<p class="spot-source">位置情報: ${positionText}</p>`;
+
   showSpotCard(`
-    <p class="spot-card-type">${escapeHtml(spot.type)} / ${escapeHtml(spot.area)}</p>
-    <h2>${escapeHtml(spot.name)}</h2>
-    <p>掲載は釣り許可を意味しません。現地看板・管理者・自治体・漁協の最新情報を必ず確認してください。</p>
-    <p>左のチェックで「釣れた魚種」「釣り禁止」「駐車」を記録できます。</p>
-    <p class="spot-source">記録魚種: ${escapeHtml(fishSummary)}</p>
-    ${spot.source ? `<p class="spot-source">位置情報: ${escapeHtml(spot.source)} / ${positionText}（掲載は立入・釣り許可を意味しません）</p>` : `<p class="spot-source">位置情報: ${positionText}</p>`}
+    <div class="spot-card-toolbar">
+      <div class="spot-card-title">
+        <p class="spot-card-type">${escapeHtml(spot.type)} / ${escapeHtml(spot.area)}</p>
+        <h2>${escapeHtml(spot.name)}</h2>
+      </div>
+      <div class="spot-card-size-controls" aria-label="詳細カードの表示サイズ">
+        <button class="spot-card-size-button" type="button" id="maximizeSpotCard" title="詳細カードを最大化" aria-label="詳細カードを最大化">拡大</button>
+        <button class="spot-card-size-button" type="button" id="minimizeSpotCard" title="詳細カードを最小化" aria-label="詳細カードを最小化">縮小</button>
+      </div>
+    </div>
+    <div class="spot-card-body">
+      <p class="spot-card-note spot-card-safety">掲載は釣り許可を意味しません。現地看板・管理者・自治体・漁協の最新情報を必ず確認してください。</p>
+      <p class="spot-card-note spot-card-check-note">左のチェックで「釣れた魚種」「釣り禁止」「駐車」を記録できます。</p>
+      <p class="spot-source">記録魚種: ${escapeHtml(fishSummary)}</p>
+      ${sourceHtml}
+    </div>
     <div class="spot-card-actions">
       <button class="edit-spot-button" type="button" id="moveSpotPosition">位置を修正</button>
       ${spot.positionAdjusted && hasDefaultPosition ? `<button class="edit-spot-button" type="button" id="resetSpotPosition">初期位置に戻す</button>` : ""}
@@ -1241,13 +1275,21 @@ function updateSpotCard(spot) {
       ` : ""}
     </div>
   `);
-  const moveButton = document.querySelector("#moveSpotPosition");
+
+  if (!spotCardSize) spotCardSize = defaultSpotCardSize();
+  applySpotCardSize(spotCardSize);
+
+  const maximizeButton = spotCard.querySelector("#maximizeSpotCard");
+  if (maximizeButton) maximizeButton.addEventListener("click", () => applySpotCardSize("expanded"));
+  const minimizeButton = spotCard.querySelector("#minimizeSpotCard");
+  if (minimizeButton) minimizeButton.addEventListener("click", () => applySpotCardSize("compact"));
+  const moveButton = spotCard.querySelector("#moveSpotPosition");
   if (moveButton) moveButton.addEventListener("click", () => setMoveSpotMode(spot.id));
-  const resetButton = document.querySelector("#resetSpotPosition");
+  const resetButton = spotCard.querySelector("#resetSpotPosition");
   if (resetButton) resetButton.addEventListener("click", () => resetSpotPosition(spot.id));
-  const editButton = document.querySelector("#editCustomSpot");
+  const editButton = spotCard.querySelector("#editCustomSpot");
   if (editButton) editButton.addEventListener("click", () => openSpotPanel(spot));
-  const deleteButton = document.querySelector("#deleteCustomSpotCard");
+  const deleteButton = spotCard.querySelector("#deleteCustomSpotCard");
   if (deleteButton) deleteButton.addEventListener("click", () => deleteCustomSpot(spot.id));
 }
 
@@ -1375,6 +1417,7 @@ if (menuBackdrop) menuBackdrop.addEventListener("click", closeMobileMenu);
 if (closeMenuButton) closeMenuButton.addEventListener("click", closeMobileMenu);
 window.addEventListener("resize", () => {
   if (!isMobileMapView()) closeMobileMenu();
+  if (!spotCard.classList.contains("is-hidden") && spotCardSize) applySpotCardSize(spotCardSize);
   window.setTimeout(() => map.invalidateSize({ pan: false }), 120);
 });
 document.addEventListener("keydown", (event) => {

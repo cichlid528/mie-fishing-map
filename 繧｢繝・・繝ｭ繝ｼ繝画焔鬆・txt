@@ -1,4 +1,4 @@
-v22: 小さいiPhone画面向けにメニューとポイント詳細カードをコンパクト表示に調整しました。
+v23: ポイント詳細カードのスクロールをなくし、右上に拡大・縮小ボタンを追加しました。
 
 GitHubにアップロードするもの:
 - index.html
@@ -11,7 +11,7 @@ GitHubにアップロードするもの:
 ZIPのままではなく、解凍した中身をアップロードしてください。
 
 コミット名の例:
-小さいiPhone画面のメニュー表示を調整
+詳細カードに拡大縮小ボタンを追加
 
 確認URL:
-https://cichlid528.github.io/mie-fishing-map/?v=22
+https://cichlid528.github.io/mie-fishing-map/?v=23
