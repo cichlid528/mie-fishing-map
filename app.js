@@ -1269,18 +1269,6 @@ function updateSpotCard(spot) {
   const sourceHtml = spot.source
     ? `<p class="spot-source">位置情報: ${escapeHtml(spot.source)} / ${positionText}（掲載は立入・釣り許可を意味しません）</p>`
     : `<p class="spot-source">位置情報: ${positionText}</p>`;
-  const statusHtml = [
-    ["釣れた", hasCaught ? "あり" : "未", hasCaught ? "is-on" : ""],
-    ["魚種", fishSummary, fishSummary !== "未選択" ? "is-on" : ""],
-    ["禁止", isBanned ? "注意" : "未確認", isBanned ? "is-alert" : ""],
-    ["駐車", hasParking ? "あり" : "未確認", hasParking ? "is-on" : ""]
-  ].map(([label, value, className]) => `
-    <span class="spot-status-pill ${className}">
-      <small>${escapeHtml(label)}</small>
-      <strong>${escapeHtml(value)}</strong>
-    </span>
-  `).join("");
-
   showSpotCard(`
     <div class="spot-card-toolbar">
       <div class="spot-card-title">
@@ -1292,22 +1280,21 @@ function updateSpotCard(spot) {
         <button class="spot-card-size-button" type="button" id="minimizeSpotCard" title="詳細カードを最小化" aria-label="詳細カードを最小化">縮小</button>
       </div>
     </div>
-    <div class="spot-status-row" aria-label="チェック状態">${statusHtml}</div>
     <div class="spot-card-control-grid" aria-label="詳細カードでチェック">
-      <label class="spot-card-check-control">
+      <label class="spot-card-check-control ${hasCaught ? "is-on" : ""}">
         <input id="spotCardCaught" type="checkbox" ${hasCaught ? "checked" : ""}>
-        <span>釣れた</span>
+        <span class="spot-card-control-text"><small>釣れた</small><strong>${hasCaught ? "あり" : "未"}</strong></span>
       </label>
       <button class="spot-card-fish-control ${fishSummary !== "未選択" ? "has-species" : ""}" type="button" id="spotCardFishButton">
         <small>魚種</small><strong>${escapeHtml(fishSummary === "未選択" ? "選択" : fishSummary)}</strong>
       </button>
-      <label class="spot-card-check-control is-alert-control">
+      <label class="spot-card-check-control is-alert-control ${isBanned ? "is-alert" : ""}">
         <input id="spotCardBanned" type="checkbox" ${isBanned ? "checked" : ""}>
-        <span>禁止</span>
+        <span class="spot-card-control-text"><small>禁止</small><strong>${isBanned ? "注意" : "未確認"}</strong></span>
       </label>
-      <label class="spot-card-check-control">
+      <label class="spot-card-check-control ${hasParking ? "is-on" : ""}">
         <input id="spotCardParking" type="checkbox" ${hasParking ? "checked" : ""}>
-        <span>駐車</span>
+        <span class="spot-card-control-text"><small>駐車</small><strong>${hasParking ? "あり" : "未確認"}</strong></span>
       </label>
     </div>
     <div class="spot-card-body">

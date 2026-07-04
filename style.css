@@ -2082,3 +2082,136 @@ h1 {
     font-size: 10px;
   }
 }
+
+/* v27: 詳細カードのチェック項目を一段表示に統一。上の状態表示と下の操作欄の二重表示を解消。 */
+.spot-card .spot-status-row {
+  display: none;
+}
+
+.spot-card-control-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.spot-card-check-control,
+.spot-card-fish-control {
+  grid-template-columns: auto minmax(0, 1fr);
+  justify-items: start;
+  align-items: center;
+  gap: 6px;
+  min-height: 46px;
+  padding: 6px 7px;
+  text-align: left;
+}
+
+.spot-card-fish-control {
+  grid-template-columns: 1fr;
+  justify-items: center;
+  text-align: center;
+}
+
+.spot-card-check-control input {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+}
+
+.spot-card-control-text,
+.spot-card-fish-control small,
+.spot-card-fish-control strong {
+  min-width: 0;
+}
+
+.spot-card-control-text {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+}
+
+.spot-card-control-text small,
+.spot-card-fish-control small {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.spot-card-control-text strong,
+.spot-card-fish-control strong {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.spot-card-check-control.is-on,
+.spot-card-check-control:has(input:checked),
+.spot-card-fish-control.has-species {
+  border-color: rgba(15, 123, 99, 0.38);
+  color: var(--accent-dark);
+  background: rgba(234, 246, 241, 0.96);
+}
+
+.spot-card-check-control.is-on strong,
+.spot-card-check-control:has(input:checked) strong,
+.spot-card-fish-control.has-species strong {
+  color: var(--accent-dark);
+}
+
+.spot-card-check-control.is-alert,
+.spot-card-check-control.is-alert-control:has(input:checked) {
+  border-color: rgba(178, 56, 45, 0.38);
+  color: var(--danger);
+  background: rgba(255, 242, 239, 0.96);
+}
+
+.spot-card-check-control.is-alert strong,
+.spot-card-check-control.is-alert-control:has(input:checked) strong {
+  color: var(--danger);
+}
+
+@media (max-width: 820px) {
+  .spot-card-control-grid {
+    gap: 5px;
+  }
+
+  .spot-card-check-control,
+  .spot-card-fish-control {
+    min-height: 42px;
+    padding: 5px 6px;
+  }
+}
+
+@media (max-width: 390px), (max-height: 700px) {
+  .spot-card-control-grid {
+    gap: 4px;
+  }
+
+  .spot-card-check-control,
+  .spot-card-fish-control {
+    min-height: 38px;
+    gap: 4px;
+    padding: 4px 5px;
+  }
+
+  .spot-card-check-control input {
+    width: 16px;
+    height: 16px;
+  }
+
+  .spot-card-control-text small,
+  .spot-card-fish-control small {
+    font-size: 9px;
+  }
+
+  .spot-card-control-text strong,
+  .spot-card-fish-control strong {
+    font-size: 10px;
+  }
+}
