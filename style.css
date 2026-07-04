@@ -1302,14 +1302,29 @@ h1 {
   }
 
   .spot-card {
+    left: 12px;
     right: 12px;
-    bottom: 12px;
+    bottom: calc(78px + env(safe-area-inset-bottom));
+    width: auto;
+    max-height: min(42dvh, 340px);
+    overflow: auto;
     padding: 12px;
+    z-index: 610;
+  }
+
+  .spot-card-actions {
+    flex-wrap: wrap;
+  }
+
+  .spot-card-actions button {
+    flex: 1 1 130px;
   }
 
   .map-tools {
     left: 12px;
-    bottom: 12px;
+    right: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    z-index: 600;
   }
 
   .spot-mode-button,
