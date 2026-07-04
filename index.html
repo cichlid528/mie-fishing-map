@@ -16,7 +16,7 @@
       integrity="sha256-p4NxAoJBhIINfQDP4nD8xQV9qVtAkM5M5OgFHJt0f9I="
       crossorigin=""
     >
-    <link rel="stylesheet" href="style.css?v=18">
+    <link rel="stylesheet" href="style.css?v=19">
   </head>
   <body>
     <button id="menuBackdrop" class="menu-backdrop" type="button" aria-label="メニューを閉じる"></button>
@@ -242,14 +242,14 @@
 
           <div class="catch-photo-field">
             <label class="photo-picker" for="catchPhoto">
-              <span>釣果写真</span>
-              <input id="catchPhoto" type="file" accept="image/*" capture="environment">
+              <span>釣果写真（写真フォルダーから選択）</span>
+              <input id="catchPhoto" type="file" accept="image/*">
             </label>
             <figure id="catchPhotoPreview" class="catch-photo-preview is-hidden">
               <img id="catchPhotoImage" alt="添付する釣果写真">
               <button id="removeCatchPhoto" type="button">写真を外す</button>
             </figure>
-            <p id="catchPhotoStatus" class="catch-photo-status" aria-live="polite">写真は圧縮してこの端末に保存します</p>
+            <p id="catchPhotoStatus" class="catch-photo-status" aria-live="polite">写真フォルダーから選ぶと、圧縮してこの端末に保存します</p>
           </div>
         </div>
 
@@ -405,6 +405,6 @@
       integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
       crossorigin=""
     ></script>
-    <script src="app.js?v=18"></script>
+    <script src="app.js?v=19"></script>
   </body>
 </html>

@@ -944,7 +944,7 @@ function showCatchPhoto(value) {
   if (photo) catchPhotoImage.src = photo;
   catchPhotoStatus.textContent = photo
     ? "写真を添付します"
-    : "写真は圧縮してこの端末に保存します";
+    : "写真フォルダーから選ぶと、圧縮してこの端末に保存します";
 }
 
 function compressCatchPhoto(file) {
