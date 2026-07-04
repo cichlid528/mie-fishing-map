@@ -206,6 +206,9 @@ const visibleCount = document.querySelector("#visibleCount");
 const spotCard = document.querySelector("#spotCard");
 const dataStatus = document.querySelector("#dataStatus");
 const sidebar = document.querySelector(".sidebar");
+const menuToggleButton = document.querySelector("#menuToggle");
+const menuBackdrop = document.querySelector("#menuBackdrop");
+const closeMenuButton = document.querySelector("#closeMenuButton");
 const changeBackgroundButton = document.querySelector("#changeBackgroundButton");
 const backgroundPanel = document.querySelector("#backgroundPanel");
 const backgroundForm = document.querySelector("#backgroundForm");
@@ -838,6 +841,7 @@ function renderCatchList() {
       moveMapTo(catchLog.lat, catchLog.lng, 17);
       const marker = catchMarkers.get(catchLog.id);
       if (marker) marker.openPopup();
+      if (isMobileMapView()) closeMobileMenu();
     });
 
     const number = document.createElement("span");
@@ -1005,6 +1009,25 @@ function isMobileMapView() {
   return window.matchMedia("(max-width: 820px)").matches || window.innerWidth <= 820;
 }
 
+function setMobileMenuOpen(open) {
+  const shouldOpen = Boolean(open) && isMobileMapView();
+  document.body.classList.toggle("is-menu-open", shouldOpen);
+  sidebar.classList.toggle("is-open", shouldOpen);
+  if (menuToggleButton) menuToggleButton.setAttribute("aria-expanded", String(shouldOpen));
+
+  window.setTimeout(() => {
+    map.invalidateSize({ pan: false });
+  }, 80);
+}
+
+function closeMobileMenu() {
+  setMobileMenuOpen(false);
+}
+
+function openMobileMenu() {
+  setMobileMenuOpen(true);
+}
+
 function targetZoomForSpot(zoom, options = {}) {
   const requestedZoom = Number(zoom) || 15;
   // スマートフォンでは、釣り場をタップした時にしっかり寄って見えるようにする。
@@ -1060,6 +1083,7 @@ function selectSpot(id) {
   updateSpotCard(spot);
   renderList();
   scrollSelectedSpotIntoView();
+  if (isMobileMapView()) closeMobileMenu();
 }
 
 function getSpotState(spotId) {
@@ -1343,6 +1367,18 @@ document.querySelector("#resetView").addEventListener("click", () => {
   moveMapTo(34.6761, 136.5086, 9, { mobileMinZoom: false });
   hideSpotCard();
   renderList();
+  closeMobileMenu();
+});
+
+if (menuToggleButton) menuToggleButton.addEventListener("click", openMobileMenu);
+if (menuBackdrop) menuBackdrop.addEventListener("click", closeMobileMenu);
+if (closeMenuButton) closeMenuButton.addEventListener("click", closeMobileMenu);
+window.addEventListener("resize", () => {
+  if (!isMobileMapView()) closeMobileMenu();
+  window.setTimeout(() => map.invalidateSize({ pan: false }), 120);
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") closeMobileMenu();
 });
 
 addCatchModeButton.addEventListener("click", () => setCatchMode(!catchMode));
