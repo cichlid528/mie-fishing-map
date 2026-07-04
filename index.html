@@ -16,7 +16,7 @@
       integrity="sha256-p4NxAoJBhIINfQDP4nD8xQV9qVtAkM5M5OgFHJt0f9I="
       crossorigin=""
     >
-    <link rel="stylesheet" href="style.css?v=6">
+    <link rel="stylesheet" href="style.css?v=7">
   </head>
   <body>
     <main class="app-shell">
@@ -47,12 +47,15 @@
             <button id="spotTab" class="list-tab is-active" type="button" aria-selected="true">釣り場</button>
             <button id="catchTab" class="list-tab" type="button" aria-selected="false">釣果</button>
           </div>
+          <div class="settings-row" aria-label="設定">
+            <button id="changeBackgroundButton" class="data-button" type="button">背景画像を変更</button>
+          </div>
         </section>
 
         <section id="spotListHead" class="list-head" aria-label="チェック項目の説明">
           <span>名称</span>
-          <span>いる</span>
-          <span>いない</span>
+          <span>釣れた</span>
+          <span>魚種</span>
           <span>禁止</span>
           <span>駐車</span>
         </section>
@@ -239,11 +242,68 @@
       </form>
     </section>
 
+    <section id="fishPanel" class="catch-panel" aria-label="魚種選択" aria-hidden="true">
+      <form id="fishForm" class="catch-form">
+        <header class="catch-form-header">
+          <div>
+            <p class="kicker">Fish Species</p>
+            <h2>釣れた魚種を選択</h2>
+          </div>
+          <button id="closeFishPanel" class="icon-button" type="button" title="閉じる" aria-label="閉じる">×</button>
+        </header>
+
+        <p id="fishPanelSpotName" class="panel-help">釣り場を選択中</p>
+        <div id="fishSpeciesGroups" class="species-groups" aria-label="魚種一覧"></div>
+
+        <label class="other-species-field">
+          <span>その他の魚種</span>
+          <input id="otherFishInput" type="text" placeholder="例: ボラ、アカメ、手長エビなど">
+        </label>
+
+        <div class="catch-actions">
+          <button id="clearFishSelection" class="delete-button" type="button">魚種を消す</button>
+          <button class="save-button" type="submit">保存</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="backgroundPanel" class="catch-panel" aria-label="背景画像変更" aria-hidden="true">
+      <form id="backgroundForm" class="catch-form">
+        <header class="catch-form-header">
+          <div>
+            <p class="kicker">Background</p>
+            <h2>背景画像を変更</h2>
+          </div>
+          <button id="closeBackgroundPanel" class="icon-button" type="button" title="閉じる" aria-label="閉じる">×</button>
+        </header>
+
+        <p class="panel-help">左側メニューの背景画像を、カメラ撮影または写真フォルダーから変更できます。</p>
+        <div class="background-picker-grid">
+          <label class="photo-picker" for="backgroundCamera">
+            <span>カメラで撮影して背景にする</span>
+            <input id="backgroundCamera" type="file" accept="image/*" capture="environment">
+          </label>
+          <label class="photo-picker" for="backgroundPicker">
+            <span>写真フォルダーから選ぶ</span>
+            <input id="backgroundPicker" type="file" accept="image/*">
+          </label>
+        </div>
+
+        <p id="backgroundStatus" class="catch-photo-status" aria-live="polite">画像は圧縮してこの端末に保存します</p>
+
+        <div class="catch-actions">
+          <button id="resetBackgroundButton" class="delete-button" type="button">初期背景に戻す</button>
+          <button class="save-button" type="button" id="closeBackgroundDone">閉じる</button>
+        </div>
+      </form>
+    </section>
+
+
     <script
       src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
       integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
       crossorigin=""
     ></script>
-    <script src="app.js?v=6"></script>
+    <script src="app.js?v=7"></script>
   </body>
 </html>

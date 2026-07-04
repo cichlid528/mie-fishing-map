@@ -1,6 +1,7 @@
 const STORAGE_KEY = "mie-bass-map-v1";
 const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
 const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
+const BACKGROUND_STORAGE_KEY = "mie-fishing-map-sidebar-background-v1";
 
 // 国土地理院の名称検索で同名地点を確認できた座標に合わせています。
 const seedSpots = [
@@ -74,6 +75,17 @@ const seedSpots = [
   { id: "nanairo-dam", name: "七色ダム", type: "ダム", area: "熊野市・紀和町周辺", lat: 33.962596, lng: 136.002566, zoom: 14 }
 ];
 
+const fishSpeciesGroups = [
+  {
+    name: "淡水魚",
+    items: ["ブラックバス", "スモールマウスバス", "ブルーギル", "ナマズ", "ライギョ", "コイ", "フナ", "ヘラブナ", "ニゴイ", "ウグイ", "オイカワ", "カワムツ", "アユ", "アマゴ", "イワナ", "ニジマス", "ワカサギ", "テナガエビ"]
+  },
+  {
+    name: "海水魚",
+    items: ["アジ", "サバ", "イワシ", "メバル", "カサゴ", "キジハタ", "クロダイ", "チヌ", "シーバス", "ヒラメ", "マゴチ", "マダイ", "グレ", "アイナメ", "カレイ", "キス", "ハゼ", "タチウオ", "アオリイカ", "コウイカ", "タコ"]
+  }
+];
+
 let customSpots = JSON.parse(localStorage.getItem(CUSTOM_SPOT_STORAGE_KEY) || "[]");
 let spots = [...seedSpots, ...customSpots];
 
@@ -118,6 +130,24 @@ const searchInput = document.querySelector("#searchInput");
 const visibleCount = document.querySelector("#visibleCount");
 const spotCard = document.querySelector("#spotCard");
 const dataStatus = document.querySelector("#dataStatus");
+const sidebar = document.querySelector(".sidebar");
+const changeBackgroundButton = document.querySelector("#changeBackgroundButton");
+const backgroundPanel = document.querySelector("#backgroundPanel");
+const backgroundForm = document.querySelector("#backgroundForm");
+const backgroundCamera = document.querySelector("#backgroundCamera");
+const backgroundPicker = document.querySelector("#backgroundPicker");
+const backgroundStatus = document.querySelector("#backgroundStatus");
+const resetBackgroundButton = document.querySelector("#resetBackgroundButton");
+const closeBackgroundPanelButton = document.querySelector("#closeBackgroundPanel");
+const closeBackgroundDoneButton = document.querySelector("#closeBackgroundDone");
+const fishPanel = document.querySelector("#fishPanel");
+const fishForm = document.querySelector("#fishForm");
+const fishPanelSpotName = document.querySelector("#fishPanelSpotName");
+const fishSpeciesGroupsContainer = document.querySelector("#fishSpeciesGroups");
+const otherFishInput = document.querySelector("#otherFishInput");
+const clearFishSelectionButton = document.querySelector("#clearFishSelection");
+const closeFishPanelButton = document.querySelector("#closeFishPanel");
+let editingFishSpotId = null;
 
 function showSpotCard(html) {
   spotCard.innerHTML = html;
@@ -178,6 +208,106 @@ let editingCatchId = null;
 let pendingCatchPhoto = "";
 
 dataStatus.textContent = `公的データで${seedSpots.filter((spot) => spot.type === "池").length}池の位置を確認済み`;
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function validImageDataUrl(value) {
+  return typeof value === "string" && /^data:image\/(?:jpeg|png|webp);base64,/i.test(value);
+}
+
+function applySidebarBackground(value) {
+  if (validImageDataUrl(value)) {
+    sidebar.style.setProperty("--sidebar-bg-image", `url("${value}")`);
+    sidebar.classList.add("has-custom-bg");
+    return;
+  }
+  sidebar.style.removeProperty("--sidebar-bg-image");
+  sidebar.classList.remove("has-custom-bg");
+}
+
+function loadSavedBackground() {
+  applySidebarBackground(localStorage.getItem(BACKGROUND_STORAGE_KEY) || "");
+}
+
+function compressImageFile(file, options = {}) {
+  const maxDimension = options.maxDimension || 960;
+  const maxLength = options.maxLength || 320000;
+  const initialQuality = options.initialQuality || 0.76;
+  const minQuality = options.minQuality || 0.42;
+
+  return new Promise((resolve, reject) => {
+    if (!file?.type.startsWith("image/")) {
+      reject(new Error("画像ファイルではありません"));
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    const image = new Image();
+    image.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      const scale = Math.min(1, maxDimension / Math.max(image.naturalWidth, image.naturalHeight));
+      const width = Math.max(1, Math.round(image.naturalWidth * scale));
+      const height = Math.max(1, Math.round(image.naturalHeight * scale));
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const context = canvas.getContext("2d");
+      context.fillStyle = "#fff";
+      context.fillRect(0, 0, width, height);
+      context.drawImage(image, 0, 0, width, height);
+
+      let quality = initialQuality;
+      let dataUrl = canvas.toDataURL("image/jpeg", quality);
+      while (dataUrl.length > maxLength && quality > minQuality) {
+        quality -= 0.08;
+        dataUrl = canvas.toDataURL("image/jpeg", quality);
+      }
+      resolve(dataUrl);
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error("画像を読み込めませんでした"));
+    };
+    image.src = objectUrl;
+  });
+}
+
+async function handleBackgroundFile(file) {
+  if (!file) return;
+  backgroundStatus.textContent = "背景画像を圧縮しています…";
+  try {
+    const dataUrl = await compressImageFile(file, {
+      maxDimension: 1600,
+      maxLength: 900000,
+      initialQuality: 0.78,
+      minQuality: 0.44
+    });
+    localStorage.setItem(BACKGROUND_STORAGE_KEY, dataUrl);
+    applySidebarBackground(dataUrl);
+    backgroundStatus.textContent = "背景画像を保存しました";
+  } catch (error) {
+    backgroundStatus.textContent = error.message || "背景画像を保存できませんでした";
+  }
+}
+
+function openBackgroundPanel() {
+  backgroundPanel.classList.add("is-open");
+  backgroundPanel.setAttribute("aria-hidden", "false");
+}
+
+function closeBackgroundPanel() {
+  backgroundPanel.classList.remove("is-open");
+  backgroundPanel.setAttribute("aria-hidden", "true");
+  backgroundCamera.value = "";
+  backgroundPicker.value = "";
+}
 
 function markerClass(type) {
   if (type === "川") return "river";
@@ -467,41 +597,11 @@ function showCatchPhoto(value) {
 }
 
 function compressCatchPhoto(file) {
-  return new Promise((resolve, reject) => {
-    if (!file?.type.startsWith("image/")) {
-      reject(new Error("画像ファイルではありません"));
-      return;
-    }
-
-    const objectUrl = URL.createObjectURL(file);
-    const image = new Image();
-    image.onload = () => {
-      URL.revokeObjectURL(objectUrl);
-      const maxDimension = 960;
-      const scale = Math.min(1, maxDimension / Math.max(image.naturalWidth, image.naturalHeight));
-      const width = Math.max(1, Math.round(image.naturalWidth * scale));
-      const height = Math.max(1, Math.round(image.naturalHeight * scale));
-      const canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
-      const context = canvas.getContext("2d");
-      context.fillStyle = "#fff";
-      context.fillRect(0, 0, width, height);
-      context.drawImage(image, 0, 0, width, height);
-
-      let quality = 0.76;
-      let dataUrl = canvas.toDataURL("image/jpeg", quality);
-      while (dataUrl.length > 320000 && quality > 0.42) {
-        quality -= 0.08;
-        dataUrl = canvas.toDataURL("image/jpeg", quality);
-      }
-      resolve(dataUrl);
-    };
-    image.onerror = () => {
-      URL.revokeObjectURL(objectUrl);
-      reject(new Error("画像を読み込めませんでした"));
-    };
-    image.src = objectUrl;
+  return compressImageFile(file, {
+    maxDimension: 960,
+    maxLength: 320000,
+    initialQuality: 0.76,
+    minQuality: 0.42
   });
 }
 
@@ -573,11 +673,153 @@ function selectSpot(id) {
   const marker = markers.get(id);
   if (marker) marker.openPopup();
 
+  updateSpotCard(spot);
+  renderList();
+}
+
+function getSpotState(spotId) {
+  savedState[spotId] = savedState[spotId] || {};
+  if (Object.prototype.hasOwnProperty.call(savedState[spotId], "noBass")) {
+    delete savedState[spotId].noBass;
+  }
+  if (!Array.isArray(savedState[spotId].fishSpecies)) {
+    savedState[spotId].fishSpecies = [];
+  }
+  if (typeof savedState[spotId].otherFish !== "string") {
+    savedState[spotId].otherFish = "";
+  }
+  return savedState[spotId];
+}
+
+function getFishList(spotId) {
+  const state = getSpotState(spotId);
+  const species = state.fishSpecies.filter(Boolean);
+  const other = state.otherFish.trim();
+  return other ? [...species, other] : species;
+}
+
+function getFishSummary(spotId) {
+  const list = getFishList(spotId);
+  if (!list.length) return "未選択";
+  if (list.length === 1) return list[0];
+  return `${list[0]} 他${list.length - 1}種`;
+}
+
+function setCaughtState(spotId, caught) {
+  const state = getSpotState(spotId);
+  state.hasBass = caught;
+  if (caught && !getFishList(spotId).length) {
+    state.fishSpecies = ["ブラックバス"];
+  }
+  if (!caught) {
+    state.fishSpecies = [];
+    state.otherFish = "";
+  }
+  persist();
+}
+
+function createFishButton(spot) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "fish-select-button";
+  const summary = getFishSummary(spot.id);
+  button.textContent = summary === "未選択" ? "選択" : summary;
+  button.classList.toggle("has-species", summary !== "未選択");
+  button.setAttribute("aria-label", `${spot.name}: 魚種を選択`);
+  button.addEventListener("click", () => openFishPanel(spot));
+  return button;
+}
+
+function renderFishOptions() {
+  const state = getSpotState(editingFishSpotId);
+  const selected = new Set(state.fishSpecies);
+  fishSpeciesGroupsContainer.replaceChildren();
+
+  fishSpeciesGroups.forEach((group) => {
+    const section = document.createElement("section");
+    section.className = "species-group";
+
+    const title = document.createElement("div");
+    title.className = "species-group-title";
+    title.textContent = group.name;
+
+    const options = document.createElement("div");
+    options.className = "species-options";
+
+    group.items.forEach((species) => {
+      const label = document.createElement("label");
+      label.className = "species-option";
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.value = species;
+      input.checked = selected.has(species);
+      label.append(input, document.createTextNode(species));
+      options.append(label);
+    });
+
+    section.append(title, options);
+    fishSpeciesGroupsContainer.append(section);
+  });
+
+  otherFishInput.value = state.otherFish || "";
+}
+
+function openFishPanel(spot) {
+  editingFishSpotId = spot.id;
+  fishPanelSpotName.textContent = `${spot.name} / ${spot.area}`;
+  renderFishOptions();
+  fishPanel.classList.add("is-open");
+  fishPanel.setAttribute("aria-hidden", "false");
+}
+
+function closeFishPanel() {
+  fishPanel.classList.remove("is-open");
+  fishPanel.setAttribute("aria-hidden", "true");
+  editingFishSpotId = null;
+  otherFishInput.value = "";
+}
+
+function saveFishSelection() {
+  if (!editingFishSpotId) return;
+  const state = getSpotState(editingFishSpotId);
+  const selected = [...fishSpeciesGroupsContainer.querySelectorAll('input[type="checkbox"]:checked')]
+    .map((input) => input.value);
+  state.fishSpecies = selected;
+  state.otherFish = otherFishInput.value.trim();
+  state.hasBass = selected.length > 0 || Boolean(state.otherFish);
+  persist();
+  renderList();
+
+  if (selectedId === editingFishSpotId) {
+    const current = spots.find((spot) => spot.id === selectedId);
+    if (current) updateSpotCard(current);
+  }
+  closeFishPanel();
+}
+
+function clearFishSelection() {
+  if (!editingFishSpotId) return;
+  const state = getSpotState(editingFishSpotId);
+  state.fishSpecies = [];
+  state.otherFish = "";
+  state.hasBass = false;
+  persist();
+  renderList();
+  if (selectedId === editingFishSpotId) {
+    const current = spots.find((spot) => spot.id === selectedId);
+    if (current) updateSpotCard(current);
+  }
+  closeFishPanel();
+}
+
+function updateSpotCard(spot) {
+  const fishSummary = getFishSummary(spot.id);
   showSpotCard(`
-    <p class="spot-card-type">${spot.type} / ${spot.area}</p>
-    <h2>${spot.name}</h2>
-    <p>左のチェックで「バスがいる」「いない」「釣り禁止」を記録できます。現地の掲示・管理者情報は必ず確認してください。</p>
-    ${spot.source ? `<p class="spot-source">位置情報: ${spot.source}（掲載は立入・釣り許可を意味しません）</p>` : ""}
+    <p class="spot-card-type">${escapeHtml(spot.type)} / ${escapeHtml(spot.area)}</p>
+    <h2>${escapeHtml(spot.name)}</h2>
+    <p>左のチェックで「釣れた魚種」「釣り禁止」「駐車」を記録できます。現地の掲示・管理者情報は必ず確認してください。</p>
+    <p class="spot-source">記録魚種: ${escapeHtml(fishSummary)}</p>
+    ${spot.source ? `<p class="spot-source">位置情報: ${escapeHtml(spot.source)}（掲載は立入・釣り許可を意味しません）</p>` : ""}
     ${spot.custom ? `
       <div class="spot-card-actions">
         <button class="edit-spot-button" type="button" id="editCustomSpot">編集</button>
@@ -589,7 +831,6 @@ function selectSpot(id) {
   if (editButton) editButton.addEventListener("click", () => openSpotPanel(spot));
   const deleteButton = document.querySelector("#deleteCustomSpotCard");
   if (deleteButton) deleteButton.addEventListener("click", () => deleteCustomSpot(spot.id));
-  renderList();
 }
 
 function createCheckbox(spot, kind, label) {
@@ -599,14 +840,17 @@ function createCheckbox(spot, kind, label) {
   input.checked = Boolean(savedState[spot.id]?.[kind]);
   input.setAttribute("aria-label", `${spot.name}: ${label}`);
   input.addEventListener("change", (event) => {
-    savedState[spot.id] = savedState[spot.id] || {};
-    savedState[spot.id][kind] = event.target.checked;
+    const state = getSpotState(spot.id);
+    state[kind] = event.target.checked;
 
-    if (kind === "hasBass" && event.target.checked) savedState[spot.id].noBass = false;
-    if (kind === "noBass" && event.target.checked) savedState[spot.id].hasBass = false;
+    if (kind === "hasBass") {
+      setCaughtState(spot.id, event.target.checked);
+    } else {
+      persist();
+    }
 
-    persist();
     renderList();
+    if (selectedId === spot.id) updateSpotCard(spot);
   });
   return input;
 }
@@ -645,9 +889,17 @@ function renderList() {
     main.append(name, meta);
     row.append(main);
 
+    const caughtCell = document.createElement("label");
+    caughtCell.className = "check-cell";
+    caughtCell.append(createCheckbox(spot, "hasBass", "釣れた"));
+    row.append(caughtCell);
+
+    const fishCell = document.createElement("div");
+    fishCell.className = "fish-cell";
+    fishCell.append(createFishButton(spot));
+    row.append(fishCell);
+
     [
-      ["hasBass", "ブラックバスがいる"],
-      ["noBass", "ブラックバスがいない"],
       ["banned", "釣り禁止"],
       ["parking", "駐車スペースがある"]
     ].forEach(([kind, label]) => {
@@ -701,6 +953,23 @@ addCatchModeButton.addEventListener("click", () => setCatchMode(!catchMode));
 addSpotModeButton.addEventListener("click", () => setSpotMode(!spotMode));
 closeCatchPanelButton.addEventListener("click", closeCatchPanel);
 closeSpotPanelButton.addEventListener("click", closeSpotPanel);
+changeBackgroundButton.addEventListener("click", openBackgroundPanel);
+closeBackgroundPanelButton.addEventListener("click", closeBackgroundPanel);
+closeBackgroundDoneButton.addEventListener("click", closeBackgroundPanel);
+backgroundForm.addEventListener("submit", (event) => event.preventDefault());
+backgroundCamera.addEventListener("change", () => handleBackgroundFile(backgroundCamera.files[0]));
+backgroundPicker.addEventListener("change", () => handleBackgroundFile(backgroundPicker.files[0]));
+resetBackgroundButton.addEventListener("click", () => {
+  localStorage.removeItem(BACKGROUND_STORAGE_KEY);
+  applySidebarBackground("");
+  backgroundStatus.textContent = "初期背景に戻しました";
+});
+closeFishPanelButton.addEventListener("click", closeFishPanel);
+fishForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  saveFishSelection();
+});
+clearFishSelectionButton.addEventListener("click", clearFishSelection);
 
 deleteSpotButton.addEventListener("click", () => {
   if (!editingSpotId) return;
@@ -828,6 +1097,7 @@ map.on("click", (event) => {
 window.addEventListener("resize", () => map.invalidateSize({ pan: false }));
 
 requestAnimationFrame(() => map.invalidateSize({ pan: false }));
+loadSavedBackground();
 
 renderList();
 setActiveList("spots");

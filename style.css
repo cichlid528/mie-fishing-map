@@ -10,6 +10,7 @@
   --water: #3478a8;
   --danger: #b2382d;
   --shadow: 0 16px 42px rgba(17, 33, 28, 0.14);
+  --sidebar-bg-image: none;
 }
 
 * {
@@ -51,9 +52,58 @@ textarea {
   height: 100%;
   padding: 18px 16px 12px;
   background: var(--panel);
+  background-size: cover;
+  background-position: center;
   border-right: 1px solid var(--line);
   box-shadow: 10px 0 34px rgba(26, 47, 40, 0.08);
   z-index: 10;
+}
+
+.sidebar.has-custom-bg {
+  background-image:
+    linear-gradient(rgba(5, 13, 10, 0.72), rgba(5, 13, 10, 0.78)),
+    var(--sidebar-bg-image);
+  color: #fff;
+}
+
+.sidebar.has-custom-bg h1,
+.sidebar.has-custom-bg .kicker,
+.sidebar.has-custom-bg .search-box,
+.sidebar.has-custom-bg .data-status,
+.sidebar.has-custom-bg .list-head,
+.sidebar.has-custom-bg .catch-list-head,
+.sidebar.has-custom-bg .sidebar-footer,
+.sidebar.has-custom-bg .spot-meta,
+.sidebar.has-custom-bg .catch-summary span {
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.sidebar.has-custom-bg .spot-row,
+.sidebar.has-custom-bg .catch-row,
+.sidebar.has-custom-bg .empty-list,
+.sidebar.has-custom-bg .search-box input,
+.sidebar.has-custom-bg .filter-chip,
+.sidebar.has-custom-bg .list-tab,
+.sidebar.has-custom-bg .data-button {
+  border-color: rgba(255, 255, 255, 0.22);
+  color: #fff;
+  background: rgba(0, 0, 0, 0.56);
+  box-shadow: none;
+}
+
+.sidebar.has-custom-bg .search-box input::placeholder {
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.sidebar.has-custom-bg .filter-chip.is-active,
+.sidebar.has-custom-bg .list-tab.is-active {
+  border-color: rgba(255, 255, 255, 0.36);
+  background: rgba(15, 123, 99, 0.94);
+}
+
+.sidebar.has-custom-bg .spot-row.is-selected {
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(15, 123, 99, 0.7);
 }
 
 .sidebar-header {
@@ -177,6 +227,10 @@ h1 {
   gap: 6px;
 }
 
+.settings-row {
+  display: grid;
+}
+
 .list-tab {
   height: 34px;
   border: 1px solid var(--line);
@@ -196,7 +250,7 @@ h1 {
 .list-head,
 .spot-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 38px 44px 40px 40px;
+  grid-template-columns: minmax(0, 1fr) 46px 78px 40px 40px;
   align-items: center;
   gap: 6px;
 }
@@ -374,6 +428,116 @@ h1 {
 
 .check-cell input[data-kind="parking"] {
   accent-color: var(--water);
+}
+
+.fish-cell {
+  display: grid;
+  min-width: 0;
+}
+
+.fish-select-button {
+  min-height: 31px;
+  border: 1px solid rgba(15, 123, 99, 0.28);
+  border-radius: 8px;
+  padding: 0 7px;
+  overflow: hidden;
+  color: var(--accent-dark);
+  font-size: 11px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: #eaf6f1;
+  cursor: pointer;
+}
+
+.fish-select-button.has-species {
+  color: #fff;
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.sidebar.has-custom-bg .fish-select-button {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(15, 123, 99, 0.7);
+}
+
+.panel-help {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.species-groups {
+  display: grid;
+  gap: 10px;
+}
+
+.species-group {
+  display: grid;
+  gap: 7px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.species-group-title {
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--accent-dark);
+}
+
+.species-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.species-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 4px 7px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  background: #f8faf8;
+}
+
+.species-option input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+}
+
+.other-species-field {
+  display: grid;
+  gap: 5px;
+}
+
+.other-species-field span {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.other-species-field input {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 10px;
+  color: var(--ink);
+  background: #fff;
+}
+
+.background-picker-grid {
+  display: grid;
+  gap: 10px;
 }
 
 .sidebar-footer {
@@ -1017,7 +1181,8 @@ h1 {
     max-height: calc(86vh - 20px);
   }
 
-  .form-grid {
+  .form-grid,
+  .species-options {
     grid-template-columns: 1fr;
   }
 }
