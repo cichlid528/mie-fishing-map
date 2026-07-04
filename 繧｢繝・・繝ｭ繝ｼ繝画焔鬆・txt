@@ -1,5 +1,12 @@
-v17: スマホで最初は地図だけ表示し、メニューボタンで釣り場リストをポップアップ表示する修正版です。
+v18: アプリのアイコンを新しい画像に変更しました。
 
-GitHubではZIPをそのまま入れず、解凍した中のファイルを上書きアップロードしてください。
-確認URL: https://cichlid528.github.io/mie-fishing-map/?v=17
-コミット名: スマホのメニューをポップアップ式に変更
+GitHubにアップロードするもの:
+- index.html
+- app.js
+- style.css
+- sw.js
+- manifest.json
+- icons フォルダー内の4つのPNG画像
+
+ZIPのままではなく、解凍した中身をアップロードしてください。
+確認URL: https://cichlid528.github.io/mie-fishing-map/?v=18
