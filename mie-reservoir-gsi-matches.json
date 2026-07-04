@@ -1,0 +1,782 @@
+[
+  {
+    "code": "24204",
+    "name": "なめり湖",
+    "address": "松阪市嬉野森本町1555-13",
+    "capacity": 1300,
+    "page": 10,
+    "lng": 136.429147,
+    "lat": 34.585853,
+    "distance": 0.8883229695405922,
+    "addressPoint": [
+      136.438644,
+      34.584213
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24216",
+    "name": "真泥池",
+    "address": "伊賀市真泥字瀧ノ谷2577",
+    "capacity": 1296,
+    "page": 34,
+    "lng": 136.193772,
+    "lat": 34.761728,
+    "distance": 0.4769004050189885,
+    "addressPoint": [
+      136.190659,
+      34.765171
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24216",
+    "name": "滝谷池",
+    "address": "伊賀市槇山字瀧谷3870",
+    "capacity": 800,
+    "page": 39,
+    "lng": 136.115892,
+    "lat": 34.882522,
+    "distance": 0.4110906266925025,
+    "addressPoint": [
+      136.11734,
+      34.879021
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24201",
+    "name": "横山池",
+    "address": "津市芸濃町椋本5838、5838-1",
+    "capacity": 537,
+    "page": 1,
+    "lng": 136.419051434018,
+    "lat": 34.8158862959397,
+    "distance": 1.3092851766948113,
+    "addressPoint": [
+      136.43248,
+      34.811752
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24201",
+    "name": "風早池",
+    "address": "津市戸木町字風早",
+    "capacity": 502,
+    "page": 1,
+    "lng": 136.453,
+    "lat": 34.689244,
+    "distance": 1.221438294481289,
+    "addressPoint": [
+      136.442413,
+      34.682545
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24214",
+    "name": "笠田大溜",
+    "address": "いなべ市員弁町笠田新田字大溜1540",
+    "capacity": 485,
+    "page": 21,
+    "lng": 136.559475,
+    "lat": 35.130256,
+    "distance": 0.8172932243046016,
+    "addressPoint": [
+      136.55629,
+      35.123383
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24216",
+    "name": "大正池",
+    "address": "伊賀市丸柱字丸峯2254-2",
+    "capacity": 480,
+    "page": 40,
+    "lng": 136.135019,
+    "lat": 34.856969,
+    "distance": 1.6733783755503175,
+    "addressPoint": [
+      136.122177,
+      34.846226
+    ],
+    "candidateCount": 3
+  },
+  {
+    "code": "24204",
+    "name": "古田池",
+    "address": "松阪市嬉野宮野町字古田852-1",
+    "capacity": 440,
+    "page": 10,
+    "lng": 136.407917,
+    "lat": 34.612864,
+    "distance": 1.3217606484112727,
+    "addressPoint": [
+      136.40686,
+      34.601009
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24207",
+    "name": "津賀池",
+    "address": "鈴鹿市津賀町字広瀬野1765",
+    "capacity": 416,
+    "page": 12,
+    "lng": 136.508433,
+    "lat": 34.897558,
+    "distance": 1.0699512073644621,
+    "addressPoint": [
+      136.514999,
+      34.889584
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24201",
+    "name": "惣谷池",
+    "address": "津市白山町上ﾉ村1812番1、1816番、1949番1、1949番6、1070番2、1833番",
+    "capacity": 340,
+    "page": 2,
+    "lng": 136.324125,
+    "lat": 34.677294,
+    "distance": 0.5667845362582495,
+    "addressPoint": [
+      136.317978,
+      34.677948
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24461",
+    "name": "大池",
+    "address": "度会郡玉城町勝田4201-1他",
+    "capacity": 318,
+    "page": 51,
+    "lng": 136.619797,
+    "lat": 34.473247,
+    "distance": 0.20433313027793842,
+    "addressPoint": [
+      136.621262,
+      34.474632
+    ],
+    "candidateCount": 10
+  },
+  {
+    "code": "24461",
+    "name": "牛尾崎池",
+    "address": "度会郡玉城町上田辺2189",
+    "capacity": 279,
+    "page": 51,
+    "lng": 136.620492,
+    "lat": 34.498581,
+    "distance": 0.9320729641952712,
+    "addressPoint": [
+      136.610321,
+      34.498589
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24216",
+    "name": "大杣池",
+    "address": "伊賀市柘植町字大杣5011-2",
+    "capacity": 274,
+    "page": 34,
+    "lng": 136.283369,
+    "lat": 34.843558,
+    "distance": 2.5497232738193363,
+    "addressPoint": [
+      136.25563,
+      34.846302
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24216",
+    "name": "鴉山池",
+    "address": "伊賀市柘植町字馬場谷5061-3",
+    "capacity": 250,
+    "page": 34,
+    "lng": 136.274119,
+    "lat": 34.842808,
+    "distance": 1.7314262190540957,
+    "addressPoint": [
+      136.25563,
+      34.846302
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24201",
+    "name": "七郷池",
+    "address": "津市安濃町草生字奥砂通３６９３",
+    "capacity": 246,
+    "page": 4,
+    "lng": 136.415111,
+    "lat": 34.752133,
+    "distance": 1.4264135739109878,
+    "addressPoint": [
+      136.413254,
+      34.76487
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24204",
+    "name": "高束池",
+    "address": "松阪市飯南町粥見5727",
+    "capacity": 244,
+    "page": 10,
+    "lng": 136.366378,
+    "lat": 34.444714,
+    "distance": 2.0741384226384354,
+    "addressPoint": [
+      136.386063,
+      34.453903
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24461",
+    "name": "汁谷池",
+    "address": "度会郡玉城町宮古1087",
+    "capacity": 225,
+    "page": 51,
+    "lng": 136.628175,
+    "lat": 34.458917,
+    "distance": 0.7748303397719675,
+    "addressPoint": [
+      136.630493,
+      34.465618
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24216",
+    "name": "竹谷池",
+    "address": "伊賀市柘植町字竹谷5878",
+    "capacity": 215,
+    "page": 34,
+    "lng": 136.261289,
+    "lat": 34.834647,
+    "distance": 1.3950924286741502,
+    "addressPoint": [
+      136.25563,
+      34.846302
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24204",
+    "name": "新池",
+    "address": "松阪市藤之木町大字清水山",
+    "capacity": 197,
+    "page": 9,
+    "lng": 136.485031,
+    "lat": 34.556903,
+    "distance": 1.1113850354914603,
+    "addressPoint": [
+      136.495651,
+      34.561741
+    ],
+    "candidateCount": 7
+  },
+  {
+    "code": "24214",
+    "name": "両ヶ池",
+    "address": "いなべ市大安町平塚字下両ヶ谷1533",
+    "capacity": 195,
+    "page": 21,
+    "lng": 136.526503,
+    "lat": 35.103506,
+    "distance": 0.6328299995855712,
+    "addressPoint": [
+      136.533417,
+      35.104134
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24201",
+    "name": "山田池",
+    "address": "津市森町北谷1921-2",
+    "capacity": 195,
+    "page": 3,
+    "lng": 136.4225,
+    "lat": 34.686578,
+    "distance": 0.2230083492546832,
+    "addressPoint": [
+      136.421204,
+      34.684879
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24201",
+    "name": "嘉古部池",
+    "address": "津市美里町三郷字嘉古部591",
+    "capacity": 183,
+    "page": 4,
+    "lng": 136.39305177594,
+    "lat": 34.7297585721844,
+    "distance": 0.8074196519296377,
+    "addressPoint": [
+      136.384705,
+      34.73214
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24201",
+    "name": "榊原池",
+    "address": "津市榊原町字奥山11109",
+    "capacity": 180,
+    "page": 1,
+    "lng": 136.327319,
+    "lat": 34.698239,
+    "distance": 2.7678141959320306,
+    "addressPoint": [
+      136.355804,
+      34.706676
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24207",
+    "name": "寺井池",
+    "address": "鈴鹿市下大久保字寺井202",
+    "capacity": 173,
+    "page": 12,
+    "lng": 136.519569,
+    "lat": 34.931158,
+    "distance": 1.494790478336326,
+    "addressPoint": [
+      136.533096,
+      34.923561
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24207",
+    "name": "祓川池",
+    "address": "鈴鹿市野村町字拂川608",
+    "capacity": 172,
+    "page": 12,
+    "lng": 136.559822,
+    "lat": 34.849142,
+    "distance": 1.1530292109357692,
+    "addressPoint": [
+      136.567551,
+      34.840939
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24207",
+    "name": "浄土池",
+    "address": "鈴鹿市稲生町字長尾",
+    "capacity": 168,
+    "page": 13,
+    "lng": 136.554961,
+    "lat": 34.852836,
+    "distance": 1.7313621846183835,
+    "addressPoint": [
+      136.546158,
+      34.839043
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24461",
+    "name": "大谷池",
+    "address": "度会郡玉城町宮古1210",
+    "capacity": 163,
+    "page": 51,
+    "lng": 136.636231,
+    "lat": 34.458083,
+    "distance": 0.9893135574950894,
+    "addressPoint": [
+      136.630493,
+      34.465618
+    ],
+    "candidateCount": 3
+  },
+  {
+    "code": "25209",
+    "name": "大沢池",
+    "address": "伊賀市下友田字奥西山3092",
+    "capacity": 154,
+    "page": 38,
+    "lng": 136.132981,
+    "lat": 34.888117,
+    "distance": 7.475173999943715,
+    "addressPoint": [
+      136.191238,
+      34.840847
+    ],
+    "candidateCount": 2
+  },
+  {
+    "code": "24207",
+    "name": "奈良池",
+    "address": "鈴鹿市住吉町字奈良6648",
+    "capacity": 148,
+    "page": 11,
+    "lng": 136.530906,
+    "lat": 34.854475,
+    "distance": 0.3523373512640003,
+    "addressPoint": [
+      136.533127,
+      34.851883
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24201",
+    "name": "安部池",
+    "address": "津市安濃町草生字大婦化3700",
+    "capacity": 148,
+    "page": 4,
+    "lng": 136.415942,
+    "lat": 34.755817,
+    "distance": 1.0361639651353696,
+    "addressPoint": [
+      136.413254,
+      34.76487
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24470",
+    "name": "大野木池",
+    "address": "度会郡度会町大野木3587",
+    "capacity": 148,
+    "page": 51,
+    "lng": 136.635758,
+    "lat": 34.447333,
+    "distance": 0.5590068837061826,
+    "addressPoint": [
+      136.635895,
+      34.442307
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24204",
+    "name": "八重田池",
+    "address": "松阪市八重田町馬立1225-2",
+    "capacity": 140,
+    "page": 9,
+    "lng": 136.486642,
+    "lat": 34.564208,
+    "distance": 0.8164333391912264,
+    "addressPoint": [
+      136.491745,
+      34.570229
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24201",
+    "name": "新池",
+    "address": "津市一身田上津部田字井ノ坪1529",
+    "capacity": 137,
+    "page": 1,
+    "lng": 136.488731,
+    "lat": 34.753336,
+    "distance": 1.2015479688545203,
+    "addressPoint": [
+      136.498993,
+      34.746578
+    ],
+    "candidateCount": 7
+  },
+  {
+    "code": "24201",
+    "name": "岩田池",
+    "address": "津市岩田字青谷33",
+    "capacity": 136,
+    "page": 1,
+    "lng": 136.502875,
+    "lat": 34.699442,
+    "distance": 1.3806174981451471,
+    "addressPoint": [
+      136.506927,
+      34.711403
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24214",
+    "name": "藤溜",
+    "address": "いなべ市員弁町大泉字藤谷2180-1",
+    "capacity": 132,
+    "page": 21,
+    "lng": 136.577586,
+    "lat": 35.117617,
+    "distance": 2.4170682496995965,
+    "addressPoint": [
+      136.568893,
+      35.097076
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24204",
+    "name": "捨田池",
+    "address": "松阪市嬉野黒野町935",
+    "capacity": 130,
+    "page": 10,
+    "lng": 136.482611,
+    "lat": 34.592003,
+    "distance": 0.8704945370794726,
+    "addressPoint": [
+      136.48616,
+      34.599266
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24216",
+    "name": "蛇喰池",
+    "address": "伊賀市愛田字池之田2089",
+    "capacity": 130,
+    "page": 35,
+    "lng": 136.243272,
+    "lat": 34.80345,
+    "distance": 1.8197134567668254,
+    "addressPoint": [
+      136.225266,
+      34.810467
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24204",
+    "name": "北谷池",
+    "address": "松阪市小片野町字北谷1896",
+    "capacity": 120,
+    "page": 9,
+    "lng": 136.449781,
+    "lat": 34.489217,
+    "distance": 0.7607067103495035,
+    "addressPoint": [
+      136.441925,
+      34.491425
+    ],
+    "candidateCount": 2
+  },
+  {
+    "code": "24216",
+    "name": "馬場谷池",
+    "address": "伊賀市柘植町字馬場谷5097-1",
+    "capacity": 118,
+    "page": 34,
+    "lng": 136.274258,
+    "lat": 34.839753,
+    "distance": 1.8493957581821894,
+    "addressPoint": [
+      136.25563,
+      34.846302
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24207",
+    "name": "丸竹池",
+    "address": "鈴鹿市国府町字奥丸竹5461",
+    "capacity": 114,
+    "page": 12,
+    "lng": 136.523656,
+    "lat": 34.845419,
+    "distance": 1.5405771509791857,
+    "addressPoint": [
+      136.507858,
+      34.850304
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24201",
+    "name": "佐倉池",
+    "address": "津市片田井戸町字奥佐倉605,606-1.607-2,609-1,610,611-1,613",
+    "capacity": 113,
+    "page": 3,
+    "lng": 136.446028,
+    "lat": 34.698772,
+    "distance": 0.5450618254419539,
+    "addressPoint": [
+      136.442886,
+      34.702938
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24201",
+    "name": "田野池",
+    "address": "津市芸濃町萩野字上田野3352-1、3352-2、3352-",
+    "capacity": 105,
+    "page": 1,
+    "lng": 136.443497,
+    "lat": 34.801844,
+    "distance": 0.5182630112176924,
+    "addressPoint": [
+      136.441696,
+      34.797424
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24561",
+    "name": "黒岩池",
+    "address": "南牟婁郡御浜町大字下市木1800",
+    "capacity": 102,
+    "page": 52,
+    "lng": 136.045253,
+    "lat": 33.841811,
+    "distance": 1.3995802849045522,
+    "addressPoint": [
+      136.049927,
+      33.829838
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24203",
+    "name": "笹原池",
+    "address": "伊勢市佐八町",
+    "capacity": 100,
+    "page": 8,
+    "lng": 136.662731,
+    "lat": 34.457028,
+    "distance": 0.35544990823942707,
+    "addressPoint": [
+      136.660919,
+      34.459854
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24203",
+    "name": "落合池",
+    "address": "伊勢市佐八町",
+    "capacity": 98.7,
+    "page": 8,
+    "lng": 136.675336,
+    "lat": 34.459114,
+    "distance": 1.324354881575823,
+    "addressPoint": [
+      136.660919,
+      34.459854
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24204",
+    "name": "鐘突池",
+    "address": "松阪市中万町",
+    "capacity": 95,
+    "page": 9,
+    "lng": 136.544353,
+    "lat": 34.518989,
+    "distance": 1.0003624027710711,
+    "addressPoint": [
+      136.55513,
+      34.520435
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "25209",
+    "name": "大沢池",
+    "address": "伊賀市波敷野字大澤1467",
+    "capacity": 95,
+    "page": 36,
+    "lng": 136.132981,
+    "lat": 34.888117,
+    "distance": 7.569002873704693,
+    "addressPoint": [
+      136.151825,
+      34.821827
+    ],
+    "candidateCount": 2
+  },
+  {
+    "code": "24204",
+    "name": "新池",
+    "address": "津市一志町八太",
+    "capacity": 93,
+    "page": 1,
+    "lng": 136.486861,
+    "lat": 34.596836,
+    "distance": 6.997410267653166,
+    "addressPoint": [
+      136.446487,
+      34.65028
+    ],
+    "candidateCount": 7
+  },
+  {
+    "code": "24201",
+    "name": "大釜池",
+    "address": "津市神戸字上はんの木3551",
+    "capacity": 93,
+    "page": 3,
+    "lng": 136.476778,
+    "lat": 34.694717,
+    "distance": 1.2608429785250304,
+    "addressPoint": [
+      136.474014,
+      34.705826
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24214",
+    "name": "畑新田溜",
+    "address": "いなべ市員弁町畑新田字溜岸23-1",
+    "capacity": 88,
+    "page": 21,
+    "lng": 136.569578,
+    "lat": 35.123794,
+    "distance": 0.9121134229033704,
+    "addressPoint": [
+      136.569366,
+      35.115593
+    ],
+    "candidateCount": 1
+  },
+  {
+    "code": "24201",
+    "name": "北谷池",
+    "address": "津市白山町三ヶ野3135",
+    "capacity": 87,
+    "page": 1,
+    "lng": 136.366431,
+    "lat": 34.685183,
+    "distance": 2.140747492908142,
+    "addressPoint": [
+      136.384201,
+      34.672649
+    ],
+    "candidateCount": 2
+  },
+  {
+    "code": "24207",
+    "name": "山上池",
+    "address": "鈴鹿市西玉垣町字山上2003",
+    "capacity": 84,
+    "page": 12,
+    "lng": 136.582433,
+    "lat": 34.862225,
+    "distance": 0.20371264355041144,
+    "addressPoint": [
+      136.584656,
+      34.862396
+    ],
+    "candidateCount": 1
+  }
+]

@@ -1,58 +1,31 @@
 {
-  "name": "三重県釣りMAP",
-  "short_name": "三重県釣りMAP",
-  "description": "三重県の野池、川、ダム、漁港、港、マリーナを探せるGPS対応の釣り場マップ",
-  "lang": "ja",
-  "dir": "ltr",
-  "id": "./",
-  "start_url": "./",
+  "name": "Bass Spot Log",
+  "short_name": "釣り場ログ",
+  "description": "三重県のブラックバス釣り場と釣果を記録するアプリ",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "display_override": [
-    "standalone",
-    "minimal-ui"
-  ],
-  "launch_handler": {
-    "client_mode": "navigate-existing"
-  },
-  "prefer_related_applications": false,
-  "categories": [
-    "navigation",
-    "sports"
-  ],
-  "theme_color": "#050706",
-  "background_color": "#000000",
+  "theme_color": "#0f7b63",
+  "background_color": "#f8faf8",
   "orientation": "any",
   "icons": [
     {
-      "src": "icon-v2-180.png",
-      "sizes": "180x180",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "icon-v2-192.png",
+      "src": "icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "icon-v2-512.png",
+      "src": "icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "icon-v2-maskable-512.png",
+      "src": "icons/icon-maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
-    },
-    {
-      "src": "icon-v2-1024.png",
-      "sizes": "1024x1024",
-      "type": "image/png",
-      "purpose": "any"
     }
   ]
 }

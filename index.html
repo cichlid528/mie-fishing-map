@@ -2,70 +2,29 @@
 <html lang="ja">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="theme-color" content="#050706">
-    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0f7b63">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-title" content="三重県釣りMAP">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="format-detection" content="telephone=no">
-    <meta name="description" content="三重県の野池、川、ダム、漁港、港、マリーナを地図で探せる釣り場マップ。バス釣り情報、GPS現在地、釣果記録、現地チェックに対応した無料PWAです。">
-    <meta name="keywords" content="三重県釣りMAP,三重県釣り場マップ,三重県釣り場,三重県 野池,三重県 バス釣り,三重県 ダム,三重県 漁港,三重県 港,三重県 マリーナ">
-    <meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">
-    <meta name="google-site-verification" content="oaON3es8hagx-QCV9lnknBYTAhy6uSfSf_7SlgLDUQc">
-    <meta property="og:type" content="website">
-    <meta property="og:locale" content="ja_JP">
-    <meta property="og:site_name" content="三重県釣りMAP">
-    <meta property="og:title" content="三重県釣りMAP｜野池・ダム・川・漁港の釣り場地図">
-    <meta property="og:description" content="三重県の野池、川、ダム、漁港、港、マリーナを地図で探せる無料の釣り場マップです。">
-    <meta property="og:url" content="https://cichlid528.github.io/mie-fishing-map/">
-    <meta property="og:image" content="https://cichlid528.github.io/mie-fishing-map/icon-v2-1024.png">
-    <meta property="og:image:width" content="1024">
-    <meta property="og:image:height" content="1024">
-    <meta property="og:image:alt" content="三重県釣りMAPのアプリアイコン">
-    <meta name="twitter:card" content="summary">
-    <meta name="twitter:title" content="三重県釣りMAP｜野池・ダム・川・漁港の釣り場地図">
-    <meta name="twitter:description" content="三重県の釣り場を地図で探し、GPSや釣果記録を使える無料PWAです。">
-    <meta name="twitter:image" content="https://cichlid528.github.io/mie-fishing-map/icon-v2-1024.png">
-    <title>三重県釣りMAP｜野池・ダム・川・漁港の釣り場地図</title>
-    <link rel="canonical" href="https://cichlid528.github.io/mie-fishing-map/">
-    <link rel="manifest" href="manifest.json?v=5">
-    <link rel="icon" href="icon-v2-192.png" sizes="192x192" type="image/png">
-    <link rel="apple-touch-icon" href="icon-v2-180.png" sizes="180x180">
-    <link rel="sitemap" type="application/xml" href="sitemap.xml">
+    <meta name="apple-mobile-web-app-title" content="釣り場ログ">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>三重県バス釣りマップ</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       integrity="sha256-p4NxAoJBhIINfQDP4nD8xQV9qVtAkM5M5OgFHJt0f9I="
       crossorigin=""
     >
-    <link rel="stylesheet" href="style.css?v=16">
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "WebApplication",
-        "name": "三重県釣りMAP",
-        "url": "https://cichlid528.github.io/mie-fishing-map/",
-        "description": "三重県の野池、川、ダム、漁港、港、マリーナを地図で探せる釣り場マップ",
-        "applicationCategory": "SportsApplication",
-        "operatingSystem": "Android, iOS, Windows, macOS",
-        "inLanguage": "ja",
-        "isAccessibleForFree": true,
-        "offers": {
-          "@type": "Offer",
-          "price": "0",
-          "priceCurrency": "JPY"
-        }
-      }
-    </script>
+    <link rel="stylesheet" href="style.css?v=6">
   </head>
   <body>
     <main class="app-shell">
       <aside class="sidebar" aria-label="釣り場リスト">
         <header class="sidebar-header">
           <div>
-            <p class="kicker">Mie Fishing Map</p>
-            <h1>三重県釣りMAP</h1>
+            <p class="kicker">Mie Bass Map</p>
+            <h1>三重県バス釣りマップ</h1>
           </div>
           <button id="resetView" class="icon-button" type="button" title="三重県全体に戻す" aria-label="三重県全体に戻す">
             ⌂
@@ -75,21 +34,15 @@
         <section class="controls" aria-label="検索と絞り込み">
           <label class="search-box">
             <span>検索</span>
-            <input id="searchInput" type="search" placeholder="池・川・ダム・漁港・港名">
+            <input id="searchInput" type="search" placeholder="池・川・ダム名">
           </label>
           <div class="filter-row" role="group" aria-label="種別フィルター">
             <button class="filter-chip is-active" type="button" data-filter="all">すべて</button>
             <button class="filter-chip" type="button" data-filter="池">池</button>
             <button class="filter-chip" type="button" data-filter="川">川</button>
             <button class="filter-chip" type="button" data-filter="ダム">ダム</button>
-            <button class="filter-chip" type="button" data-filter="漁港">漁港</button>
-            <button class="filter-chip" type="button" data-filter="港">港</button>
-            <button class="filter-chip" type="button" data-filter="マリーナ">マリーナ</button>
           </div>
           <p id="dataStatus" class="data-status" aria-live="polite">地理院地図の名称位置に補正済み</p>
-          <button id="openBackgroundPanel" class="background-settings-button" type="button">
-            背景画像を変更
-          </button>
           <div class="list-tabs" role="tablist" aria-label="リスト切り替え">
             <button id="spotTab" class="list-tab is-active" type="button" aria-selected="true">釣り場</button>
             <button id="catchTab" class="list-tab" type="button" aria-selected="false">釣果</button>
@@ -98,8 +51,8 @@
 
         <section id="spotListHead" class="list-head" aria-label="チェック項目の説明">
           <span>名称</span>
-          <span>釣れた</span>
-          <span>釣れてない</span>
+          <span>いる</span>
+          <span>いない</span>
           <span>禁止</span>
           <span>駐車</span>
         </section>
@@ -119,70 +72,13 @@
 
       <section class="map-pane" aria-label="三重県地図">
         <div id="map"></div>
-        <button id="mobileListToggle" class="mobile-list-button" type="button" title="場所リスト" aria-label="場所リストを開く" aria-expanded="false">☰</button>
         <div class="map-tools" aria-label="地図操作">
-          <button id="installApp" class="install-button is-hidden" type="button" aria-label="アプリをインストール">
-            <span class="tool-icon" aria-hidden="true">⇩</span>
-            <span class="tool-label">インストール</span>
-          </button>
-          <button id="locateMe" class="gps-button" type="button" aria-pressed="false">
-            <span class="tool-icon" aria-hidden="true">⌖</span>
-            <span class="tool-label">現在地</span>
-          </button>
-          <button id="pinCurrentLocation" class="current-pin-button" type="button" aria-label="現在地に普通のピンを追加">
-            <span class="tool-icon" aria-hidden="true">◎</span>
-            <span class="tool-label">現在地ピン</span>
-          </button>
-          <button id="addSpotMode" class="spot-mode-button" type="button" aria-label="釣り場を追加" aria-pressed="false">
-            <span class="tool-icon" aria-hidden="true">＋</span>
-            <span class="tool-label">釣り場</span>
-          </button>
-          <button id="addCatchMode" class="catch-mode-button" type="button" aria-label="釣果ピンを追加" aria-pressed="false">
-            <span class="tool-icon" aria-hidden="true">◎</span>
-            <span class="tool-label">釣果</span>
-          </button>
+          <button id="addSpotMode" class="spot-mode-button" type="button">釣り場追加</button>
+          <button id="addCatchMode" class="catch-mode-button" type="button">釣果ピン追加</button>
         </div>
-        <p id="gpsStatus" class="gps-status" role="status" aria-live="polite"></p>
-        <aside id="iosInstallHint" class="ios-install-hint" aria-label="iPhoneへの追加方法" aria-hidden="true">
-          <div>
-            <strong>iPhoneに追加</strong>
-            <p>Safariの共有ボタンから「ホーム画面に追加」を選択してください。</p>
-          </div>
-          <button id="closeIosInstallHint" type="button" title="閉じる" aria-label="案内を閉じる">×</button>
-        </aside>
+        <div id="spotCard" class="spot-card is-hidden" aria-live="polite"></div>
       </section>
     </main>
-
-    <section id="backgroundPanel" class="catch-panel background-panel" aria-label="背景画像の変更" aria-hidden="true">
-      <div class="catch-form background-form">
-        <header class="catch-form-header">
-          <div>
-            <p class="kicker">Background</p>
-            <h2>背景画像を変更</h2>
-          </div>
-          <button id="closeBackgroundPanel" class="icon-button" type="button" title="閉じる" aria-label="閉じる">×</button>
-        </header>
-
-        <div id="backgroundPreview" class="background-preview" role="img" aria-label="現在の背景画像"></div>
-
-        <div class="background-source-actions">
-          <label class="background-action-button" for="backgroundCamera">
-            <span>写真を撮影して背景にする</span>
-            <input id="backgroundCamera" type="file" accept="image/*" capture="environment">
-          </label>
-          <label class="background-action-button" for="backgroundPhoto">
-            <span>写真フォルダーから選ぶ</span>
-            <input id="backgroundPhoto" type="file" accept="image/*">
-          </label>
-        </div>
-
-        <p id="backgroundStatus" class="background-status" aria-live="polite">現在は初期背景です</p>
-
-        <div class="catch-actions">
-          <button id="resetBackground" class="delete-button" type="button">初期背景に戻す</button>
-        </div>
-      </div>
-    </section>
 
     <section id="spotPanel" class="catch-panel" aria-label="釣り場登録" aria-hidden="true">
       <form id="spotForm" class="catch-form">
@@ -209,9 +105,6 @@
               <option>池</option>
               <option>川</option>
               <option>ダム</option>
-              <option>漁港</option>
-              <option>港</option>
-              <option>マリーナ</option>
             </select>
           </label>
 
@@ -327,21 +220,15 @@
           </label>
 
           <div class="catch-photo-field">
-            <div class="photo-source-actions">
-              <label class="photo-picker" for="catchPhoto">
-                <span>Googleフォト・端末から選ぶ</span>
-                <input id="catchPhoto" type="file" accept="image/*">
-              </label>
-              <label class="photo-picker photo-picker-secondary" for="catchCamera">
-                <span>カメラで撮る</span>
-                <input id="catchCamera" type="file" accept="image/*" capture="environment">
-              </label>
-            </div>
+            <label class="photo-picker" for="catchPhoto">
+              <span>釣果写真</span>
+              <input id="catchPhoto" type="file" accept="image/*" capture="environment">
+            </label>
             <figure id="catchPhotoPreview" class="catch-photo-preview is-hidden">
               <img id="catchPhotoImage" alt="添付する釣果写真">
               <button id="removeCatchPhoto" type="button">写真を外す</button>
             </figure>
-            <p id="catchPhotoStatus" class="catch-photo-status" aria-live="polite">Googleフォトまたは端末の写真を圧縮して保存します</p>
+            <p id="catchPhotoStatus" class="catch-photo-status" aria-live="polite">写真は圧縮してこの端末に保存します</p>
           </div>
         </div>
 
@@ -352,61 +239,11 @@
       </form>
     </section>
 
-    <section id="locationPinPanel" class="catch-panel" aria-label="現在地ピン" aria-hidden="true">
-      <form id="locationPinForm" class="catch-form">
-        <header class="catch-form-header">
-          <div>
-            <p class="kicker">Location Pin</p>
-            <h2>現在地にピン</h2>
-          </div>
-          <button id="closeLocationPinPanel" class="icon-button" type="button" title="閉じる" aria-label="閉じる">×</button>
-        </header>
-
-        <input id="locationPinLat" type="hidden">
-        <input id="locationPinLng" type="hidden">
-
-        <div class="form-grid">
-          <label>
-            <span>ピンの名前</span>
-            <input id="locationPinName" type="text" placeholder="例: 気になる場所">
-          </label>
-
-          <label class="full-width">
-            <span>メモ</span>
-            <textarea id="locationPinMemo" rows="3" placeholder="目印、状況、確認したいことなど"></textarea>
-          </label>
-
-          <div class="catch-photo-field">
-            <div class="photo-source-actions">
-              <label class="photo-picker" for="locationPinPhoto">
-                <span>Googleフォト・端末から選ぶ</span>
-                <input id="locationPinPhoto" type="file" accept="image/*">
-              </label>
-              <label class="photo-picker photo-picker-secondary" for="locationPinCamera">
-                <span>カメラで撮る</span>
-                <input id="locationPinCamera" type="file" accept="image/*" capture="environment">
-              </label>
-            </div>
-            <figure id="locationPinPhotoPreview" class="catch-photo-preview is-hidden">
-              <img id="locationPinPhotoImage" alt="ピンに添付する写真">
-              <button id="removeLocationPinPhoto" type="button">写真を外す</button>
-            </figure>
-            <p id="locationPinPhotoStatus" class="catch-photo-status" aria-live="polite">写真は圧縮してこの端末に保存します</p>
-          </div>
-        </div>
-
-        <div class="catch-actions">
-          <button id="deleteLocationPin" class="delete-button" type="button">削除</button>
-          <button class="save-button" type="submit">ピンを保存</button>
-        </div>
-      </form>
-    </section>
-
     <script
       src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
       integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
       crossorigin=""
     ></script>
-    <script src="app.js?v=17"></script>
+    <script src="app.js?v=6"></script>
   </body>
 </html>

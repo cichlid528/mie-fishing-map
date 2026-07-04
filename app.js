@@ -1,10 +1,6 @@
 const STORAGE_KEY = "mie-bass-map-v1";
 const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
 const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
-const LOCATION_PIN_STORAGE_KEY = "mie-map-location-pins-v1";
-const BACKGROUND_DB_NAME = "mie-fishing-map-settings";
-const BACKGROUND_DB_STORE = "appearance";
-const BACKGROUND_DB_KEY = "sidebar-background";
 
 // 国土地理院の名称検索で同名地点を確認できた座標に合わせています。
 const seedSpots = [
@@ -75,32 +71,7 @@ const seedSpots = [
   { id: "official-pond-041", name: "大釜池", type: "池", area: "津市神戸", lat: 34.694717, lng: 136.476778, zoom: 16, source: "三重県ため池DB" },
   { id: "official-pond-042", name: "畑新田溜", type: "池", area: "いなべ市員弁町畑新田", lat: 35.123794, lng: 136.569578, zoom: 16, source: "三重県ため池DB" },
   { id: "official-pond-043", name: "山上池", type: "池", area: "鈴鹿市西玉垣町", lat: 34.862225, lng: 136.582433, zoom: 16, source: "三重県ため池DB" },
-  { id: "nanairo-dam", name: "七色ダム", type: "ダム", area: "熊野市・紀和町周辺", lat: 33.962596, lng: 136.002566, zoom: 14 },
-  { id: "isozu-port", name: "磯津漁港", type: "漁港", area: "四日市市塩浜・楠町吉崎", lat: 34.929185, lng: 136.648500, zoom: 15, source: "三重県 漁港一覧・国土地理院" },
-  { id: "wakamatsu-port", name: "若松漁港", type: "漁港", area: "鈴鹿市若松", lat: 34.865365, lng: 136.620509, zoom: 15, source: "三重県 漁港一覧・国土地理院" },
-  { id: "shiroko-port", name: "白子漁港", type: "漁港", area: "鈴鹿市白子", lat: 34.828600, lng: 136.596500, zoom: 15, source: "三重県 漁港一覧・国土地理院" },
-  { id: "shiratsuka-port", name: "白塚漁港", type: "漁港", area: "津市白塚町・河芸町一色", lat: 34.768000, lng: 136.548000, zoom: 15, source: "三重県 漁港一覧・国土地理院" },
-  { id: "karasu-port", name: "香良洲漁港", type: "漁港", area: "津市香良洲町", lat: 34.661000, lng: 136.552250, zoom: 15, source: "三重県 漁港一覧・国土地理院" },
-  { id: "matsugasaki-port", name: "松ヶ崎漁港", type: "漁港", area: "松阪市松崎浦町", lat: 34.621000, lng: 136.555000, zoom: 15, source: "三重県 漁港一覧・国土地理院" },
-  { id: "ryoshi-port", name: "猟師漁港", type: "漁港", area: "松阪市猟師町", lat: 34.603650, lng: 136.560000, zoom: 15, source: "三重県 漁港一覧・国土地理院" },
-  { id: "shimomiito-port", name: "下御糸漁港", type: "漁港", area: "多気郡明和町", lat: 34.558800, lng: 136.658000, zoom: 15, source: "三重県 漁港一覧・国土地理院" },
-  { id: "oizu-port", name: "大淀漁港", type: "漁港", area: "多気郡明和町大淀", lat: 34.529500, lng: 136.683000, zoom: 15, source: "三重県 漁港一覧・国土地理院" },
-  { id: "muramatsu-port", name: "村松漁港", type: "漁港", area: "伊勢市村松町", lat: 34.515000, lng: 136.722000, zoom: 15, source: "三重県 漁港一覧・国土地理院" },
-  { id: "yokkaichi-harbor", name: "四日市港", type: "港", area: "四日市市・三重郡川越町", lat: 34.9553109, lng: 136.6449348, zoom: 16, source: "地図名称位置（2026年7月確認）" },
-  { id: "tsu-matsusaka-harbor", name: "松阪港（津松阪港）", type: "港", area: "松阪市大口町", lat: 34.6133673, lng: 136.5587269, zoom: 16, source: "地図名称位置（2026年7月確認）" },
-  { id: "owase-harbor", name: "尾鷲港", type: "港", area: "尾鷲市", lat: 34.0741243, lng: 136.2048044, zoom: 16, source: "地図名称位置（2026年7月確認）" },
-  { id: "kuwana-harbor", name: "桑名港", type: "港", area: "桑名市外堀", lat: 35.0610533, lng: 136.6929696, zoom: 16, source: "地図名称位置（2026年7月確認）" },
-  { id: "chiyozaki-harbor", name: "千代崎港", type: "港", area: "鈴鹿市中若松町", lat: 34.8546490, lng: 136.6152344, zoom: 16, source: "地図名称位置（2026年7月確認）" },
-  { id: "ujiyamada-harbor", name: "宇治山田港", type: "港", area: "伊勢市", lat: 34.5236329, lng: 136.7432210, zoom: 16, source: "地図名称位置（2026年7月確認）" },
-  { id: "toba-harbor", name: "鳥羽港", type: "港", area: "鳥羽市", lat: 34.4802944, lng: 136.8467641, zoom: 16, source: "地図名称位置（2026年7月確認）" },
-  { id: "kashikojima-harbor", name: "賢島港", type: "港", area: "志摩市", lat: 34.3074066, lng: 136.8188755, zoom: 16, source: "地図名称位置（2026年7月確認）" },
-  { id: "hamajima-harbor", name: "浜島港", type: "港", area: "志摩市浜島町", lat: 34.2977415, lng: 136.7595214, zoom: 16, source: "地図名称位置（2026年7月確認）" },
-  { id: "udono-harbor", name: "鵜殿港", type: "港", area: "南牟婁郡紀宝町", lat: 33.7330007, lng: 136.0155256, zoom: 16, source: "地図名称位置（2026年7月確認）" },
-  { id: "tsu-yacht-harbor-marina", name: "津ヨットハーバー", type: "マリーナ", area: "津市津興", lat: 34.7085275, lng: 136.5233700, zoom: 17, memo: "伊勢湾海洋スポーツセンター。ヨット・ボート体験やスクールを実施。", source: "地図名称位置・施設公式" },
-  { id: "marina-kawage-marina", name: "マリーナ河芸", type: "マリーナ", area: "津市河芸町東千里", lat: 34.8007085, lng: 136.5626337, zoom: 17, memo: "伊勢湾に面したマリーナと海辺のレジャースポット。", source: "地図名称位置・施設公式" },
-  { id: "ise-shima-marina", name: "WestCove伊勢志摩マリーナ", type: "マリーナ", area: "度会郡南伊勢町船越", lat: 34.3363278, lng: 136.6830094, zoom: 17, memo: "五ヶ所湾に面したヨット・ボートのリゾートマリーナ。", source: "地図名称位置・施設公式" },
-  { id: "toba-marina", name: "鳥羽マリーナ", type: "マリーナ", area: "鳥羽市千賀町", lat: 34.3887081, lng: 136.8807123, zoom: 17, memo: "的矢湾に位置するヨット・ボート向けマリーナ。", source: "地図名称位置・施設公式" },
-  { id: "nemu-resort-marina", name: "NEMU RESORT マリーナ", type: "マリーナ", area: "志摩市浜島町迫子", lat: 34.2955310, lng: 136.7993228, zoom: 17, memo: "英虞湾に面したリゾート内のマリーナ。", source: "地図名称位置・施設公式" }
+  { id: "nanairo-dam", name: "七色ダム", type: "ダム", area: "熊野市・紀和町周辺", lat: 33.962596, lng: 136.002566, zoom: 14 }
 ];
 
 let customSpots = JSON.parse(localStorage.getItem(CUSTOM_SPOT_STORAGE_KEY) || "[]");
@@ -113,6 +84,8 @@ const map = L.map("map", {
   fadeAnimation: false,
   markerZoomAnimation: false
 }).setView([34.6761, 136.5086], 9);
+
+// 地図の著作権表記は削除せず、右上へ移動します。
 map.attributionControl.setPosition("topright");
 
 const standardMap = L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png", {
@@ -143,7 +116,18 @@ const savedState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
 const spotList = document.querySelector("#spotList");
 const searchInput = document.querySelector("#searchInput");
 const visibleCount = document.querySelector("#visibleCount");
+const spotCard = document.querySelector("#spotCard");
 const dataStatus = document.querySelector("#dataStatus");
+
+function showSpotCard(html) {
+  spotCard.innerHTML = html;
+  spotCard.classList.remove("is-hidden");
+}
+
+function hideSpotCard() {
+  spotCard.classList.add("is-hidden");
+  spotCard.replaceChildren();
+}
 const spotTab = document.querySelector("#spotTab");
 const catchTab = document.querySelector("#catchTab");
 const spotListHead = document.querySelector("#spotListHead");
@@ -174,49 +158,16 @@ const catchWater = document.querySelector("#catchWater");
 const catchSize = document.querySelector("#catchSize");
 const catchMemo = document.querySelector("#catchMemo");
 const catchPhoto = document.querySelector("#catchPhoto");
-const catchCamera = document.querySelector("#catchCamera");
 const catchPhotoPreview = document.querySelector("#catchPhotoPreview");
 const catchPhotoImage = document.querySelector("#catchPhotoImage");
 const removeCatchPhotoButton = document.querySelector("#removeCatchPhoto");
 const catchPhotoStatus = document.querySelector("#catchPhotoStatus");
 const deleteCatchButton = document.querySelector("#deleteCatch");
 const closeCatchPanelButton = document.querySelector("#closeCatchPanel");
-const locationPinPanel = document.querySelector("#locationPinPanel");
-const locationPinForm = document.querySelector("#locationPinForm");
-const locationPinLat = document.querySelector("#locationPinLat");
-const locationPinLng = document.querySelector("#locationPinLng");
-const locationPinName = document.querySelector("#locationPinName");
-const locationPinMemo = document.querySelector("#locationPinMemo");
-const locationPinPhoto = document.querySelector("#locationPinPhoto");
-const locationPinCamera = document.querySelector("#locationPinCamera");
-const locationPinPhotoPreview = document.querySelector("#locationPinPhotoPreview");
-const locationPinPhotoImage = document.querySelector("#locationPinPhotoImage");
-const locationPinPhotoStatus = document.querySelector("#locationPinPhotoStatus");
-const removeLocationPinPhotoButton = document.querySelector("#removeLocationPinPhoto");
-const deleteLocationPinButton = document.querySelector("#deleteLocationPin");
-const closeLocationPinPanelButton = document.querySelector("#closeLocationPinPanel");
-const locateMeButton = document.querySelector("#locateMe");
-const pinCurrentLocationButton = document.querySelector("#pinCurrentLocation");
-const installAppButton = document.querySelector("#installApp");
-const iosInstallHint = document.querySelector("#iosInstallHint");
-const closeIosInstallHintButton = document.querySelector("#closeIosInstallHint");
-const gpsStatus = document.querySelector("#gpsStatus");
-const mobileListToggle = document.querySelector("#mobileListToggle");
-const sidebar = document.querySelector(".sidebar");
-const openBackgroundPanelButton = document.querySelector("#openBackgroundPanel");
-const backgroundPanel = document.querySelector("#backgroundPanel");
-const closeBackgroundPanelButton = document.querySelector("#closeBackgroundPanel");
-const backgroundCamera = document.querySelector("#backgroundCamera");
-const backgroundPhoto = document.querySelector("#backgroundPhoto");
-const backgroundPreview = document.querySelector("#backgroundPreview");
-const backgroundStatus = document.querySelector("#backgroundStatus");
-const resetBackgroundButton = document.querySelector("#resetBackground");
 const filterButtons = [...document.querySelectorAll(".filter-chip")];
 const markers = new Map();
 const catchMarkers = new Map();
-const locationPinMarkers = new Map();
 let catches = JSON.parse(localStorage.getItem(CATCH_STORAGE_KEY) || "[]");
-let locationPins = JSON.parse(localStorage.getItem(LOCATION_PIN_STORAGE_KEY) || "[]");
 let selectedId = null;
 let activeFilter = "all";
 let activeList = "spots";
@@ -225,34 +176,18 @@ let editingSpotId = null;
 let catchMode = false;
 let editingCatchId = null;
 let pendingCatchPhoto = "";
-let editingLocationPinId = null;
-let pendingLocationPinPhoto = "";
-let locationWatchId = null;
-let currentLocationMarker = null;
-let currentAccuracyCircle = null;
-let lastKnownLocation = null;
-let pendingCurrentLocationPin = false;
-let deferredInstallPrompt = null;
-let backgroundDbPromise = null;
-let backgroundObjectUrl = "";
 
-dataStatus.textContent = `公的データで${seedSpots.filter((spot) => spot.type === "池").length}池・${seedSpots.filter((spot) => spot.type === "漁港").length}漁港・${seedSpots.filter((spot) => spot.type === "港").length}港・${seedSpots.filter((spot) => spot.type === "マリーナ").length}マリーナを登録`;
+dataStatus.textContent = `公的データで${seedSpots.filter((spot) => spot.type === "池").length}池の位置を確認済み`;
 
 function markerClass(type) {
   if (type === "川") return "river";
   if (type === "ダム") return "dam";
-  if (type === "漁港") return "fishing-port";
-  if (type === "港") return "harbor";
-  if (type === "マリーナ") return "marina";
   return "pond";
 }
 
 function markerLabel(type) {
   if (type === "川") return "川";
   if (type === "ダム") return "堰";
-  if (type === "漁港") return "漁";
-  if (type === "港") return "港";
-  if (type === "マリーナ") return "艇";
   return "池";
 }
 
@@ -280,14 +215,8 @@ function addMarker(spot) {
   if (markers.has(spot.id)) return;
   const marker = L.marker([spot.lat, spot.lng], { icon: makeIcon(spot) })
     .addTo(map)
-    .bindPopup(spotPopupHtml(spot));
+    .bindPopup(`<strong>${spot.name}</strong><br>${spot.type} / ${spot.area}`);
   marker.on("click", () => selectSpot(spot.id));
-  marker.on("popupopen", () => {
-    const editButton = document.querySelector(`[data-edit-spot-id="${spot.id}"]`);
-    if (editButton) editButton.addEventListener("click", () => openSpotPanel(spot));
-    const deleteButton = document.querySelector(`[data-delete-spot-id="${spot.id}"]`);
-    if (deleteButton) deleteButton.addEventListener("click", () => deleteCustomSpot(spot.id));
-  });
   markers.set(spot.id, marker);
 }
 
@@ -314,6 +243,7 @@ function deleteCustomSpot(spotId) {
   closeSpotPanel();
 
   selectedId = null;
+  hideSpotCard();
 }
 
 function persist() {
@@ -328,15 +258,6 @@ function persistCustomSpots() {
 function persistCatches() {
   try {
     localStorage.setItem(CATCH_STORAGE_KEY, JSON.stringify(catches));
-    return true;
-  } catch (error) {
-    return false;
-  }
-}
-
-function persistLocationPins() {
-  try {
-    localStorage.setItem(LOCATION_PIN_STORAGE_KEY, JSON.stringify(locationPins));
     return true;
   } catch (error) {
     return false;
@@ -426,38 +347,6 @@ function renderCatchMarkers() {
   catches.forEach(addCatchMarker);
 }
 
-function locationPinPopupHtml(pin) {
-  return `
-    <div class="catch-popup">
-      <strong>${escapeHtml(pin.name || "保存したピン")}</strong>
-      ${validCatchPhoto(pin.photo) ? `<img class="catch-popup-photo" src="${pin.photo}" alt="ピンの写真">` : ""}
-      ${pin.memo ? `<p>${escapeHtml(pin.memo)}</p>` : ""}
-      <button class="popup-edit-button" type="button" data-location-pin-id="${pin.id}">編集</button>
-    </div>
-  `;
-}
-
-function addLocationPinMarker(pin) {
-  const marker = L.marker([pin.lat, pin.lng], {
-    title: pin.name || "保存したピン"
-  })
-    .addTo(map)
-    .bindPopup(locationPinPopupHtml(pin));
-
-  marker.on("popupopen", () => {
-    const button = document.querySelector(`[data-location-pin-id="${pin.id}"]`);
-    if (button) button.addEventListener("click", () => openLocationPinPanel(pin));
-  });
-
-  locationPinMarkers.set(pin.id, marker);
-}
-
-function renderLocationPinMarkers() {
-  locationPinMarkers.forEach((marker) => marker.remove());
-  locationPinMarkers.clear();
-  locationPins.forEach(addLocationPinMarker);
-}
-
 function renderCatchList() {
   catchList.replaceChildren();
 
@@ -542,8 +431,7 @@ function setCatchMode(active) {
   catchMode = active;
   if (active) setSpotMode(false);
   addCatchModeButton.classList.toggle("is-active", active);
-  addCatchModeButton.setAttribute("aria-pressed", String(active));
-  addCatchModeButton.querySelector(".tool-label").textContent = active ? "位置選択" : "釣果";
+  addCatchModeButton.textContent = active ? "地図をタップ" : "釣果ピン追加";
   map.getContainer().style.cursor = active ? "crosshair" : "";
 }
 
@@ -551,8 +439,7 @@ function setSpotMode(active) {
   spotMode = active;
   if (active) setCatchMode(false);
   addSpotModeButton.classList.toggle("is-active", active);
-  addSpotModeButton.setAttribute("aria-pressed", String(active));
-  addSpotModeButton.querySelector(".tool-label").textContent = active ? "位置選択" : "釣り場";
+  addSpotModeButton.textContent = active ? "地図をタップ" : "釣り場追加";
   map.getContainer().style.cursor = active ? "crosshair" : "";
 }
 
@@ -576,7 +463,7 @@ function showCatchPhoto(value) {
   if (photo) catchPhotoImage.src = photo;
   catchPhotoStatus.textContent = photo
     ? "写真を添付します"
-    : "Googleフォトまたは端末の写真を圧縮して保存します";
+    : "写真は圧縮してこの端末に保存します";
 }
 
 function compressCatchPhoto(file) {
@@ -618,231 +505,6 @@ function compressCatchPhoto(file) {
   });
 }
 
-function setBackgroundStatus(message, isError = false) {
-  backgroundStatus.textContent = message;
-  backgroundStatus.classList.toggle("is-error", isError);
-}
-
-function openBackgroundDatabase() {
-  if (backgroundDbPromise) return backgroundDbPromise;
-  if (!("indexedDB" in window)) {
-    return Promise.reject(new Error("この端末では背景画像を保存できません"));
-  }
-
-  backgroundDbPromise = new Promise((resolve, reject) => {
-    const request = indexedDB.open(BACKGROUND_DB_NAME, 1);
-    request.onupgradeneeded = () => {
-      const database = request.result;
-      if (!database.objectStoreNames.contains(BACKGROUND_DB_STORE)) {
-        database.createObjectStore(BACKGROUND_DB_STORE, { keyPath: "key" });
-      }
-    };
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(new Error("背景画像の保存領域を開けませんでした"));
-    request.onblocked = () => reject(new Error("アプリを閉じてから、もう一度お試しください"));
-  });
-
-  return backgroundDbPromise;
-}
-
-async function loadStoredBackground() {
-  const database = await openBackgroundDatabase();
-  return new Promise((resolve, reject) => {
-    const transaction = database.transaction(BACKGROUND_DB_STORE, "readonly");
-    const request = transaction.objectStore(BACKGROUND_DB_STORE).get(BACKGROUND_DB_KEY);
-    request.onsuccess = () => resolve(request.result?.blob || null);
-    request.onerror = () => reject(new Error("保存した背景画像を読み込めませんでした"));
-  });
-}
-
-async function saveStoredBackground(blob) {
-  const database = await openBackgroundDatabase();
-  return new Promise((resolve, reject) => {
-    const transaction = database.transaction(BACKGROUND_DB_STORE, "readwrite");
-    transaction.objectStore(BACKGROUND_DB_STORE).put({
-      key: BACKGROUND_DB_KEY,
-      blob,
-      updatedAt: Date.now()
-    });
-    transaction.oncomplete = () => resolve();
-    transaction.onerror = () => reject(new Error("背景画像を保存できませんでした"));
-    transaction.onabort = () => reject(new Error("背景画像の保存が中断されました"));
-  });
-}
-
-async function deleteStoredBackground() {
-  const database = await openBackgroundDatabase();
-  return new Promise((resolve, reject) => {
-    const transaction = database.transaction(BACKGROUND_DB_STORE, "readwrite");
-    transaction.objectStore(BACKGROUND_DB_STORE).delete(BACKGROUND_DB_KEY);
-    transaction.oncomplete = () => resolve();
-    transaction.onerror = () => reject(new Error("保存した背景画像を削除できませんでした"));
-    transaction.onabort = () => reject(new Error("背景画像の初期化が中断されました"));
-  });
-}
-
-function canvasToJpegBlob(canvas, quality) {
-  return new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => {
-      if (blob) resolve(blob);
-      else reject(new Error("画像を圧縮できませんでした"));
-    }, "image/jpeg", quality);
-  });
-}
-
-function compressBackgroundPhoto(file) {
-  return new Promise((resolve, reject) => {
-    if (!file?.type.startsWith("image/")) {
-      reject(new Error("画像ファイルを選んでください"));
-      return;
-    }
-
-    const objectUrl = URL.createObjectURL(file);
-    const image = new Image();
-    image.onload = async () => {
-      URL.revokeObjectURL(objectUrl);
-      try {
-        const maxDimension = 1600;
-        const scale = Math.min(1, maxDimension / Math.max(image.naturalWidth, image.naturalHeight));
-        const width = Math.max(1, Math.round(image.naturalWidth * scale));
-        const height = Math.max(1, Math.round(image.naturalHeight * scale));
-        const canvas = document.createElement("canvas");
-        canvas.width = width;
-        canvas.height = height;
-        const context = canvas.getContext("2d");
-        if (!context) throw new Error("画像を処理できませんでした");
-        context.fillStyle = "#000";
-        context.fillRect(0, 0, width, height);
-        context.drawImage(image, 0, 0, width, height);
-
-        let quality = 0.82;
-        let blob = await canvasToJpegBlob(canvas, quality);
-        while (blob.size > 1500000 && quality > 0.5) {
-          quality -= 0.08;
-          blob = await canvasToJpegBlob(canvas, quality);
-        }
-        resolve(blob);
-      } catch (error) {
-        reject(error);
-      }
-    };
-    image.onerror = () => {
-      URL.revokeObjectURL(objectUrl);
-      reject(new Error("画像を読み込めませんでした"));
-    };
-    image.src = objectUrl;
-  });
-}
-
-function applySidebarBackground(blob) {
-  if (backgroundObjectUrl) {
-    URL.revokeObjectURL(backgroundObjectUrl);
-    backgroundObjectUrl = "";
-  }
-
-  if (blob instanceof Blob) {
-    backgroundObjectUrl = URL.createObjectURL(blob);
-    const imageValue = `url("${backgroundObjectUrl}")`;
-    sidebar.style.setProperty("--sidebar-custom-background", imageValue);
-    sidebar.classList.add("has-custom-background");
-    backgroundPreview.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.42)), ${imageValue}`;
-    resetBackgroundButton.disabled = false;
-    setBackgroundStatus("設定した背景画像を使用しています");
-    return;
-  }
-
-  sidebar.classList.remove("has-custom-background");
-  sidebar.style.removeProperty("--sidebar-custom-background");
-  backgroundPreview.style.backgroundImage = getComputedStyle(sidebar).backgroundImage;
-  resetBackgroundButton.disabled = true;
-  setBackgroundStatus("現在は初期背景です");
-}
-
-async function restoreSidebarBackground() {
-  applySidebarBackground(null);
-  try {
-    const blob = await loadStoredBackground();
-    if (blob instanceof Blob) applySidebarBackground(blob);
-  } catch (error) {
-    setBackgroundStatus(error.message, true);
-  }
-}
-
-async function handleBackgroundSelection(input) {
-  const [file] = input.files;
-  if (!file) return;
-  setBackgroundStatus("画像を縮小・圧縮しています…");
-  try {
-    const blob = await compressBackgroundPhoto(file);
-    await saveStoredBackground(blob);
-    applySidebarBackground(blob);
-    setBackgroundStatus("背景画像を保存しました");
-  } catch (error) {
-    setBackgroundStatus(error.message, true);
-  } finally {
-    backgroundCamera.value = "";
-    backgroundPhoto.value = "";
-  }
-}
-
-function closeBackgroundPanel() {
-  backgroundPanel.classList.remove("is-open");
-  backgroundPanel.setAttribute("aria-hidden", "true");
-}
-
-function openBackgroundPanel() {
-  closeCatchPanel();
-  closeSpotPanel();
-  closeLocationPinPanel();
-  setCatchMode(false);
-  setSpotMode(false);
-  backgroundPanel.classList.add("is-open");
-  backgroundPanel.setAttribute("aria-hidden", "false");
-  if (window.matchMedia("(max-width: 820px)").matches) setMobileList(false);
-}
-
-async function handleCatchPhotoSelection(input) {
-  const [file] = input.files;
-  if (!file) return;
-  catchPhotoStatus.textContent = "写真を圧縮しています…";
-  try {
-    pendingCatchPhoto = await compressCatchPhoto(file);
-    showCatchPhoto(pendingCatchPhoto);
-  } catch (error) {
-    pendingCatchPhoto = "";
-    showCatchPhoto("");
-    catchPhotoStatus.textContent = error.message;
-  } finally {
-    input.value = "";
-  }
-}
-
-function showLocationPinPhoto(value) {
-  const photo = validCatchPhoto(value) ? value : "";
-  locationPinPhotoImage.removeAttribute("src");
-  locationPinPhotoPreview.classList.toggle("is-hidden", !photo);
-  if (photo) locationPinPhotoImage.src = photo;
-  locationPinPhotoStatus.textContent = photo
-    ? "写真をピンに添付します"
-    : "写真は圧縮してこの端末に保存します";
-}
-
-async function handleLocationPinPhotoSelection(input) {
-  const [file] = input.files;
-  if (!file) return;
-  locationPinPhotoStatus.textContent = "写真を圧縮しています…";
-  try {
-    pendingLocationPinPhoto = await compressCatchPhoto(file);
-    showLocationPinPhoto(pendingLocationPinPhoto);
-  } catch (error) {
-    pendingLocationPinPhoto = "";
-    showLocationPinPhoto("");
-    locationPinPhotoStatus.textContent = error.message;
-  } finally {
-    input.value = "";
-  }
-}
-
 function closeSpotPanel() {
   spotPanel.classList.remove("is-open");
   spotPanel.setAttribute("aria-hidden", "true");
@@ -851,7 +513,6 @@ function closeSpotPanel() {
 }
 
 function openCatchPanel(catchLog = null, latLng = null) {
-  closeBackgroundPanel();
   editingCatchId = catchLog?.id || null;
 
   const lat = catchLog?.lat ?? latLng?.lat;
@@ -875,32 +536,7 @@ function openCatchPanel(catchLog = null, latLng = null) {
   setCatchMode(false);
 }
 
-function closeLocationPinPanel() {
-  locationPinPanel.classList.remove("is-open");
-  locationPinPanel.setAttribute("aria-hidden", "true");
-  editingLocationPinId = null;
-  pendingLocationPinPhoto = "";
-  locationPinForm.reset();
-  showLocationPinPhoto("");
-}
-
-function openLocationPinPanel(pin = null, latLng = null) {
-  closeBackgroundPanel();
-  editingLocationPinId = pin?.id || null;
-  locationPinLat.value = pin?.lat ?? latLng?.lat;
-  locationPinLng.value = pin?.lng ?? latLng?.lng;
-  locationPinName.value = pin?.name || "保存したピン";
-  locationPinMemo.value = pin?.memo || "";
-  pendingLocationPinPhoto = validCatchPhoto(pin?.photo) ? pin.photo : "";
-  showLocationPinPhoto(pendingLocationPinPhoto);
-  deleteLocationPinButton.classList.toggle("is-hidden", !editingLocationPinId);
-
-  locationPinPanel.classList.add("is-open");
-  locationPinPanel.setAttribute("aria-hidden", "false");
-}
-
 function openSpotPanel(spot = null, latLng = null) {
-  closeBackgroundPanel();
   editingSpotId = spot?.id || null;
   const lat = spot?.lat ?? latLng?.lat;
   const lng = spot?.lng ?? latLng?.lng;
@@ -928,146 +564,6 @@ function moveMapTo(lat, lng, zoom) {
   });
 }
 
-function setMobileList(open) {
-  sidebar.classList.toggle("is-open", open);
-  mobileListToggle.setAttribute("aria-expanded", String(open));
-  mobileListToggle.setAttribute("aria-label", open ? "場所リストを閉じる" : "場所リストを開く");
-  mobileListToggle.textContent = open ? "×" : "☰";
-  requestAnimationFrame(() => map.invalidateSize({ pan: false }));
-}
-
-function setGpsStatus(message, isError = false) {
-  gpsStatus.textContent = message;
-  gpsStatus.classList.toggle("is-error", isError);
-  gpsStatus.classList.toggle("is-visible", Boolean(message));
-}
-
-function stopLocationTracking() {
-  if (locationWatchId !== null) {
-    navigator.geolocation.clearWatch(locationWatchId);
-    locationWatchId = null;
-  }
-  locateMeButton.classList.remove("is-active");
-  locateMeButton.setAttribute("aria-pressed", "false");
-}
-
-function showCurrentLocation(position) {
-  const { latitude, longitude, accuracy } = position.coords;
-  const latlng = [latitude, longitude];
-  lastKnownLocation = {
-    lat: latitude,
-    lng: longitude,
-    accuracy,
-    timestamp: position.timestamp || Date.now()
-  };
-
-  if (!currentLocationMarker) {
-    currentAccuracyCircle = L.circle(latlng, {
-      radius: accuracy,
-      color: "#2f8fff",
-      weight: 1,
-      fillColor: "#2f8fff",
-      fillOpacity: 0.12
-    }).addTo(map);
-    currentLocationMarker = L.circleMarker(latlng, {
-      radius: 9,
-      color: "#ffffff",
-      weight: 3,
-      fillColor: "#2f8fff",
-      fillOpacity: 1
-    }).addTo(map).bindTooltip("現在地");
-    map.setView(latlng, 16, { animate: false });
-  } else {
-    currentLocationMarker.setLatLng(latlng);
-    currentAccuracyCircle.setLatLng(latlng).setRadius(accuracy);
-  }
-
-  setGpsStatus(`現在地を表示中（精度 約${Math.round(accuracy)}m）`);
-
-  if (pendingCurrentLocationPin) {
-    pendingCurrentLocationPin = false;
-    openLocationPinPanel(null, lastKnownLocation);
-  }
-}
-
-function handleLocationError(error) {
-  pendingCurrentLocationPin = false;
-  stopLocationTracking();
-  const messages = {
-    1: "位置情報の利用が許可されていません。端末の設定で許可してください。",
-    2: "現在地を取得できませんでした。電波状況を確認してください。",
-    3: "現在地の取得がタイムアウトしました。もう一度お試しください。"
-  };
-  setGpsStatus(messages[error.code] || "現在地を取得できませんでした。", true);
-}
-
-function toggleLocationTracking() {
-  if (!navigator.geolocation) {
-    setGpsStatus("この端末ではGPSを利用できません。", true);
-    return;
-  }
-
-  if (locationWatchId !== null) {
-    stopLocationTracking();
-    setGpsStatus("GPS追跡を停止しました。");
-    return;
-  }
-
-  setGpsStatus("現在地を確認しています…");
-  locateMeButton.classList.add("is-active");
-  locateMeButton.setAttribute("aria-pressed", "true");
-  locationWatchId = navigator.geolocation.watchPosition(
-    showCurrentLocation,
-    handleLocationError,
-    {
-      enableHighAccuracy: true,
-      timeout: 15000,
-      maximumAge: 15000
-    }
-  );
-}
-
-function addPinAtCurrentLocation() {
-  if (lastKnownLocation) {
-    openLocationPinPanel(null, lastKnownLocation);
-    return;
-  }
-
-  if (!navigator.geolocation) {
-    setGpsStatus("この端末ではGPSを利用できません。", true);
-    return;
-  }
-
-  pendingCurrentLocationPin = true;
-  setGpsStatus("現在地を取得してピンを準備しています…");
-  if (locationWatchId === null) toggleLocationTracking();
-}
-
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-function spotPopupHtml(spot) {
-  return `
-    <div class="spot-popup">
-      <strong>${escapeHtml(spot.name)}</strong>
-      <p>${escapeHtml(spot.type)} / ${escapeHtml(spot.area)}</p>
-      ${spot.memo ? `<p>${escapeHtml(spot.memo)}</p>` : ""}
-      ${spot.custom ? `
-        <div class="popup-spot-actions">
-          <button class="edit-spot-button" type="button" data-edit-spot-id="${spot.id}">編集</button>
-          <button class="delete-spot-button" type="button" data-delete-spot-id="${spot.id}">削除</button>
-        </div>
-      ` : ""}
-    </div>
-  `;
-}
-
 function selectSpot(id) {
   const spot = spots.find((item) => item.id === id);
   if (!spot) return;
@@ -1077,8 +573,23 @@ function selectSpot(id) {
   const marker = markers.get(id);
   if (marker) marker.openPopup();
 
+  showSpotCard(`
+    <p class="spot-card-type">${spot.type} / ${spot.area}</p>
+    <h2>${spot.name}</h2>
+    <p>左のチェックで「バスがいる」「いない」「釣り禁止」を記録できます。現地の掲示・管理者情報は必ず確認してください。</p>
+    ${spot.source ? `<p class="spot-source">位置情報: ${spot.source}（掲載は立入・釣り許可を意味しません）</p>` : ""}
+    ${spot.custom ? `
+      <div class="spot-card-actions">
+        <button class="edit-spot-button" type="button" id="editCustomSpot">編集</button>
+        <button class="delete-spot-button" type="button" id="deleteCustomSpotCard">削除</button>
+      </div>
+    ` : ""}
+  `);
+  const editButton = document.querySelector("#editCustomSpot");
+  if (editButton) editButton.addEventListener("click", () => openSpotPanel(spot));
+  const deleteButton = document.querySelector("#deleteCustomSpotCard");
+  if (deleteButton) deleteButton.addEventListener("click", () => deleteCustomSpot(spot.id));
   renderList();
-  if (window.matchMedia("(max-width: 820px)").matches) setMobileList(false);
 }
 
 function createCheckbox(spot, kind, label) {
@@ -1135,8 +646,8 @@ function renderList() {
     row.append(main);
 
     [
-      ["hasBass", "釣れた"],
-      ["noBass", "釣れてない"],
+      ["hasBass", "ブラックバスがいる"],
+      ["noBass", "ブラックバスがいない"],
       ["banned", "釣り禁止"],
       ["parking", "駐車スペースがある"]
     ].forEach(([kind, label]) => {
@@ -1158,7 +669,6 @@ spots.forEach(addMarker);
 populateCatchSpots();
 renderCatchMarkers();
 renderCatchList();
-renderLocationPinMarkers();
 
 searchInput.addEventListener("input", renderList);
 
@@ -1183,38 +693,14 @@ filterButtons.forEach((button) => {
 document.querySelector("#resetView").addEventListener("click", () => {
   selectedId = null;
   moveMapTo(34.6761, 136.5086, 9);
+  hideSpotCard();
   renderList();
 });
 
 addCatchModeButton.addEventListener("click", () => setCatchMode(!catchMode));
 addSpotModeButton.addEventListener("click", () => setSpotMode(!spotMode));
-locateMeButton.addEventListener("click", toggleLocationTracking);
-pinCurrentLocationButton.addEventListener("click", addPinAtCurrentLocation);
-mobileListToggle.addEventListener("click", () => {
-  setMobileList(!sidebar.classList.contains("is-open"));
-});
 closeCatchPanelButton.addEventListener("click", closeCatchPanel);
 closeSpotPanelButton.addEventListener("click", closeSpotPanel);
-closeLocationPinPanelButton.addEventListener("click", closeLocationPinPanel);
-openBackgroundPanelButton.addEventListener("click", openBackgroundPanel);
-closeBackgroundPanelButton.addEventListener("click", closeBackgroundPanel);
-backgroundCamera.addEventListener("change", () => handleBackgroundSelection(backgroundCamera));
-backgroundPhoto.addEventListener("change", () => handleBackgroundSelection(backgroundPhoto));
-
-resetBackgroundButton.addEventListener("click", async () => {
-  resetBackgroundButton.disabled = true;
-  setBackgroundStatus("初期背景へ戻しています…");
-  try {
-    await deleteStoredBackground();
-    applySidebarBackground(null);
-    setBackgroundStatus("初期背景へ戻しました");
-  } catch (error) {
-    resetBackgroundButton.disabled = false;
-    setBackgroundStatus(error.message, true);
-  }
-});
-
-restoreSidebarBackground();
 
 deleteSpotButton.addEventListener("click", () => {
   if (!editingSpotId) return;
@@ -1231,32 +717,24 @@ deleteCatchButton.addEventListener("click", () => {
   closeCatchPanel();
 });
 
-catchPhoto.addEventListener("change", () => handleCatchPhotoSelection(catchPhoto));
-catchCamera.addEventListener("change", () => handleCatchPhotoSelection(catchCamera));
+catchPhoto.addEventListener("change", async () => {
+  const [file] = catchPhoto.files;
+  if (!file) return;
+  catchPhotoStatus.textContent = "写真を圧縮しています…";
+  try {
+    pendingCatchPhoto = await compressCatchPhoto(file);
+    showCatchPhoto(pendingCatchPhoto);
+  } catch (error) {
+    pendingCatchPhoto = "";
+    showCatchPhoto("");
+    catchPhotoStatus.textContent = error.message;
+  }
+});
 
 removeCatchPhotoButton.addEventListener("click", () => {
   pendingCatchPhoto = "";
   catchPhoto.value = "";
-  catchCamera.value = "";
   showCatchPhoto("");
-});
-
-locationPinPhoto.addEventListener("change", () => handleLocationPinPhotoSelection(locationPinPhoto));
-locationPinCamera.addEventListener("change", () => handleLocationPinPhotoSelection(locationPinCamera));
-
-removeLocationPinPhotoButton.addEventListener("click", () => {
-  pendingLocationPinPhoto = "";
-  locationPinPhoto.value = "";
-  locationPinCamera.value = "";
-  showLocationPinPhoto("");
-});
-
-deleteLocationPinButton.addEventListener("click", () => {
-  if (!editingLocationPinId) return;
-  locationPins = locationPins.filter((pin) => pin.id !== editingLocationPinId);
-  persistLocationPins();
-  renderLocationPinMarkers();
-  closeLocationPinPanel();
 });
 
 spotForm.addEventListener("submit", (event) => {
@@ -1279,9 +757,10 @@ spotForm.addEventListener("submit", (event) => {
   if (editingSpotId) {
     spots = spots.map((spot) => (spot.id === editingSpotId ? spotData : spot));
     const marker = markers.get(spotData.id);
-    if (marker) marker.remove();
-    markers.delete(spotData.id);
-    addMarker(spotData);
+    if (marker) {
+      marker.setLatLng([spotData.lat, spotData.lng]);
+      marker.setPopupContent(`<strong>${spotData.name}</strong><br>${spotData.type} / ${spotData.area}`);
+    }
   } else {
     spots.push(spotData);
     addMarker(spotData);
@@ -1293,37 +772,6 @@ spotForm.addEventListener("submit", (event) => {
   closeSpotPanel();
   setActiveList("spots");
   selectSpot(spotData.id);
-});
-
-locationPinForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-
-  const pinData = {
-    id: editingLocationPinId || `location-pin-${Date.now()}`,
-    name: locationPinName.value.trim() || "保存したピン",
-    memo: locationPinMemo.value.trim(),
-    photo: pendingLocationPinPhoto,
-    lat: Number(locationPinLat.value),
-    lng: Number(locationPinLng.value)
-  };
-
-  const previousPins = locationPins;
-  if (editingLocationPinId) {
-    locationPins = locationPins.map((pin) => (pin.id === editingLocationPinId ? pinData : pin));
-  } else {
-    locationPins = [...locationPins, pinData];
-  }
-
-  if (!persistLocationPins()) {
-    locationPins = previousPins;
-    locationPinPhotoStatus.textContent = "端末の保存容量が不足しています。写真を外すか、小さい画像を選んでください。";
-    return;
-  }
-
-  renderLocationPinMarkers();
-  closeLocationPinPanel();
-  const marker = locationPinMarkers.get(pinData.id);
-  if (marker) marker.openPopup();
 });
 
 catchForm.addEventListener("submit", (event) => {
@@ -1374,76 +822,10 @@ function handleMapTap(latlng) {
 }
 
 map.on("click", (event) => {
-  if (window.matchMedia("(max-width: 820px)").matches && sidebar.classList.contains("is-open")) {
-    setMobileList(false);
-  }
   handleMapTap(event.latlng);
 });
 
-window.addEventListener("resize", () => {
-  if (!window.matchMedia("(max-width: 820px)").matches) setMobileList(false);
-  map.invalidateSize({ pan: false });
-});
-
-window.addEventListener("beforeunload", () => {
-  stopLocationTracking();
-  if (backgroundObjectUrl) URL.revokeObjectURL(backgroundObjectUrl);
-});
-
-const isStandaloneMode = () =>
-  window.matchMedia("(display-mode: standalone)").matches ||
-  window.navigator.standalone === true;
-
-const isIosDevice = /iPhone|iPad|iPod/i.test(navigator.userAgent) ||
-  (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-const isIosSafari = isIosDevice &&
-  /Safari/i.test(navigator.userAgent) &&
-  !/CriOS|FxiOS|EdgiOS|OPiOS/i.test(navigator.userAgent);
-const iosHintDismissed = localStorage.getItem("mie-ios-install-hint-dismissed-v1") === "1";
-
-installAppButton.classList.add("is-hidden");
-iosInstallHint.classList.toggle("is-visible", isIosSafari && !isStandaloneMode() && !iosHintDismissed);
-iosInstallHint.setAttribute(
-  "aria-hidden",
-  String(!isIosSafari || isStandaloneMode() || iosHintDismissed)
-);
-
-closeIosInstallHintButton.addEventListener("click", () => {
-  iosInstallHint.classList.remove("is-visible");
-  iosInstallHint.setAttribute("aria-hidden", "true");
-  try {
-    localStorage.setItem("mie-ios-install-hint-dismissed-v1", "1");
-  } catch (error) {
-    // The hint still closes when private browsing blocks storage.
-  }
-});
-
-window.addEventListener("beforeinstallprompt", (event) => {
-  event.preventDefault();
-  deferredInstallPrompt = event;
-  if (!isStandaloneMode()) installAppButton.classList.remove("is-hidden");
-});
-
-installAppButton.addEventListener("click", async () => {
-  if (!deferredInstallPrompt) {
-    setGpsStatus("Chromeのメニューから「アプリをインストール」または「ホーム画面に追加」を選んでください。");
-    return;
-  }
-
-  installAppButton.disabled = true;
-  await deferredInstallPrompt.prompt();
-  const choice = await deferredInstallPrompt.userChoice;
-  deferredInstallPrompt = null;
-  installAppButton.disabled = false;
-  installAppButton.classList.toggle("is-hidden", choice.outcome === "accepted");
-});
-
-window.addEventListener("appinstalled", () => {
-  deferredInstallPrompt = null;
-  installAppButton.classList.add("is-hidden");
-  iosInstallHint.classList.remove("is-visible");
-  iosInstallHint.setAttribute("aria-hidden", "true");
-});
+window.addEventListener("resize", () => map.invalidateSize({ pan: false }));
 
 requestAnimationFrame(() => map.invalidateSize({ pan: false }));
 
@@ -1452,12 +834,8 @@ setActiveList("spots");
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js", {
-      scope: "./",
-      updateViaCache: "none"
-    })
+    navigator.serviceWorker.register("./sw.js")
       .then((registration) => {
-        registration.update();
         console.log("Service worker registered:", registration.scope);
       })
       .catch((error) => {
