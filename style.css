@@ -61,7 +61,7 @@ textarea {
 
 .sidebar.has-custom-bg {
   background-image:
-    linear-gradient(rgba(5, 13, 10, 0.50), rgba(5, 13, 10, 0.50)),
+    linear-gradient(rgba(5, 13, 10, 0.30), rgba(5, 13, 10, 0.30)),
     var(--sidebar-bg-image);
   color: #fff;
 }
@@ -87,7 +87,7 @@ textarea {
 .sidebar.has-custom-bg .data-button {
   border-color: rgba(255, 255, 255, 0.22);
   color: #fff;
-  background: rgba(0, 0, 0, 0.50);
+  background: rgba(0, 0, 0, 0.30);
   box-shadow: none;
 }
 
@@ -98,12 +98,12 @@ textarea {
 .sidebar.has-custom-bg .filter-chip.is-active,
 .sidebar.has-custom-bg .list-tab.is-active {
   border-color: rgba(255, 255, 255, 0.36);
-  background: rgba(15, 123, 99, 0.50);
+  background: rgba(15, 123, 99, 0.30);
 }
 
 .sidebar.has-custom-bg .spot-row.is-selected {
   border-color: rgba(255, 255, 255, 0.5);
-  background: rgba(15, 123, 99, 0.50);
+  background: rgba(15, 123, 99, 0.30);
 }
 
 .sidebar-header {
@@ -472,7 +472,7 @@ h1 {
 .sidebar.has-custom-bg .fish-select-button {
   color: #fff;
   border-color: rgba(255, 255, 255, 0.28);
-  background: rgba(15, 123, 99, 0.50);
+  background: rgba(15, 123, 99, 0.30);
 }
 
 .panel-help {
@@ -1317,7 +1317,7 @@ h1 {
 
 
 
-/* 背景画像を使う時は、メニュー項目の背景を50%透過にそろえる */
+/* 背景画像を使う時は、メニュー項目の背景を30%透過にそろえる */
 .sidebar.has-custom-bg .spot-row,
 .sidebar.has-custom-bg .catch-row,
 .sidebar.has-custom-bg .empty-list,
@@ -1327,7 +1327,7 @@ h1 {
 .sidebar.has-custom-bg .data-button,
 .sidebar.has-custom-bg .install-button,
 .sidebar.has-custom-bg .fish-select-button {
-  background-color: rgba(0, 0, 0, 0.50);
+  background-color: rgba(0, 0, 0, 0.30);
   backdrop-filter: blur(4px);
 }
 
@@ -1335,11 +1335,11 @@ h1 {
 .sidebar.has-custom-bg .list-tab.is-active,
 .sidebar.has-custom-bg .spot-row.is-selected,
 .sidebar.has-custom-bg .fish-select-button.has-species {
-  background-color: rgba(15, 123, 99, 0.50);
+  background-color: rgba(15, 123, 99, 0.30);
 }
 
 .sidebar.has-custom-bg .notice-banner {
-  background-color: rgba(122, 33, 28, 0.50);
+  background-color: rgba(122, 33, 28, 0.30);
 }
 
 @media (max-width: 820px) {
@@ -1442,7 +1442,7 @@ h1 {
 
   .sidebar.has-custom-bg .list-head,
   .sidebar.has-custom-bg .catch-list-head {
-    background: rgba(5, 13, 10, 0.74);
+    background: rgba(5, 13, 10, 0.30);
     backdrop-filter: blur(8px);
   }
 
@@ -1587,7 +1587,7 @@ h1 {
 .sidebar.has-custom-bg .notice-banner {
   color: #fff;
   border-color: rgba(255, 255, 255, 0.28);
-  background: rgba(122, 33, 28, 0.50);
+  background: rgba(122, 33, 28, 0.30);
 }
 
 .settings-row {
@@ -1667,7 +1667,7 @@ h1 {
 .sidebar.has-custom-bg .install-button {
   color: #fff;
   border-color: rgba(255, 255, 255, 0.42);
-  background: rgba(15, 123, 99, 0.50);
+  background: rgba(15, 123, 99, 0.30);
 }
 
 .install-content section {
