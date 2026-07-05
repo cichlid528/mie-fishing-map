@@ -1,9 +1,10 @@
-const CACHE_NAME = "bass-spot-log-v49-stable";
+const CACHE_NAME = "bass-spot-log-v50-reset";
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./style.css?v=49-stable",
-  "./app.js?v=49-stable",
+  "./reset-cache.html",
+  "./style.css?v=50-reset",
+  "./app.js?v=50-reset",
   "./manifest.json",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
@@ -26,7 +27,7 @@ self.addEventListener("activate", (event) => {
 function isAppShellRequest(requestUrl, request) {
   if (request.mode === "navigate") return true;
   const path = requestUrl.pathname.split("/").pop() || "index.html";
-  return ["", "index.html", "app.js", "style.css", "sw.js", "manifest.json"].includes(path);
+  return ["", "index.html", "reset-cache.html", "app.js", "style.css", "sw.js", "manifest.json"].includes(path);
 }
 
 self.addEventListener("fetch", (event) => {
