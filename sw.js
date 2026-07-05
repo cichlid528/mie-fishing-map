@@ -1,4 +1,4 @@
-const CACHE_NAME = "bass-spot-log-v51-livefix";
+const CACHE_NAME = "bass-spot-log-v52-icon-cachefix";
 const APP_SHELL = [
   "./",
   "./index.html",

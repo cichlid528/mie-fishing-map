@@ -1,4 +1,4 @@
-# v51 安定復旧・キャッシュリセット版（READMEは変更しない）
+# v52 アイコン・キャッシュ整合版（READMEは変更しない）
 
 このZIPには `README.md` は入れていません。
 既存のREADMEは上書きしないでください。
@@ -26,8 +26,8 @@ https://cichlid528.github.io/mie-fishing-map/reset-cache.html?auto=1
 
 ## 通常確認URL
 
-https://cichlid528.github.io/mie-fishing-map/?v=50-reset
+https://cichlid528.github.io/mie-fishing-map/?v=v52-icon-cachefix
 
 ## コミットメッセージ
 
-fix: 地図表示を安定復旧して古いキャッシュをリセット
+fix: PWAアイコン配置とキャッシュ版数を整合
