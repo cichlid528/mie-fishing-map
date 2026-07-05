@@ -11,8 +11,8 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQDP4nD8xQV9qVtAkM5M5OgFHJt0f9I=" crossorigin="">
-    <link rel="stylesheet" href="style.css?v=65-gsi-live-fullscreen">
-    <style id="v65-gsi-live-fullscreen-fix">
+    <link rel="stylesheet" href="style.css?v=66-visible-buttons">
+    <style id="v66-visible-buttons-fix">
       html, body { width: 100% !important; height: 100% !important; margin: 0 !important; padding: 0 !important; overflow: hidden !important; }
       body { position: fixed !important; inset: 0 !important; width: 100vw !important; height: 100vh !important; height: 100dvh !important; }
       .app-shell { display: block !important; grid-template-columns: none !important; width: 100vw !important; height: 100vh !important; height: 100dvh !important; margin: 0 !important; padding: 0 !important; }
@@ -23,6 +23,14 @@
       .mobile-menu-button { display: inline-flex !important; position: fixed !important; z-index: 60 !important; }
       .map-tools { position: fixed !important; z-index: 55 !important; }
       .spot-card { position: fixed !important; z-index: 56 !important; }
+      /* v66: 地図上ボタンを白飛びさせず、必ず濃い文字で表示 */
+      .map-pane .mobile-menu-button, .map-pane .locate-button, .map-pane .spot-mode-button, .map-pane .catch-mode-button, .leaflet-control-zoom a, .leaflet-bar a, .leaflet-control-layers, .leaflet-control-layers-toggle { opacity: 1 !important; visibility: visible !important; filter: none !important; mix-blend-mode: normal !important; color: #073f33 !important; -webkit-text-fill-color: #073f33 !important; background-color: rgba(255,255,255,.96) !important; border: 2px solid rgba(7,63,51,.42) !important; box-shadow: 0 10px 28px rgba(0,0,0,.35), 0 0 0 1px rgba(255,255,255,.75) inset !important; text-shadow: none !important; }
+      .map-pane .mobile-menu-button, .map-pane .locate-button, .map-pane .spot-mode-button, .map-pane .catch-mode-button { min-height: 44px !important; border-radius: 999px !important; padding: 10px 14px !important; font-weight: 950 !important; font-size: .92rem !important; line-height: 1.15 !important; white-space: nowrap !important; }
+      .map-pane .spot-mode-button.is-active, .map-pane .catch-mode-button.is-active { background-color: #ff9b3f !important; color: #301900 !important; -webkit-text-fill-color: #301900 !important; border-color: rgba(48,25,0,.55) !important; }
+      .leaflet-control-layers label, .leaflet-control-layers span { color: #073f33 !important; -webkit-text-fill-color: #073f33 !important; font-weight: 800 !important; }
+      .catch-form .icon-button, .catch-actions .save-button, .location-inline-button { background-color: #0f7b63 !important; color: #fff !important; -webkit-text-fill-color: #fff !important; box-shadow: 0 6px 18px rgba(0,0,0,.22) !important; }
+      .catch-actions .delete-button, .catch-photo-preview button { background-color: #ffebeb !important; color: #a12626 !important; -webkit-text-fill-color: #a12626 !important; border: 1px solid rgba(161,38,38,.28) !important; }
+      @media (max-width: 560px) { .map-tools { top: 68px !important; right: 8px !important; flex-direction: column !important; align-items: flex-end !important; max-width: calc(100vw - 16px) !important; } .map-pane .mobile-menu-button { top: 10px !important; left: 10px !important; } .map-pane .locate-button, .map-pane .spot-mode-button, .map-pane .catch-mode-button { max-width: 190px !important; font-size: .84rem !important; padding: 9px 11px !important; } }
     </style>
   </head>
   <body>
@@ -53,7 +61,7 @@
             <button class="filter-chip" type="button" data-filter="港">港・漁港</button>
             <button class="filter-chip" type="button" data-filter="マリーナ">マリーナ</button>
           </div>
-          <p id="dataStatus" class="data-status" aria-live="polite">v65・国土地理院ライブマップ</p>
+          <p id="dataStatus" class="data-status" aria-live="polite">v66・ボタン視認性修正</p>
           <p class="notice-banner">掲載情報は釣りの許可を意味しません。現地看板・管理者・自治体・漁協の最新情報を必ず確認してください。</p>
           <div class="stats-grid" aria-label="記録集計">
             <span><strong id="spotCount">0</strong><small>釣り場</small></span>
@@ -78,7 +86,7 @@
 
         <footer class="sidebar-footer">
           <span id="visibleCount">0件</span>
-          <span>v65・国土地理院ライブマップ</span>
+          <span>v66・ボタン視認性修正</span>
         </footer>
 
         <section class="settings-row sidebar-actions" aria-label="設定">
@@ -206,7 +214,7 @@
     </section>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="pwa-install.js?v=65-gsi-live-fullscreen"></script>
-    <script src="app.js?v=65-gsi-live-fullscreen"></script>
+    <script src="pwa-install.js?v=66-visible-buttons"></script>
+    <script src="app.js?v=66-visible-buttons"></script>
   </body>
 </html>

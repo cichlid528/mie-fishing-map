@@ -1,16 +1,16 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v65-gsi-live-fullscreen";
+  const APP_VERSION = "v66-visible-buttons";
 
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
   const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
   const BACKGROUND_STORAGE_KEY = "mie-fishing-map-sidebar-background-v1";
-  const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v65";
+  const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v66";
   const LEGACY_SINGLE_KEY = "mieFishingMap.v1";
 
-  // v65: 静止画像をやめ、国土地理院の地理院タイルを直接読み込む全画面マップ。
+  // v66: 国土地理院タイルの全画面マップに、見えるボタン色を強制指定。
   // Leafletは [緯度, 経度] の順番。三重県全体が自然に入る範囲へ初期表示する。
   const MIE_CENTER = [34.55, 136.48];
   const MIE_HOME_ZOOM = 9;
@@ -298,7 +298,7 @@
   }
 
   function addMieBoundaryLayer() {
-    // v65: 国土地理院タイルをそのまま表示するため、Leaflet側では県境線やラベルを追加しない。
+    // v66: 国土地理院タイルをそのまま表示し、県境線やラベルは追加しない。
   }
 
 
@@ -434,7 +434,7 @@
     if (state.spotMode) state.catchMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v65・国土地理院ライブマップ";
+    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v66・ボタン視認性修正";
   }
 
   function setCatchMode(value) {
@@ -442,7 +442,7 @@
     if (state.catchMode) state.spotMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v65・国土地理院ライブマップ";
+    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v66・ボタン視認性修正";
   }
 
   function handleMapClick(latlng) {
@@ -1181,7 +1181,7 @@
     window.addEventListener("load", forceFullscreenLayout);
     window.addEventListener("resize", forceFullscreenLayout);
     registerServiceWorker();
-    els.dataStatus.textContent = `v65・国土地理院ライブマップ / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
+    els.dataStatus.textContent = `v66・ボタン視認性修正 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
   }
 
   init();

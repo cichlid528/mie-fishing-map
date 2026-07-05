@@ -249,7 +249,7 @@ textarea { resize: vertical; }
 }
 
 
-/* v65 GSI live fullscreen override: PCでもスマホでも地図を画面いっぱいに固定する */
+/* v66 GSI live fullscreen override: PCでもスマホでも地図を画面いっぱいに固定する */
 html, body {
   width: 100% !important;
   height: 100% !important;
@@ -312,3 +312,128 @@ body { position: fixed !important; inset: 0 !important; width: 100vw !important;
 .map-tools { position: fixed !important; z-index: 55 !important; }
 .spot-card { position: fixed !important; z-index: 56 !important; }
 .leaflet-control-container { position: relative !important; z-index: 20 !important; }
+
+/* v66 visible buttons override: 地図上の白飛び・文字消えを防ぐ */
+.map-pane .mobile-menu-button,
+.map-pane .locate-button,
+.map-pane .spot-mode-button,
+.map-pane .catch-mode-button,
+.leaflet-control-zoom a,
+.leaflet-bar a,
+.leaflet-control-layers,
+.leaflet-control-layers-toggle {
+  opacity: 1 !important;
+  visibility: visible !important;
+  filter: none !important;
+  mix-blend-mode: normal !important;
+  -webkit-text-fill-color: #073f33 !important;
+  color: #073f33 !important;
+  background-color: rgba(255, 255, 255, 0.96) !important;
+  border: 2px solid rgba(7, 63, 51, 0.42) !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255,255,255,0.75) inset !important;
+  text-shadow: none !important;
+}
+
+.map-pane .mobile-menu-button,
+.map-pane .locate-button,
+.map-pane .spot-mode-button,
+.map-pane .catch-mode-button {
+  min-height: 44px !important;
+  border-radius: 999px !important;
+  padding: 10px 14px !important;
+  font-weight: 950 !important;
+  font-size: 0.92rem !important;
+  line-height: 1.15 !important;
+  white-space: nowrap !important;
+  backdrop-filter: blur(4px);
+}
+
+.map-pane .mobile-menu-button::before,
+.map-pane .locate-button::before,
+.map-pane .spot-mode-button::before,
+.map-pane .catch-mode-button::before {
+  display: inline-block;
+  margin-right: 4px;
+}
+
+.map-pane .spot-mode-button.is-active,
+.map-pane .catch-mode-button.is-active {
+  background-color: #ff9b3f !important;
+  color: #301900 !important;
+  -webkit-text-fill-color: #301900 !important;
+  border-color: rgba(48, 25, 0, 0.55) !important;
+}
+
+.map-tools {
+  gap: 8px !important;
+  align-items: flex-start !important;
+}
+
+.leaflet-control-zoom a,
+.leaflet-bar a {
+  width: 34px !important;
+  height: 34px !important;
+  line-height: 30px !important;
+  font-size: 20px !important;
+  font-weight: 900 !important;
+}
+
+.leaflet-control-layers {
+  padding: 7px !important;
+}
+
+.leaflet-control-layers label,
+.leaflet-control-layers span {
+  color: #073f33 !important;
+  -webkit-text-fill-color: #073f33 !important;
+  font-weight: 800 !important;
+}
+
+.catch-form .icon-button,
+.catch-actions .save-button,
+.location-inline-button {
+  opacity: 1 !important;
+  visibility: visible !important;
+  background-color: #0f7b63 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  border: 0 !important;
+  box-shadow: 0 6px 18px rgba(0,0,0,.22) !important;
+}
+
+.catch-actions .delete-button,
+.catch-photo-preview button {
+  opacity: 1 !important;
+  visibility: visible !important;
+  background-color: #ffebeb !important;
+  color: #a12626 !important;
+  -webkit-text-fill-color: #a12626 !important;
+  border: 1px solid rgba(161,38,38,.28) !important;
+}
+
+.sidebar .icon-button {
+  background: rgba(255,255,255,.20) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+@media (max-width: 560px) {
+  .map-tools {
+    top: 68px !important;
+    right: 8px !important;
+    flex-direction: column !important;
+    align-items: flex-end !important;
+    max-width: calc(100vw - 16px) !important;
+  }
+  .map-pane .mobile-menu-button {
+    top: 10px !important;
+    left: 10px !important;
+  }
+  .map-pane .locate-button,
+  .map-pane .spot-mode-button,
+  .map-pane .catch-mode-button {
+    max-width: 190px !important;
+    font-size: 0.84rem !important;
+    padding: 9px 11px !important;
+  }
+}
