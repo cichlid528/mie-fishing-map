@@ -2,7 +2,7 @@
   "use strict";
   window.__MIE_PWA_INSTALL_MANAGED__ = true;
 
-  const APP_VERSION = "v69-menu-gsi-fixed";
+  const APP_VERSION = "v70-mobile-menu-fixed";
   const installButton = document.querySelector("#installAppButton");
   const installPanel = document.querySelector("#installPanel");
   const installStatus = document.querySelector("#installStatus");

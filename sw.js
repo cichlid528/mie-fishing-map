@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bass-spot-log-";
-const VERSION = "v69-menu-gsi-fixed";
+const VERSION = "v70-mobile-menu-fixed";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());

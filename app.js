@@ -1,16 +1,16 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v69-menu-gsi-fixed";
+  const APP_VERSION = "v70-mobile-menu-fixed";
 
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
   const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
   const BACKGROUND_STORAGE_KEY = "mie-fishing-map-sidebar-background-v1";
-  const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v69";
+  const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v70";
   const LEGACY_SINGLE_KEY = "mieFishingMap.v1";
 
-  // v69: 国土地理院の地理院タイルを通常のLeaflet地図として表示。固定範囲なし。
+  // v70: 国土地理院の地理院タイルを通常のLeaflet地図として表示。固定範囲なし。スマホメニューを前面で操作可能に修正。
   const MIE_CENTER = [34.55, 136.48];
   const MIE_HOME_ZOOM = 9;
   const MAP_MIN_ZOOM = 5;
@@ -293,7 +293,7 @@
 
 
   function forceFullscreenLayout() {
-    // v69: 全画面強制レイアウトは廃止。CSSの通常レイアウトに任せる。
+    // v70: 全画面強制レイアウトは廃止。CSSの通常レイアウトに任せる。
     invalidateMapSize(120);
   }
 
@@ -327,7 +327,7 @@
       keepBuffer: 2,
       updateWhenIdle: true,
       updateWhenZooming: false,
-      attribution: '地図: <a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noopener">国土地理院（地理院タイル）</a>'
+      attribution: '地図出典：<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noopener">国土地理院（地理院タイル）</a>'
     };
 
     const standardMap = L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png", tileOptions).addTo(map);
@@ -403,7 +403,7 @@
     if (state.spotMode) state.catchMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v69・国土地理院マップ";
+    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v70・国土地理院マップ";
   }
 
   function setCatchMode(value) {
@@ -411,7 +411,7 @@
     if (state.catchMode) state.spotMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v69・国土地理院マップ";
+    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v70・国土地理院マップ";
   }
 
   function handleMapClick(latlng) {
@@ -1009,6 +1009,7 @@
   function openMobileMenu() {
     els.mobileMenu.classList.add("is-open");
     els.menuBackdrop.classList.add("is-open");
+    document.body.classList.add("menu-open");
     els.menuToggle.setAttribute("aria-expanded", "true");
     invalidateMapSize(260);
   }
@@ -1016,6 +1017,7 @@
   function closeMobileMenu() {
     els.mobileMenu.classList.remove("is-open");
     els.menuBackdrop.classList.remove("is-open");
+    document.body.classList.remove("menu-open");
     els.menuToggle.setAttribute("aria-expanded", "false");
     invalidateMapSize(260);
   }
@@ -1095,6 +1097,7 @@
     });
     els.closeMenuButton.addEventListener("click", closeMobileMenu);
     els.menuBackdrop.addEventListener("click", closeMobileMenu);
+    window.addEventListener("resize", () => { if (window.matchMedia("(min-width: 921px)").matches) closeMobileMenu(); });
     els.locateCatchButton.addEventListener("click", () => useCurrentLocationForCatch(true));
     els.useCurrentLocationButton.addEventListener("click", () => useCurrentLocationForCatch(false));
     els.addSpotMode.addEventListener("click", () => setSpotMode(!state.spotMode));
@@ -1152,7 +1155,7 @@
     window.addEventListener("load", forceFullscreenLayout);
     window.addEventListener("resize", forceFullscreenLayout);
     registerServiceWorker();
-    els.dataStatus.textContent = `v69・国土地理院マップ / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
+    els.dataStatus.textContent = `v70・国土地理院マップ / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
   }
 
   init();
