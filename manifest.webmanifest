@@ -1,0 +1,17 @@
+{
+  "name": "三重県釣りマップ",
+  "short_name": "釣りマップ",
+  "description": "釣り場・野池・釣果・現地メモを記録する地図アプリ",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f4f7f5",
+  "theme_color": "#0f766e",
+  "icons": [
+    {
+      "src": "assets/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

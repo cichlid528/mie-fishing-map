@@ -1,8 +1,14 @@
 # Changelog
 
-## v47-refresh
+## v1.0
 
-- 古いService Workerキャッシュを削除する処理を追加
-- `pwa-install.js` を追加し、Service Worker登録を明示化
-- `style.css` / `app.js` / `sw.js` のバージョンを `v47-refresh` に更新
-- スマホでv46が反映されない場合の強制更新に対応
+- GitHub Pages用の初版
+- 釣り場追加、記録ピン、釣果メモ、写真添付、バックアップ対応
+- 野池バス用の記録項目を追加
+  - 水位
+  - ベイト確認
+  - カバー・地形
+  - 反応場所
+  - プレッシャー
+  - 時間帯
+  - ルアー色・重さ

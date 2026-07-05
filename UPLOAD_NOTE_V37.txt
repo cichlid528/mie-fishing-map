@@ -1,0 +1,4 @@
+v37 rollback ZIP
+README.md は入れていません。
+ZIPを解凍して中身だけをGitHubリポジトリ直下へ上書きしてください。
+確認URL: https://cichlid528.github.io/mie-fishing-map/?v=37
