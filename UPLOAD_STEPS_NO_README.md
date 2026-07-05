@@ -1,6 +1,6 @@
-# v73 アップロード手順（READMEなし）
+# v74 アップロード手順（READMEなし）
 
-このZIPは、スマホ版で右上に重なっていた操作ボタンを左下へ移動した修正版です。READMEは入れていません。
+このZIPは、PC版・スマホ版どちらも地図切替を「標準地図」「航空写真」だけに統一した修正版です。READMEは入れていません。
 
 ## アップロードするもの
 
@@ -24,16 +24,15 @@ https://cichlid528.github.io/mie-fishing-map/reset-cache.html?auto=1
 
 ## 確認URL
 
-https://cichlid528.github.io/mie-fishing-map/?v=v73-desktop-tools-maplayers
+https://cichlid528.github.io/mie-fishing-map/?v=v74-two-maplayers-all-devices
+
+## v74の変更点
+
+- PC版・スマホ版ともに地図切替項目を「標準地図」「航空写真」のみに整理
+- 「淡色地図」「陰影起伏図」は出ないように削除
+- PC/スマホの操作ボタン左下配置は維持
+- 国土地理院（地理院タイル）の出典表記を維持
 
 ## コミット案
 
-fix: PC/スマホの操作ボタン重なりを解消
-
-
-## v73の変更点
-- PCでも「現在地メモ登録・釣り場追加・記録ピン追加」を左下に移動
-- 地図切替項目を「標準地図」「航空写真」のみに整理
-- 国土地理院（地理院タイル）の出典表記を維持
-
-コミット案: fix: PC操作ボタンの重なりと地図項目を整理
+fix: 全端末の地図項目を標準地図と航空写真だけに整理
