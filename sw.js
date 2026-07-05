@@ -1,10 +1,10 @@
-const CACHE_NAME = "bass-spot-log-v50-reset";
+const CACHE_NAME = "bass-spot-log-v51-livefix";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./reset-cache.html",
-  "./style.css?v=50-reset",
-  "./app.js?v=50-reset",
+  "./style.css?v=51-livefix",
+  "./app.js?v=51-livefix",
   "./manifest.json",
   "./icons/icon-192.png",
   "./icons/icon-512.png",

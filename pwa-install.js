@@ -2,10 +2,8 @@
   "use strict";
   window.__MIE_PWA_INSTALL_MANAGED__ = true;
 
-  window.__MIE_PWA_INSTALL_MANAGED__ = true;
-
-  const APP_VERSION = "v50-reset";
-  const CURRENT_CACHE = "bass-spot-log-v50-reset";
+  const APP_VERSION = "v51-livefix";
+  const CURRENT_CACHE = "bass-spot-log-v51-livefix";
   const installButton = document.querySelector("#installAppButton");
   const installPanel = document.querySelector("#installPanel");
   const installStatus = document.querySelector("#installStatus");
