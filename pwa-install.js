@@ -2,8 +2,8 @@
   "use strict";
   window.__MIE_PWA_INSTALL_MANAGED__ = true;
 
-  const APP_VERSION = "v54-mie-only";
-  const CURRENT_CACHE = "bass-spot-log-v54-mie-only";
+  const APP_VERSION = "v55-mie-boundsfix";
+  const CURRENT_CACHE = "bass-spot-log-v55-mie-boundsfix";
   const installButton = document.querySelector("#installAppButton");
   const installPanel = document.querySelector("#installPanel");
   const installStatus = document.querySelector("#installStatus");
