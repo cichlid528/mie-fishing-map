@@ -1,16 +1,16 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v63-fullscreen-map";
+  const APP_VERSION = "v64-hard-fullscreen";
 
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
   const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
   const BACKGROUND_STORAGE_KEY = "mie-fishing-map-sidebar-background-v1";
-  const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v63";
+  const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v64";
   const LEGACY_SINGLE_KEY = "mieFishingMap.v1";
 
-  // v63: ユーザー指定画像の三重県マップを、画面全体に固定表示。
+  // v64: ユーザー指定画像の三重県マップを、画面全体に固定表示。
   // Leafletは [緯度, 経度] の順番。画像はスクリーンショット右側の操作ボタンを切り取り、地図面だけを使う。
   const MIE_CENTER = [34.45, 136.35];
   const MIE_HOME_ZOOM = 9;
@@ -300,7 +300,31 @@
   }
 
   function addMieBoundaryLayer() {
-    // v63: 三重県の黒い輪郭は画像に含まれているため、Leaflet側では線やラベルを追加しない。
+    // v64: 三重県の黒い輪郭は画像に含まれているため、Leaflet側では線やラベルを追加しない。
+  }
+
+
+  function forceFullscreenLayout() {
+    const root = document.querySelector(".app-shell");
+    const pane = document.querySelector(".map-pane");
+    const mapElement = document.getElementById("map");
+    [document.documentElement, document.body, root, pane, mapElement].forEach((el) => {
+      if (!el) return;
+      el.style.setProperty("width", "100vw", "important");
+      el.style.setProperty("height", "100dvh", "important");
+      el.style.setProperty("margin", "0", "important");
+      el.style.setProperty("padding", "0", "important");
+    });
+    if (pane) {
+      pane.style.setProperty("position", "fixed", "important");
+      pane.style.setProperty("inset", "0", "important");
+    }
+    if (mapElement) {
+      mapElement.style.setProperty("position", "absolute", "important");
+      mapElement.style.setProperty("inset", "0", "important");
+    }
+    invalidateMapSize(0);
+    invalidateMapSize(250);
   }
 
   function initMap() {
@@ -392,7 +416,7 @@
     if (state.spotMode) state.catchMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v63・全画面マップ";
+    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v64・完全全画面マップ";
   }
 
   function setCatchMode(value) {
@@ -400,7 +424,7 @@
     if (state.catchMode) state.spotMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v63・全画面マップ";
+    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v64・完全全画面マップ";
   }
 
   function handleMapClick(latlng) {
@@ -1129,13 +1153,17 @@
 
   function init() {
     initEls();
+    forceFullscreenLayout();
     loadState();
     initMap();
     bindEvents();
     applySidebarBackground(localStorage.getItem(BACKGROUND_STORAGE_KEY) || "");
     render();
+    forceFullscreenLayout();
+    window.addEventListener("load", forceFullscreenLayout);
+    window.addEventListener("resize", forceFullscreenLayout);
     registerServiceWorker();
-    els.dataStatus.textContent = `v63・全画面マップ / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
+    els.dataStatus.textContent = `v64・完全全画面マップ / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
   }
 
   init();

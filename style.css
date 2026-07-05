@@ -247,3 +247,68 @@ textarea { resize: vertical; }
   box-shadow: 0 8px 22px rgba(12, 54, 43, .18);
   border: 1px solid rgba(15, 123, 99, .25);
 }
+
+
+/* v64 hard fullscreen override: PCでもスマホでも地図を画面いっぱいに固定する */
+html, body {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+body { position: fixed !important; inset: 0 !important; width: 100vw !important; height: 100vh !important; height: 100dvh !important; }
+.app-shell {
+  display: block !important;
+  grid-template-columns: none !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  min-width: 100vw !important;
+  min-height: 100vh !important;
+  min-height: 100dvh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.map-pane {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 1 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  min-width: 100vw !important;
+  min-height: 100vh !important;
+  min-height: 100dvh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+#map, #map.leaflet-container, .leaflet-container {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  min-width: 100vw !important;
+  min-height: 100vh !important;
+  min-height: 100dvh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.sidebar {
+  position: fixed !important;
+  inset: 0 auto 0 0 !important;
+  width: min(390px, 92vw) !important;
+  max-width: 92vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  z-index: 50 !important;
+  transform: translateX(-105%) !important;
+}
+.sidebar.is-open { transform: translateX(0) !important; }
+.menu-backdrop { position: fixed !important; inset: 0 !important; z-index: 45 !important; }
+.mobile-menu-button { display: inline-flex !important; position: fixed !important; z-index: 60 !important; }
+.map-tools { position: fixed !important; z-index: 55 !important; }
+.spot-card { position: fixed !important; z-index: 56 !important; }
+.leaflet-control-container { position: relative !important; z-index: 20 !important; }

@@ -1,11 +1,15 @@
-# v63 全画面マップ版（READMEは変更しない）
+# v64 完全全画面マップ版（READMEは変更しない）
 
 このZIPには `README.md` は入れていません。
 既存のREADMEは上書きしないでください。
 
-## アップロード対象
+## 重要
 
-GitHubリポジトリ直下に、ZIPの中身を上書きしてください。
+今回は `style.css` の上書きが必須です。
+現在の公開アプリが全画面にならない原因は、古い `style.css` が左メニュー用の `grid-template-columns: 380px 1fr` を持ったまま残っているためです。
+ZIPの中身をリポジトリ直下へまとめて上書きしてください。
+
+## アップロード対象
 
 - index.html
 - style.css
@@ -25,8 +29,8 @@ https://cichlid528.github.io/mie-fishing-map/reset-cache.html?auto=1
 
 ## 通常確認URL
 
-https://cichlid528.github.io/mie-fishing-map/?v=63-fullscreen-map
+https://cichlid528.github.io/mie-fishing-map/?v=64-hard-fullscreen
 
 ## コミットメッセージ
 
-feat: feat: マップを全画面表示に変更
+fix: 地図を完全全画面表示に固定
