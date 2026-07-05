@@ -5,16 +5,25 @@
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
   const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
   const BACKGROUND_STORAGE_KEY = "mie-fishing-map-sidebar-background-v1";
-  const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v59";
+  const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v60";
   const LEGACY_SINGLE_KEY = "mieFishingMap.v1";
 
-  // v59: 三重県を囲む緑の枠線を削除。
+  // v60: 国土地理院の標準地図に陰影起伏図を重ね、三重県全体がきれいに収まる表示に変更。
   // Leafletは [緯度, 経度] の順番。三重県はおおよそ緯度33.7〜35.3、経度135.8〜137.1。
   const MIE_CENTER = [34.6761, 136.5086];
-  const MIE_HOME_ZOOM = 10;
-  const MIE_MIN_ZOOM = 10;
-  const MIE_HOME_BOUNDS = [[33.72, 135.82], [35.28, 137.02]];
-  const MIE_NAV_BOUNDS = [[33.62, 135.72], [35.38, 137.18]];
+  const MIE_HOME_ZOOM = 9;
+  const MIE_MIN_ZOOM = 9;
+  const MIE_HOME_BOUNDS = [[33.70, 135.78], [35.32, 137.08]];
+  const MIE_NAV_BOUNDS = [[33.45, 135.45], [35.55, 137.35]];
+  const MIE_OUTLINE = [
+    [35.26, 136.45], [35.20, 136.60], [35.10, 136.72], [34.98, 136.74],
+    [34.88, 136.66], [34.78, 136.54], [34.66, 136.58], [34.55, 136.72],
+    [34.48, 136.92], [34.36, 136.91], [34.24, 136.80], [34.12, 136.58],
+    [33.96, 136.36], [33.77, 136.17], [33.72, 135.96], [33.86, 135.86],
+    [34.05, 136.00], [34.24, 136.08], [34.42, 136.15], [34.55, 136.08],
+    [34.68, 136.18], [34.78, 136.34], [34.93, 136.43], [35.08, 136.42],
+    [35.20, 136.35], [35.26, 136.45]
+  ];
 
   const seedSpots = [
     { id: "ano-river", name: "安濃川", type: "川", area: "津市・芸濃町周辺", lat: 34.727056, lng: 136.515436, zoom: 13 },
@@ -290,15 +299,26 @@
 
   function resetMieView() {
     if (!map || typeof L === "undefined") return;
-    map.setView(MIE_CENTER, MIE_HOME_ZOOM, { animate: false });
+    map.fitBounds(getMieHomeBounds(), { padding: [10, 10], animate: false });
+    if (map.getZoom() < MIE_MIN_ZOOM) map.setZoom(MIE_MIN_ZOOM, { animate: false });
     map.panInsideBounds(getMieNavBounds(), { animate: false });
   }
 
   function addMieBoundaryLayer() {
     if (!map || typeof L === "undefined") return;
-    L.marker(MIE_CENTER, {
-      interactive: false,
-      icon: L.divIcon({ className: "mie-area-label", html: '<span>三重県マップ</span>', iconSize: [112, 32], iconAnchor: [56, 16] })
+    if (!map.getPane("mieBoundaryPane")) {
+      map.createPane("mieBoundaryPane");
+      map.getPane("mieBoundaryPane").style.zIndex = 430;
+      map.getPane("mieBoundaryPane").style.pointerEvents = "none";
+    }
+    L.polyline(MIE_OUTLINE, {
+      pane: "mieBoundaryPane",
+      color: "#111111",
+      weight: 3,
+      opacity: 0.92,
+      lineJoin: "round",
+      lineCap: "round",
+      interactive: false
     }).addTo(map);
   }
 
@@ -336,11 +356,17 @@
       updateWhenZooming: false,
       attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noopener">国土地理院</a>'
     };
+    const hillshadeOptions = { ...tileOptions, opacity: 0.26, attribution: "" };
 
-    const standardMap = L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png", tileOptions).addTo(map);
-    standardMap.once("load", () => invalidateMapSize(100));
+    const gsiStandardBase = L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png", tileOptions);
+    const gsiHillshade = L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/hillshademap/{z}/{x}/{y}.png", hillshadeOptions);
+    const gsiTerrainMap = L.layerGroup([gsiStandardBase, gsiHillshade]).addTo(map);
+    gsiStandardBase.once("load", () => invalidateMapSize(100));
+
+    const standardMap = L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png", tileOptions);
     const aerialMap = L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg", tileOptions);
-    L.control.layers({ "標準地図": standardMap, "航空写真": aerialMap }, null, { position: "topright" }).addTo(map);
+    L.control.layers({ "地理院地図（地形陰影）": gsiTerrainMap, "標準地図": standardMap, "航空写真": aerialMap }, null, { position: "topright" }).addTo(map);
+    L.control.scale({ imperial: false, metric: true, position: "topleft" }).addTo(map);
     addMieBoundaryLayer();
     map.on("moveend", lockMieView);
     map.on("click", (event) => handleMapClick(event.latlng));
@@ -396,7 +422,7 @@
     if (state.spotMode) state.catchMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v59・緑枠線なし版";
+    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v60・地理院地形図版";
   }
 
   function setCatchMode(value) {
@@ -404,7 +430,7 @@
     if (state.catchMode) state.spotMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v59・緑枠線なし版";
+    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v60・地理院地形図版";
   }
 
   function handleMapClick(latlng) {
@@ -1139,7 +1165,7 @@
     applySidebarBackground(localStorage.getItem(BACKGROUND_STORAGE_KEY) || "");
     render();
     registerServiceWorker();
-    els.dataStatus.textContent = `v59・緑枠線なし / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
+    els.dataStatus.textContent = `v60・地理院地形図 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
   }
 
   init();

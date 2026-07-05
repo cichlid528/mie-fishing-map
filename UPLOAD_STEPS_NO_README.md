@@ -1,6 +1,7 @@
-# v59 緑枠線削除版（READMEは変更しない）
+# v60 国土地理院・地形陰影マップ版（READMEは変更しない）
 
-このZIPには `README.md` は入れていません。既存のREADMEは上書きしないでください。
+このZIPには `README.md` は入れていません。
+既存のREADMEは上書きしないでください。
 
 ## アップロード対象
 
@@ -17,20 +18,16 @@ GitHubリポジトリ直下に、ZIPの中身を上書きしてください。
 - .nojekyll
 - UPLOAD_STEPS_NO_README.md
 
-## 修正内容
-
-- 三重県を囲っていた緑の四角い線を削除
-- 地図の三重県中央表示とキャッシュ停止方針は維持
-- バージョンを `v59-no-green-line` に更新
-
 ## 反映後に最初に開くURL
 
 https://cichlid528.github.io/mie-fishing-map/reset-cache.html?auto=1
 
+このページで古いService Workerとキャッシュを消してから、最新版を開き直します。
+
 ## 通常確認URL
 
-https://cichlid528.github.io/mie-fishing-map/?v=59-no-green-line
+https://cichlid528.github.io/mie-fishing-map/?v=60-gsi-terrain
 
 ## コミットメッセージ
 
-fix: 三重県マップの緑枠線を削除
+feat: 国土地理院の地形陰影マップ表示に変更

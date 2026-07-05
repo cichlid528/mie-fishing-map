@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bass-spot-log-";
-const VERSION = "v59-no-green-line";
+const VERSION = "v60-gsi-terrain";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());
