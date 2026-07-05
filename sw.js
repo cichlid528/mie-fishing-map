@@ -1,10 +1,10 @@
-const CACHE_NAME = "bass-spot-log-v53-mapfix";
+const CACHE_NAME = "bass-spot-log-v54-mie-only";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./reset-cache.html",
-  "./style.css?v=53-mapfix",
-  "./app.js?v=53-mapfix",
+  "./style.css?v=54-mie-only",
+  "./app.js?v=54-mie-only",
   "./manifest.json",
   "./icons/icon-192.png",
   "./icons/icon-512.png",

@@ -1,4 +1,4 @@
-# v53 地図ズレ修正版（READMEは変更しない）
+# v54 三重県限定マップ版（READMEは変更しない）
 
 このZIPには `README.md` は入れていません。
 既存のREADMEは上書きしないでください。
@@ -26,8 +26,14 @@ https://cichlid528.github.io/mie-fishing-map/reset-cache.html?auto=1
 
 ## 通常確認URL
 
-https://cichlid528.github.io/mie-fishing-map/?v=53-mapfix
+https://cichlid528.github.io/mie-fishing-map/?v=54-mie-only
 
 ## コミットメッセージ
 
-fix: 地図ズレを防ぐ位置補正とLeaflet表示を修正
+fix: 地図表示を三重県範囲に限定
+
+## 今回の修正内容
+
+- 地図の初期表示を三重県全体に合わせました。
+- 地図を三重県周辺の範囲外へ大きく移動できないようにしました。
+- 「三重県全体に戻す」ボタンも三重県範囲へ戻るようにしました。

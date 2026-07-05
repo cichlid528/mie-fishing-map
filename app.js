@@ -8,6 +8,8 @@
   const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v53";
   const LEGACY_SINGLE_KEY = "mieFishingMap.v1";
   const MIE_CENTER = [34.6761, 136.5086];
+  // 三重県だけを使うための表示制限範囲。少し余白を入れて、北勢・伊賀・南紀・伊勢志摩まで操作できるようにしています。
+  const MIE_VIEW_BOUNDS = [[33.65, 135.72], [35.35, 137.12]];
 
   const seedSpots = [
     { id: "ano-river", name: "安濃川", type: "川", area: "津市・芸濃町周辺", lat: 34.727056, lng: 136.515436, zoom: 13 },
@@ -257,6 +259,11 @@
     }, delay);
   }
 
+  function resetMieView() {
+    if (!map || typeof L === "undefined") return;
+    map.fitBounds(L.latLngBounds(MIE_VIEW_BOUNDS), { padding: [18, 18], maxZoom: 9, animate: false });
+  }
+
   function initMap() {
     const mapElement = document.getElementById("map");
     if (!mapElement || typeof L === "undefined") {
@@ -268,14 +275,20 @@
       try { map.remove(); } catch (error) {}
     }
 
+    const mieBounds = L.latLngBounds(MIE_VIEW_BOUNDS);
     map = L.map("map", {
       zoomControl: true,
       preferCanvas: true,
       zoomAnimation: false,
       fadeAnimation: false,
-      markerZoomAnimation: false
-    }).setView(MIE_CENTER, 9);
+      markerZoomAnimation: false,
+      minZoom: 8,
+      maxBounds: mieBounds,
+      maxBoundsViscosity: 1.0,
+      worldCopyJump: false
+    });
     map.attributionControl.setPosition("topright");
+    resetMieView();
 
     const tileOptions = {
       maxZoom: 18,
@@ -341,7 +354,7 @@
     if (state.spotMode) state.catchMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v53・地図ズレ修正版";
+    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v54・三重県限定マップ版";
   }
 
   function setCatchMode(value) {
@@ -349,7 +362,7 @@
     if (state.catchMode) state.spotMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v53・地図ズレ修正版";
+    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v54・三重県限定マップ版";
   }
 
   function handleMapClick(latlng) {
@@ -1010,7 +1023,7 @@
       }
     });
 
-    els.resetView.addEventListener("click", () => map.setView(MIE_CENTER, 9));
+    els.resetView.addEventListener("click", resetMieView);
     els.menuToggle.addEventListener("click", openMobileMenu);
     els.closeMenuButton.addEventListener("click", closeMobileMenu);
     els.menuBackdrop.addEventListener("click", closeMobileMenu);
@@ -1067,7 +1080,7 @@
     applySidebarBackground(localStorage.getItem(BACKGROUND_STORAGE_KEY) || "");
     render();
     registerServiceWorker();
-    els.dataStatus.textContent = `v53・地図ズレ修正 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
+    els.dataStatus.textContent = `v54・三重県限定マップ / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
   }
 
   init();
