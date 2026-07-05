@@ -1,4 +1,4 @@
-# v61 指定画像クローズアップマップ版（READMEは変更しない）
+# v62 指定画像クローズアップ版（READMEは変更しない）
 
 このZIPには `README.md` は入れていません。
 既存のREADMEは上書きしないでください。
@@ -14,7 +14,7 @@ GitHubリポジトリ直下に、ZIPの中身を上書きしてください。
 - sw.js
 - pwa-install.js
 - reset-cache.html
-- mie-map-gsi-closeup.png
+- mie-map-reference-clean.png
 - icons/
 - .nojekyll
 - UPLOAD_STEPS_NO_README.md
@@ -23,12 +23,10 @@ GitHubリポジトリ直下に、ZIPの中身を上書きしてください。
 
 https://cichlid528.github.io/mie-fishing-map/reset-cache.html?auto=1
 
-このページで古いService Workerとキャッシュを消してから、最新版を開き直します。
-
 ## 通常確認URL
 
-https://cichlid528.github.io/mie-fishing-map/?v=61-image-closeup
+https://cichlid528.github.io/mie-fishing-map/?v=62-reference-image
 
 ## コミットメッセージ
 
-feat: 指定画像で三重県クローズアップマップを表示
+feat: 指定画像を使った三重県クローズアップマップに変更

@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bass-spot-log-";
-const VERSION = "v61-image-closeup";
+const VERSION = "v62-reference-image";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());

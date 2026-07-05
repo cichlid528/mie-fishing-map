@@ -1,22 +1,23 @@
 (() => {
   "use strict";
 
+  const APP_VERSION = "v62-reference-image";
+
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
   const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
   const BACKGROUND_STORAGE_KEY = "mie-fishing-map-sidebar-background-v1";
-  const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v61";
+  const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v62";
   const LEGACY_SINGLE_KEY = "mieFishingMap.v1";
 
-  // v61: ユーザー指定の国土地理院風スクリーンショット画像を、三重県クローズアップの固定マップとして表示。
-  // Leafletは [緯度, 経度] の順番。画像は三重県が大きく見えるようにトリミング済み。
-  const APP_VERSION = "v61-image-closeup";
-  const MIE_CENTER = [34.55, 136.45];
+  // v62: ユーザー指定の国土地理院スクリーンショットを、三重県クローズアップ固定マップとして表示。
+  // Leafletは [緯度, 経度] の順番。画像はスクリーンショット右側の操作ボタンを切り取り、地図面だけを使う。
+  const MIE_CENTER = [34.45, 136.35];
   const MIE_HOME_ZOOM = 9;
   const MIE_MIN_ZOOM = 8;
-  const MIE_IMAGE_URL = `./mie-map-gsi-closeup.png?${APP_VERSION}`;
-  const MIE_IMAGE_BOUNDS = [[33.714286, 135.654473], [35.325714, 137.053834]];
-  const MIE_HOME_BOUNDS = MIE_IMAGE_BOUNDS;
+  const MIE_IMAGE_URL = `./mie-map-reference-clean.png?${APP_VERSION}`;
+  const MIE_IMAGE_BOUNDS = [[33.46, 135.35], [35.34, 137.14]];
+  const MIE_HOME_BOUNDS = [[33.62, 135.54], [35.27, 137.02]];
   const MIE_NAV_BOUNDS = MIE_IMAGE_BOUNDS;
 
   const seedSpots = [
@@ -293,13 +294,13 @@
 
   function resetMieView() {
     if (!map || typeof L === "undefined") return;
-    map.fitBounds(getMieHomeBounds(), { padding: [10, 10], animate: false });
+    map.fitBounds(getMieHomeBounds(), { padding: [8, 8], animate: false });
     if (map.getZoom() < MIE_MIN_ZOOM) map.setZoom(MIE_MIN_ZOOM, { animate: false });
     map.panInsideBounds(getMieNavBounds(), { animate: false });
   }
 
   function addMieBoundaryLayer() {
-    // v61: 三重県の黒い輪郭は画像に含める。Leaflet側では追加の囲い線を描かない。
+    // v62: 三重県の黒い輪郭は画像に含まれているため、Leaflet側では線やラベルを追加しない。
   }
 
   function initMap() {
@@ -335,8 +336,7 @@
       attribution: '<a href="https://maps.gsi.go.jp/" target="_blank" rel="noopener">国土地理院</a>'
     }).addTo(map);
     baseImage.once("load", () => invalidateMapSize(100));
-    map.attributionControl.addAttribution("画像ベースの三重県クローズアップマップ");
-    L.control.scale({ imperial: false, metric: true, position: "topleft" }).addTo(map);
+    map.attributionControl.addAttribution("指定画像ベースの三重県クローズアップマップ");
     addMieBoundaryLayer();
     map.on("moveend", lockMieView);
     map.on("click", (event) => handleMapClick(event.latlng));
@@ -392,7 +392,7 @@
     if (state.spotMode) state.catchMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v61・画像クローズアップ版";
+    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v62・指定画像マップ";
   }
 
   function setCatchMode(value) {
@@ -400,7 +400,7 @@
     if (state.catchMode) state.spotMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v61・画像クローズアップ版";
+    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v62・指定画像マップ";
   }
 
   function handleMapClick(latlng) {
@@ -1135,7 +1135,7 @@
     applySidebarBackground(localStorage.getItem(BACKGROUND_STORAGE_KEY) || "");
     render();
     registerServiceWorker();
-    els.dataStatus.textContent = `v61・画像クローズアップ / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
+    els.dataStatus.textContent = `v62・指定画像マップ / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
   }
 
   init();
