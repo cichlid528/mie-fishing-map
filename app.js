@@ -1,16 +1,16 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v75-menu-photo-readable";
+  const APP_VERSION = "v76-popout-panels";
 
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
   const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
   const BACKGROUND_STORAGE_KEY = "mie-fishing-map-sidebar-background-v1";
-  const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v75";
+  const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v76";
   const LEGACY_SINGLE_KEY = "mieFishingMap.v1";
 
-  // v75: メニュー背景写真を見やすく調整。地図切替は「標準地図」「航空写真」のみ。
+  // v75: メニュー内ボタンから開く画面をポップアウト表示に修正。地図切替は「標準地図」「航空写真」のみ。
   const MIE_CENTER = [34.55, 136.48];
   const MIE_HOME_ZOOM = 9;
   const MAP_MIN_ZOOM = 5;
@@ -397,7 +397,7 @@
     if (state.spotMode) state.catchMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v75・背景写真を見やすく調整";
+    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v76・ポップアウト表示";
   }
 
   function setCatchMode(value) {
@@ -405,7 +405,7 @@
     if (state.catchMode) state.spotMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v75・背景写真を見やすく調整";
+    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v76・ポップアウト表示";
   }
 
   function handleMapClick(latlng) {
@@ -615,8 +615,27 @@
     return best;
   }
 
-  function openPanel(panel) { panel.classList.add("is-open"); panel.setAttribute("aria-hidden", "false"); }
-  function closePanel(panel) { panel.classList.remove("is-open"); panel.setAttribute("aria-hidden", "true"); }
+  function openPanel(panel) {
+    if (!panel) return;
+    // v76: スマホのメニュー上から開いた時は、先にメニューを閉じてポップアウト画面を最前面に出す。
+    try {
+      if (els.mobileMenu?.classList.contains("is-open")) closeMobileMenu();
+    } catch (error) {}
+    document.body.classList.add("panel-open");
+    panel.classList.add("is-open");
+    panel.setAttribute("aria-hidden", "false");
+    const firstInput = panel.querySelector("input, select, textarea, button");
+    window.setTimeout(() => { try { firstInput?.focus?.({ preventScroll: true }); } catch (error) {} }, 80);
+  }
+
+  function closePanel(panel) {
+    if (!panel) return;
+    panel.classList.remove("is-open");
+    panel.setAttribute("aria-hidden", "true");
+    window.setTimeout(() => {
+      if (!document.querySelector(".catch-panel.is-open")) document.body.classList.remove("panel-open");
+    }, 0);
+  }
 
   function openSpotPanel(id = null, latlng = null) {
     const spot = id ? state.spots.find((s) => s.id === id) : null;
@@ -1149,7 +1168,7 @@
     window.addEventListener("load", forceFullscreenLayout);
     window.addEventListener("resize", forceFullscreenLayout);
     registerServiceWorker();
-    els.dataStatus.textContent = `v75・背景写真を見やすく調整 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
+    els.dataStatus.textContent = `v76・ポップアウト表示 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
   }
 
   init();

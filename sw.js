@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bass-spot-log-";
-const VERSION = "v75-menu-photo-readable";
+const VERSION = "v76-popout-panels";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());
