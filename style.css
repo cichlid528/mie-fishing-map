@@ -249,7 +249,7 @@ textarea { resize: vertical; }
 }
 
 
-/* v64 hard fullscreen override: PCでもスマホでも地図を画面いっぱいに固定する */
+/* v65 GSI live fullscreen override: PCでもスマホでも地図を画面いっぱいに固定する */
 html, body {
   width: 100% !important;
   height: 100% !important;

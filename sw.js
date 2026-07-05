@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bass-spot-log-";
-const VERSION = "v64-hard-fullscreen";
+const VERSION = "v65-gsi-live-fullscreen";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());

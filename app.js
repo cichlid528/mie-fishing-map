@@ -1,24 +1,22 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v64-hard-fullscreen";
+  const APP_VERSION = "v65-gsi-live-fullscreen";
 
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
   const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
   const BACKGROUND_STORAGE_KEY = "mie-fishing-map-sidebar-background-v1";
-  const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v64";
+  const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v65";
   const LEGACY_SINGLE_KEY = "mieFishingMap.v1";
 
-  // v64: ユーザー指定画像の三重県マップを、画面全体に固定表示。
-  // Leafletは [緯度, 経度] の順番。画像はスクリーンショット右側の操作ボタンを切り取り、地図面だけを使う。
-  const MIE_CENTER = [34.45, 136.35];
+  // v65: 静止画像をやめ、国土地理院の地理院タイルを直接読み込む全画面マップ。
+  // Leafletは [緯度, 経度] の順番。三重県全体が自然に入る範囲へ初期表示する。
+  const MIE_CENTER = [34.55, 136.48];
   const MIE_HOME_ZOOM = 9;
   const MIE_MIN_ZOOM = 8;
-  const MIE_IMAGE_URL = `./mie-map-reference-clean.png?${APP_VERSION}`;
-  const MIE_IMAGE_BOUNDS = [[33.46, 135.35], [35.34, 137.14]];
-  const MIE_HOME_BOUNDS = [[33.62, 135.54], [35.27, 137.02]];
-  const MIE_NAV_BOUNDS = MIE_IMAGE_BOUNDS;
+  const MIE_HOME_BOUNDS = [[33.72, 135.78], [35.30, 137.08]];
+  const MIE_NAV_BOUNDS = [[33.50, 135.55], [35.52, 137.32]];
 
   const seedSpots = [
     { id: "ano-river", name: "安濃川", type: "川", area: "津市・芸濃町周辺", lat: 34.727056, lng: 136.515436, zoom: 13 },
@@ -300,7 +298,7 @@
   }
 
   function addMieBoundaryLayer() {
-    // v64: 三重県の黒い輪郭は画像に含まれているため、Leaflet側では線やラベルを追加しない。
+    // v65: 国土地理院タイルをそのまま表示するため、Leaflet側では県境線やラベルを追加しない。
   }
 
 
@@ -353,14 +351,34 @@
     }).setView(MIE_CENTER, MIE_HOME_ZOOM);
     map.attributionControl.setPosition("topright");
 
-    const imageBounds = L.latLngBounds(MIE_IMAGE_BOUNDS);
-    const baseImage = L.imageOverlay(MIE_IMAGE_URL, imageBounds, {
-      opacity: 1,
-      interactive: false,
-      attribution: '<a href="https://maps.gsi.go.jp/" target="_blank" rel="noopener">国土地理院</a>'
+    const tileOptions = {
+      maxZoom: 18,
+      noWrap: true,
+      keepBuffer: 2,
+      updateWhenIdle: true,
+      updateWhenZooming: false,
+      attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noopener">国土地理院</a>'
+    };
+
+    const standardMap = L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png", tileOptions).addTo(map);
+    standardMap.once("load", () => invalidateMapSize(100));
+    const paleMap = L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png", tileOptions);
+    const aerialMap = L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg", tileOptions);
+    const hillshadeMap = L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/hillshademap/{z}/{x}/{y}.png", {
+      ...tileOptions,
+      opacity: 0.30
     }).addTo(map);
-    baseImage.once("load", () => invalidateMapSize(100));
-    map.attributionControl.addAttribution("指定画像ベースの三重県全画面マップ");
+
+    L.control.layers(
+      {
+        "標準地図（国土地理院）": standardMap,
+        "淡色地図（国土地理院）": paleMap,
+        "航空写真（国土地理院）": aerialMap
+      },
+      { "陰影起伏図を重ねる": hillshadeMap },
+      { position: "topright" }
+    ).addTo(map);
+    map.attributionControl.addAttribution("国土地理院ライブタイル");
     addMieBoundaryLayer();
     map.on("moveend", lockMieView);
     map.on("click", (event) => handleMapClick(event.latlng));
@@ -416,7 +434,7 @@
     if (state.spotMode) state.catchMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v64・完全全画面マップ";
+    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v65・国土地理院ライブマップ";
   }
 
   function setCatchMode(value) {
@@ -424,7 +442,7 @@
     if (state.catchMode) state.spotMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v64・完全全画面マップ";
+    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v65・国土地理院ライブマップ";
   }
 
   function handleMapClick(latlng) {
@@ -1163,7 +1181,7 @@
     window.addEventListener("load", forceFullscreenLayout);
     window.addEventListener("resize", forceFullscreenLayout);
     registerServiceWorker();
-    els.dataStatus.textContent = `v64・完全全画面マップ / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
+    els.dataStatus.textContent = `v65・国土地理院ライブマップ / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
   }
 
   init();
