@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bass-spot-log-";
-const VERSION = "v62-reference-image";
+const VERSION = "v63-fullscreen-map";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());

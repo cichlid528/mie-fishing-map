@@ -1,16 +1,16 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v62-reference-image";
+  const APP_VERSION = "v63-fullscreen-map";
 
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
   const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
   const BACKGROUND_STORAGE_KEY = "mie-fishing-map-sidebar-background-v1";
-  const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v62";
+  const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v63";
   const LEGACY_SINGLE_KEY = "mieFishingMap.v1";
 
-  // v62: ユーザー指定の国土地理院スクリーンショットを、三重県クローズアップ固定マップとして表示。
+  // v63: ユーザー指定画像の三重県マップを、画面全体に固定表示。
   // Leafletは [緯度, 経度] の順番。画像はスクリーンショット右側の操作ボタンを切り取り、地図面だけを使う。
   const MIE_CENTER = [34.45, 136.35];
   const MIE_HOME_ZOOM = 9;
@@ -300,7 +300,7 @@
   }
 
   function addMieBoundaryLayer() {
-    // v62: 三重県の黒い輪郭は画像に含まれているため、Leaflet側では線やラベルを追加しない。
+    // v63: 三重県の黒い輪郭は画像に含まれているため、Leaflet側では線やラベルを追加しない。
   }
 
   function initMap() {
@@ -336,7 +336,7 @@
       attribution: '<a href="https://maps.gsi.go.jp/" target="_blank" rel="noopener">国土地理院</a>'
     }).addTo(map);
     baseImage.once("load", () => invalidateMapSize(100));
-    map.attributionControl.addAttribution("指定画像ベースの三重県クローズアップマップ");
+    map.attributionControl.addAttribution("指定画像ベースの三重県全画面マップ");
     addMieBoundaryLayer();
     map.on("moveend", lockMieView);
     map.on("click", (event) => handleMapClick(event.latlng));
@@ -392,7 +392,7 @@
     if (state.spotMode) state.catchMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v62・指定画像マップ";
+    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v63・全画面マップ";
   }
 
   function setCatchMode(value) {
@@ -400,7 +400,7 @@
     if (state.catchMode) state.spotMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v62・指定画像マップ";
+    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v63・全画面マップ";
   }
 
   function handleMapClick(latlng) {
@@ -1135,7 +1135,7 @@
     applySidebarBackground(localStorage.getItem(BACKGROUND_STORAGE_KEY) || "");
     render();
     registerServiceWorker();
-    els.dataStatus.textContent = `v62・指定画像マップ / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
+    els.dataStatus.textContent = `v63・全画面マップ / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
   }
 
   init();

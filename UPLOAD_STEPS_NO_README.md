@@ -1,4 +1,4 @@
-# v62 指定画像クローズアップ版（READMEは変更しない）
+# v63 全画面マップ版（READMEは変更しない）
 
 このZIPには `README.md` は入れていません。
 既存のREADMEは上書きしないでください。
@@ -25,8 +25,8 @@ https://cichlid528.github.io/mie-fishing-map/reset-cache.html?auto=1
 
 ## 通常確認URL
 
-https://cichlid528.github.io/mie-fishing-map/?v=62-reference-image
+https://cichlid528.github.io/mie-fishing-map/?v=63-fullscreen-map
 
 ## コミットメッセージ
 
-feat: 指定画像を使った三重県クローズアップマップに変更
+feat: feat: マップを全画面表示に変更
