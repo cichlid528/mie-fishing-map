@@ -1,4 +1,4 @@
-# v66 ボタン視認性修正版（READMEは変更しない）
+# v67 操作ボタン前面修正版（READMEは変更しない）
 
 このZIPには `README.md` は入れていません。
 既存のREADMEは上書きしないでください。
@@ -22,12 +22,10 @@ GitHubリポジトリ直下に、ZIPの中身を上書きしてください。
 
 https://cichlid528.github.io/mie-fishing-map/reset-cache.html?auto=1
 
-このページで古いService Workerとキャッシュを消してから、最新版を開き直します。
-
 ## 通常確認URL
 
-https://cichlid528.github.io/mie-fishing-map/?v=66-visible-buttons
+https://cichlid528.github.io/mie-fishing-map/?v=67-ui-above-map
 
 ## コミットメッセージ
 
-fix: 全画面マップ上の操作ボタンを見やすく修正
+fix: 操作ボタンを地図より前面に固定

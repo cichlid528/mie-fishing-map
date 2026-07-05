@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bass-spot-log-";
-const VERSION = "v66-visible-buttons";
+const VERSION = "v67-ui-above-map";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());
