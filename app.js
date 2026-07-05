@@ -1,17 +1,16 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v68-gsi-free-map";
+  const APP_VERSION = "v69-menu-gsi-fixed";
 
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
   const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
   const BACKGROUND_STORAGE_KEY = "mie-fishing-map-sidebar-background-v1";
-  const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v68";
+  const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v69";
   const LEGACY_SINGLE_KEY = "mieFishingMap.v1";
 
-  // v68: 国土地理院タイルをそのまま使う。県境固定・移動制限・ズーム固定はしない。
-  // 初期表示だけ三重県周辺に置くが、地図は全国へ自由に移動できる。
+  // v69: 国土地理院の地理院タイルを通常のLeaflet地図として表示。固定範囲なし。
   const MIE_CENTER = [34.55, 136.48];
   const MIE_HOME_ZOOM = 9;
   const MAP_MIN_ZOOM = 5;
@@ -294,26 +293,8 @@
 
 
   function forceFullscreenLayout() {
-    const root = document.querySelector(".app-shell");
-    const pane = document.querySelector(".map-pane");
-    const mapElement = document.getElementById("map");
-    [document.documentElement, document.body, root, pane, mapElement].forEach((el) => {
-      if (!el) return;
-      el.style.setProperty("width", "100vw", "important");
-      el.style.setProperty("height", "100dvh", "important");
-      el.style.setProperty("margin", "0", "important");
-      el.style.setProperty("padding", "0", "important");
-    });
-    if (pane) {
-      pane.style.setProperty("position", "fixed", "important");
-      pane.style.setProperty("inset", "0", "important");
-    }
-    if (mapElement) {
-      mapElement.style.setProperty("position", "absolute", "important");
-      mapElement.style.setProperty("inset", "0", "important");
-    }
-    invalidateMapSize(0);
-    invalidateMapSize(250);
+    // v69: 全画面強制レイアウトは廃止。CSSの通常レイアウトに任せる。
+    invalidateMapSize(120);
   }
 
   function initMap() {
@@ -337,7 +318,8 @@
       worldCopyJump: false,
       bounceAtZoomLimits: false
     }).setView(MIE_CENTER, MIE_HOME_ZOOM);
-    map.attributionControl.setPosition("topright");
+    map.attributionControl.setPosition("bottomright");
+    map.attributionControl.setPrefix("");
 
     const tileOptions = {
       maxZoom: 18,
@@ -345,7 +327,7 @@
       keepBuffer: 2,
       updateWhenIdle: true,
       updateWhenZooming: false,
-      attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noopener">国土地理院</a>'
+      attribution: '地図: <a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noopener">国土地理院（地理院タイル）</a>'
     };
 
     const standardMap = L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png", tileOptions).addTo(map);
@@ -359,14 +341,14 @@
 
     L.control.layers(
       {
-        "標準地図（国土地理院）": standardMap,
-        "淡色地図（国土地理院）": paleMap,
-        "航空写真（国土地理院）": aerialMap
+        "国土地理院 標準地図": standardMap,
+        "国土地理院 淡色地図": paleMap,
+        "国土地理院 航空写真": aerialMap
       },
-      { "陰影起伏図を重ねる": hillshadeMap },
+      { "国土地理院 陰影起伏図": hillshadeMap },
       { position: "topright" }
     ).addTo(map);
-    map.attributionControl.addAttribution("国土地理院ライブタイル");
+    
     addMieBoundaryLayer();
     map.on("click", (event) => handleMapClick(event.latlng));
 
@@ -421,7 +403,7 @@
     if (state.spotMode) state.catchMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v68・国土地理院フリーマップ";
+    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v69・国土地理院マップ";
   }
 
   function setCatchMode(value) {
@@ -429,7 +411,7 @@
     if (state.catchMode) state.spotMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v68・国土地理院フリーマップ";
+    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v69・国土地理院マップ";
   }
 
   function handleMapClick(latlng) {
@@ -1108,7 +1090,9 @@
     });
 
     els.resetView.addEventListener("click", resetMieView);
-    els.menuToggle.addEventListener("click", openMobileMenu);
+    els.menuToggle.addEventListener("click", () => {
+      if (els.mobileMenu.classList.contains("is-open")) closeMobileMenu(); else openMobileMenu();
+    });
     els.closeMenuButton.addEventListener("click", closeMobileMenu);
     els.menuBackdrop.addEventListener("click", closeMobileMenu);
     els.locateCatchButton.addEventListener("click", () => useCurrentLocationForCatch(true));
@@ -1168,7 +1152,7 @@
     window.addEventListener("load", forceFullscreenLayout);
     window.addEventListener("resize", forceFullscreenLayout);
     registerServiceWorker();
-    els.dataStatus.textContent = `v68・国土地理院フリーマップ / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
+    els.dataStatus.textContent = `v69・国土地理院マップ / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
   }
 
   init();

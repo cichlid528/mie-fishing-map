@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bass-spot-log-";
-const VERSION = "v68-gsi-free-map";
+const VERSION = "v69-menu-gsi-fixed";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());

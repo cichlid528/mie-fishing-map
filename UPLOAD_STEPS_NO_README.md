@@ -1,27 +1,26 @@
-# v68 アップロード手順（READMEなし）
+# v69 アップロード手順（READMEなし）
 
-このZIPは、国土地理院タイルを直接使うフリーマップ版です。
-三重県固定・移動制限・ズーム固定・県境枠線は入れていません。
+今回の目的:
+- PCでは左メニューを常時表示して、検索・絞り込み・一覧・バックアップ等を全部使えるように戻す
+- スマホでは「☰ メニュー」で開く引き出し式を維持
+- 全画面固定CSSと強制z-indexを整理して、地図がメニューを隠さないようにする
+- 国土地理院の表記を「地図: 国土地理院（地理院タイル）」に修正
+- 地図は国土地理院の地理院タイルを直接使用し、三重県固定・移動制限はしない
 
-## 手順
+## アップロード
 
-1. ZIPを展開します。
-2. 中身を GitHub リポジトリ `cichlid528/mie-fishing-map` のルートへ上書きアップロードします。
-3. 画像ファイルの追加は不要です。
-4. アップロード後、まず下記を開いて古いキャッシュを消します。
+このZIPの中身を、GitHubリポジトリ `cichlid528/mie-fishing-map` のルートに上書きしてください。
 
-```text
+## 反映確認
+
+最初に開くURL:
+
 https://cichlid528.github.io/mie-fishing-map/reset-cache.html?auto=1
-```
 
-5. 通常確認URLです。
+通常確認URL:
 
-```text
-https://cichlid528.github.io/mie-fishing-map/?v=v68-gsi-free-map
-```
+https://cichlid528.github.io/mie-fishing-map/?v=v69-menu-gsi-fixed
 
 ## コミット案
 
-```text
-fix: 国土地理院の自由操作マップに戻す
-```
+fix: メニュー表示と国土地理院表記を修正
