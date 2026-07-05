@@ -1,29 +1,20 @@
 (() => {
   "use strict";
 
+  const APP_VERSION = "v68-gsi-free-map";
+
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
   const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
   const BACKGROUND_STORAGE_KEY = "mie-fishing-map-sidebar-background-v1";
-  const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v60";
+  const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v68";
   const LEGACY_SINGLE_KEY = "mieFishingMap.v1";
 
-  // v60: 国土地理院の標準地図に陰影起伏図を重ね、三重県全体がきれいに収まる表示に変更。
-  // Leafletは [緯度, 経度] の順番。三重県はおおよそ緯度33.7〜35.3、経度135.8〜137.1。
-  const MIE_CENTER = [34.6761, 136.5086];
+  // v68: 国土地理院タイルをそのまま使う。県境固定・移動制限・ズーム固定はしない。
+  // 初期表示だけ三重県周辺に置くが、地図は全国へ自由に移動できる。
+  const MIE_CENTER = [34.55, 136.48];
   const MIE_HOME_ZOOM = 9;
-  const MIE_MIN_ZOOM = 9;
-  const MIE_HOME_BOUNDS = [[33.70, 135.78], [35.32, 137.08]];
-  const MIE_NAV_BOUNDS = [[33.45, 135.45], [35.55, 137.35]];
-  const MIE_OUTLINE = [
-    [35.26, 136.45], [35.20, 136.60], [35.10, 136.72], [34.98, 136.74],
-    [34.88, 136.66], [34.78, 136.54], [34.66, 136.58], [34.55, 136.72],
-    [34.48, 136.92], [34.36, 136.91], [34.24, 136.80], [34.12, 136.58],
-    [33.96, 136.36], [33.77, 136.17], [33.72, 135.96], [33.86, 135.86],
-    [34.05, 136.00], [34.24, 136.08], [34.42, 136.15], [34.55, 136.08],
-    [34.68, 136.18], [34.78, 136.34], [34.93, 136.43], [35.08, 136.42],
-    [35.20, 136.35], [35.26, 136.45]
-  ];
+  const MAP_MIN_ZOOM = 5;
 
   const seedSpots = [
     { id: "ano-river", name: "安濃川", type: "川", area: "津市・芸濃町周辺", lat: 34.727056, lng: 136.515436, zoom: 13 },
@@ -274,52 +265,55 @@
   }
 
   function getMieHomeBounds() {
-    return L.latLngBounds(MIE_HOME_BOUNDS);
+    // 互換用。v68では表示範囲の固定には使わない。
+    return typeof L !== "undefined" ? L.latLngBounds([[33.72, 135.78], [35.30, 137.08]]) : null;
   }
 
   function getMieNavBounds() {
-    return L.latLngBounds(MIE_NAV_BOUNDS);
+    // 互換用。v68では移動制限には使わない。
+    return typeof L !== "undefined" ? L.latLngBounds([[33.50, 135.55], [35.52, 137.32]]) : null;
   }
 
   function isInsideMieNavBounds(lat, lng) {
-    if (typeof L === "undefined") return true;
-    return getMieNavBounds().contains(L.latLng(Number(lat), Number(lng)));
+    // v68: 三重県固定を廃止。現在地・登録地点・記録地点を範囲で弾かない。
+    return Number.isFinite(Number(lat)) && Number.isFinite(Number(lng));
   }
 
   function lockMieView() {
-    if (!map || typeof L === "undefined") return;
-    const navBounds = getMieNavBounds();
-    map.setMaxBounds(navBounds);
-    map.setMinZoom(MIE_MIN_ZOOM);
-    if (map.getZoom() < MIE_MIN_ZOOM) map.setZoom(MIE_MIN_ZOOM, { animate: false });
-    if (!navBounds.contains(map.getCenter())) {
-      resetMieView();
-    }
+    // v68: 地図固定なし。Leafletの通常操作に任せる。
   }
 
   function resetMieView() {
     if (!map || typeof L === "undefined") return;
-    map.fitBounds(getMieHomeBounds(), { padding: [10, 10], animate: false });
-    if (map.getZoom() < MIE_MIN_ZOOM) map.setZoom(MIE_MIN_ZOOM, { animate: false });
-    map.panInsideBounds(getMieNavBounds(), { animate: false });
+    map.setView(MIE_CENTER, MIE_HOME_ZOOM, { animate: false });
   }
 
   function addMieBoundaryLayer() {
-    if (!map || typeof L === "undefined") return;
-    if (!map.getPane("mieBoundaryPane")) {
-      map.createPane("mieBoundaryPane");
-      map.getPane("mieBoundaryPane").style.zIndex = 430;
-      map.getPane("mieBoundaryPane").style.pointerEvents = "none";
+    // v68: 県境線や固定枠は描画しない。
+  }
+
+
+  function forceFullscreenLayout() {
+    const root = document.querySelector(".app-shell");
+    const pane = document.querySelector(".map-pane");
+    const mapElement = document.getElementById("map");
+    [document.documentElement, document.body, root, pane, mapElement].forEach((el) => {
+      if (!el) return;
+      el.style.setProperty("width", "100vw", "important");
+      el.style.setProperty("height", "100dvh", "important");
+      el.style.setProperty("margin", "0", "important");
+      el.style.setProperty("padding", "0", "important");
+    });
+    if (pane) {
+      pane.style.setProperty("position", "fixed", "important");
+      pane.style.setProperty("inset", "0", "important");
     }
-    L.polyline(MIE_OUTLINE, {
-      pane: "mieBoundaryPane",
-      color: "#111111",
-      weight: 3,
-      opacity: 0.92,
-      lineJoin: "round",
-      lineCap: "round",
-      interactive: false
-    }).addTo(map);
+    if (mapElement) {
+      mapElement.style.setProperty("position", "absolute", "important");
+      mapElement.style.setProperty("inset", "0", "important");
+    }
+    invalidateMapSize(0);
+    invalidateMapSize(250);
   }
 
   function initMap() {
@@ -333,16 +327,13 @@
       try { map.remove(); } catch (error) {}
     }
 
-    const navBounds = getMieNavBounds();
     map = L.map("map", {
       zoomControl: true,
       preferCanvas: true,
       zoomAnimation: false,
       fadeAnimation: false,
       markerZoomAnimation: false,
-      minZoom: MIE_MIN_ZOOM,
-      maxBounds: navBounds,
-      maxBoundsViscosity: 0.9,
+      minZoom: MAP_MIN_ZOOM,
       worldCopyJump: false,
       bounceAtZoomLimits: false
     }).setView(MIE_CENTER, MIE_HOME_ZOOM);
@@ -350,34 +341,42 @@
 
     const tileOptions = {
       maxZoom: 18,
-      noWrap: true,
+      noWrap: false,
       keepBuffer: 2,
       updateWhenIdle: true,
       updateWhenZooming: false,
       attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noopener">国土地理院</a>'
     };
-    const hillshadeOptions = { ...tileOptions, opacity: 0.26, attribution: "" };
 
-    const gsiStandardBase = L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png", tileOptions);
-    const gsiHillshade = L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/hillshademap/{z}/{x}/{y}.png", hillshadeOptions);
-    const gsiTerrainMap = L.layerGroup([gsiStandardBase, gsiHillshade]).addTo(map);
-    gsiStandardBase.once("load", () => invalidateMapSize(100));
-
-    const standardMap = L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png", tileOptions);
+    const standardMap = L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png", tileOptions).addTo(map);
+    standardMap.once("load", () => invalidateMapSize(100));
+    const paleMap = L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png", tileOptions);
     const aerialMap = L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg", tileOptions);
-    L.control.layers({ "地理院地図（地形陰影）": gsiTerrainMap, "標準地図": standardMap, "航空写真": aerialMap }, null, { position: "topright" }).addTo(map);
-    L.control.scale({ imperial: false, metric: true, position: "topleft" }).addTo(map);
+    const hillshadeMap = L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/hillshademap/{z}/{x}/{y}.png", {
+      ...tileOptions,
+      opacity: 0.30
+    }).addTo(map);
+
+    L.control.layers(
+      {
+        "標準地図（国土地理院）": standardMap,
+        "淡色地図（国土地理院）": paleMap,
+        "航空写真（国土地理院）": aerialMap
+      },
+      { "陰影起伏図を重ねる": hillshadeMap },
+      { position: "topright" }
+    ).addTo(map);
+    map.attributionControl.addAttribution("国土地理院ライブタイル");
     addMieBoundaryLayer();
-    map.on("moveend", lockMieView);
     map.on("click", (event) => handleMapClick(event.latlng));
 
-    map.whenReady(() => { resetMieView(); invalidateMapSize(100); });
+    map.whenReady(() => { invalidateMapSize(100); });
     invalidateMapSize(0);
     invalidateMapSize(250);
     invalidateMapSize(800);
-    window.addEventListener("resize", () => { invalidateMapSize(120); window.setTimeout(lockMieView, 180); });
-    window.addEventListener("orientationchange", () => { invalidateMapSize(450); window.setTimeout(lockMieView, 520); });
-    document.addEventListener("visibilitychange", () => { if (!document.hidden) { invalidateMapSize(200); window.setTimeout(lockMieView, 260); } });
+    window.addEventListener("resize", () => invalidateMapSize(120));
+    window.addEventListener("orientationchange", () => invalidateMapSize(450));
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) invalidateMapSize(200); });
   }
 
   function markerClass(type) {
@@ -422,7 +421,7 @@
     if (state.spotMode) state.catchMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v60・地理院地形図版";
+    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v68・国土地理院フリーマップ";
   }
 
   function setCatchMode(value) {
@@ -430,7 +429,7 @@
     if (state.catchMode) state.spotMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v60・地理院地形図版";
+    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v68・国土地理院フリーマップ";
   }
 
   function handleMapClick(latlng) {
@@ -1159,13 +1158,17 @@
 
   function init() {
     initEls();
+    forceFullscreenLayout();
     loadState();
     initMap();
     bindEvents();
     applySidebarBackground(localStorage.getItem(BACKGROUND_STORAGE_KEY) || "");
     render();
+    forceFullscreenLayout();
+    window.addEventListener("load", forceFullscreenLayout);
+    window.addEventListener("resize", forceFullscreenLayout);
     registerServiceWorker();
-    els.dataStatus.textContent = `v60・地理院地形図 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
+    els.dataStatus.textContent = `v68・国土地理院フリーマップ / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
   }
 
   init();

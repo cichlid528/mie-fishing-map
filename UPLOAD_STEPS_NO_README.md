@@ -1,33 +1,27 @@
-# v60 国土地理院・地形陰影マップ版（READMEは変更しない）
+# v68 アップロード手順（READMEなし）
 
-このZIPには `README.md` は入れていません。
-既存のREADMEは上書きしないでください。
+このZIPは、国土地理院タイルを直接使うフリーマップ版です。
+三重県固定・移動制限・ズーム固定・県境枠線は入れていません。
 
-## アップロード対象
+## 手順
 
-GitHubリポジトリ直下に、ZIPの中身を上書きしてください。
+1. ZIPを展開します。
+2. 中身を GitHub リポジトリ `cichlid528/mie-fishing-map` のルートへ上書きアップロードします。
+3. 画像ファイルの追加は不要です。
+4. アップロード後、まず下記を開いて古いキャッシュを消します。
 
-- index.html
-- style.css
-- app.js
-- manifest.json
-- sw.js
-- pwa-install.js
-- reset-cache.html
-- icons/
-- .nojekyll
-- UPLOAD_STEPS_NO_README.md
-
-## 反映後に最初に開くURL
-
+```text
 https://cichlid528.github.io/mie-fishing-map/reset-cache.html?auto=1
+```
 
-このページで古いService Workerとキャッシュを消してから、最新版を開き直します。
+5. 通常確認URLです。
 
-## 通常確認URL
+```text
+https://cichlid528.github.io/mie-fishing-map/?v=v68-gsi-free-map
+```
 
-https://cichlid528.github.io/mie-fishing-map/?v=60-gsi-terrain
+## コミット案
 
-## コミットメッセージ
-
-feat: 国土地理院の地形陰影マップ表示に変更
+```text
+fix: 国土地理院の自由操作マップに戻す
+```

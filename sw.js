@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bass-spot-log-";
-const VERSION = "v60-gsi-terrain";
+const VERSION = "v68-gsi-free-map";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());

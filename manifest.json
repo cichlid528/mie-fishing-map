@@ -1,8 +1,8 @@
 {
   "name": "三重県釣りマップ",
   "short_name": "釣りマップ",
-  "description": "三重県の釣り場と釣果を記録するアプリ。v60・国土地理院の地形陰影マップ対応版。",
-  "start_url": "./index.html?v=59-no-green-line",
+  "description": "国土地理院の地図を自由に動かしながら、釣り場と釣果を記録するアプリ。国土地理院ライブを使った三重県クローズアップマップ版。",
+  "start_url": "./index.html?v=v68-gsi-free-map",
   "scope": "./",
   "display": "standalone",
   "theme_color": "#0f7b63",
