@@ -1,4 +1,4 @@
-# v60 国土地理院・地形陰影マップ版（READMEは変更しない）
+# v61 指定画像クローズアップマップ版（READMEは変更しない）
 
 このZIPには `README.md` は入れていません。
 既存のREADMEは上書きしないでください。
@@ -14,6 +14,7 @@ GitHubリポジトリ直下に、ZIPの中身を上書きしてください。
 - sw.js
 - pwa-install.js
 - reset-cache.html
+- mie-map-gsi-closeup.png
 - icons/
 - .nojekyll
 - UPLOAD_STEPS_NO_README.md
@@ -26,8 +27,8 @@ https://cichlid528.github.io/mie-fishing-map/reset-cache.html?auto=1
 
 ## 通常確認URL
 
-https://cichlid528.github.io/mie-fishing-map/?v=60-gsi-terrain
+https://cichlid528.github.io/mie-fishing-map/?v=61-image-closeup
 
 ## コミットメッセージ
 
-feat: 国土地理院の地形陰影マップ表示に変更
+feat: 指定画像で三重県クローズアップマップを表示
