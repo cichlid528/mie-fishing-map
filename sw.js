@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bass-spot-log-";
-const VERSION = "v58-nocache-mie";
+const VERSION = "v59-no-green-line";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());

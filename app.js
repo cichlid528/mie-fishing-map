@@ -5,10 +5,10 @@
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
   const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
   const BACKGROUND_STORAGE_KEY = "mie-fishing-map-sidebar-background-v1";
-  const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v58";
+  const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v59";
   const LEGACY_SINGLE_KEY = "mieFishingMap.v1";
 
-  // v58: Service Workerキャッシュを止め、三重県中央を固定表示。
+  // v59: 三重県を囲む緑の枠線を削除。
   // Leafletは [緯度, 経度] の順番。三重県はおおよそ緯度33.7〜35.3、経度135.8〜137.1。
   const MIE_CENTER = [34.6761, 136.5086];
   const MIE_HOME_ZOOM = 10;
@@ -296,14 +296,6 @@
 
   function addMieBoundaryLayer() {
     if (!map || typeof L === "undefined") return;
-    const home = getMieHomeBounds();
-    L.rectangle(home, {
-      color: "#0f7b63",
-      weight: 2,
-      opacity: 0.55,
-      fill: false,
-      interactive: false
-    }).addTo(map);
     L.marker(MIE_CENTER, {
       interactive: false,
       icon: L.divIcon({ className: "mie-area-label", html: '<span>三重県マップ</span>', iconSize: [112, 32], iconAnchor: [56, 16] })
@@ -404,7 +396,7 @@
     if (state.spotMode) state.catchMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v58・三重県マップ修正版";
+    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v59・緑枠線なし版";
   }
 
   function setCatchMode(value) {
@@ -412,7 +404,7 @@
     if (state.catchMode) state.spotMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v58・三重県マップ修正版";
+    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v59・緑枠線なし版";
   }
 
   function handleMapClick(latlng) {
@@ -1147,7 +1139,7 @@
     applySidebarBackground(localStorage.getItem(BACKGROUND_STORAGE_KEY) || "");
     render();
     registerServiceWorker();
-    els.dataStatus.textContent = `v58・三重県マップ修正 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
+    els.dataStatus.textContent = `v59・緑枠線なし / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
   }
 
   init();

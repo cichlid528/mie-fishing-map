@@ -1,4 +1,4 @@
-# v58 キャッシュ停止・三重県固定表示版（READMEは変更しない）
+# v59 緑枠線削除版（READMEは変更しない）
 
 このZIPには `README.md` は入れていません。既存のREADMEは上書きしないでください。
 
@@ -17,10 +17,11 @@ GitHubリポジトリ直下に、ZIPの中身を上書きしてください。
 - .nojekyll
 - UPLOAD_STEPS_NO_README.md
 
-## 重要
+## 修正内容
 
-今回の版は、古いService Workerキャッシュが地図を壊す可能性を潰すため、アプリシェルのService Workerキャッシュを停止します。
-釣果・追加釣り場・写真・背景画像などの localStorage は消しません。
+- 三重県を囲っていた緑の四角い線を削除
+- 地図の三重県中央表示とキャッシュ停止方針は維持
+- バージョンを `v59-no-green-line` に更新
 
 ## 反映後に最初に開くURL
 
@@ -28,8 +29,8 @@ https://cichlid528.github.io/mie-fishing-map/reset-cache.html?auto=1
 
 ## 通常確認URL
 
-https://cichlid528.github.io/mie-fishing-map/?v=58-nocache-mie
+https://cichlid528.github.io/mie-fishing-map/?v=59-no-green-line
 
 ## コミットメッセージ
 
-fix: 古いキャッシュを停止して三重県マップ表示を固定
+fix: 三重県マップの緑枠線を削除
