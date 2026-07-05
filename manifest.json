@@ -1,16 +1,43 @@
 {
   "name": "三重県釣りマップ",
   "short_name": "釣りマップ",
-  "description": "三重県の釣り場と釣果を記録するアプリ。野池バス分析項目に対応。",
-  "start_url": "./index.html",
+  "description": "三重県の釣り場と釣果を記録するアプリ。地図表示復旧版。",
+  "start_url": "./index.html?v=46-mapfix",
   "scope": "./",
   "display": "standalone",
   "theme_color": "#0f7b63",
   "background_color": "#f8faf8",
   "orientation": "any",
   "icons": [
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "id": "/mie-fishing-map/",
+  "display_override": [
+    "standalone",
+    "minimal-ui",
+    "browser"
+  ],
+  "prefer_related_applications": false,
+  "categories": [
+    "sports",
+    "navigation",
+    "utilities"
   ]
 }

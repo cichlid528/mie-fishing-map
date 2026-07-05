@@ -236,19 +236,52 @@
     els.fishingFields = [...document.querySelectorAll(".fishing-field")];
   }
 
+  function invalidateMapSize(delay = 0) {
+    if (!map) return;
+    window.setTimeout(() => {
+      try { map.invalidateSize({ animate: false }); } catch (error) {}
+    }, delay);
+  }
+
   function initMap() {
-    map = L.map("map", { zoomControl: true, preferCanvas: true }).setView(MIE_CENTER, 9);
+    const mapElement = document.getElementById("map");
+    if (!mapElement || typeof L === "undefined") {
+      if (els.dataStatus) els.dataStatus.textContent = "地図ライブラリを読み込めませんでした。通信状態を確認して再読み込みしてください。";
+      return;
+    }
+
+    if (map) {
+      try { map.remove(); } catch (error) {}
+    }
+
+    map = L.map("map", {
+      zoomControl: true,
+      preferCanvas: true,
+      zoomAnimation: false,
+      fadeAnimation: false,
+      markerZoomAnimation: false
+    }).setView(MIE_CENTER, 9);
     map.attributionControl.setPosition("topright");
-    const standardMap = L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png", {
+
+    const tileOptions = {
       maxZoom: 18,
+      keepBuffer: 2,
+      updateWhenIdle: true,
+      updateWhenZooming: false,
       attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noopener">国土地理院</a>'
-    }).addTo(map);
-    const aerialMap = L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg", {
-      maxZoom: 18,
-      attribution: '<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noopener">国土地理院</a>'
-    });
+    };
+
+    const standardMap = L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png", tileOptions).addTo(map);
+    const aerialMap = L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg", tileOptions);
     L.control.layers({ "標準地図": standardMap, "航空写真": aerialMap }, null, { position: "topright" }).addTo(map);
     map.on("click", (event) => handleMapClick(event.latlng));
+
+    invalidateMapSize(0);
+    invalidateMapSize(250);
+    invalidateMapSize(800);
+    window.addEventListener("resize", () => invalidateMapSize(120));
+    window.addEventListener("orientationchange", () => invalidateMapSize(450));
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) invalidateMapSize(200); });
   }
 
   function markerClass(type) {
@@ -293,7 +326,7 @@
     if (state.spotMode) state.catchMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v44・野池バス分析項目対応";
+    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v46・地図表示復旧版";
   }
 
   function setCatchMode(value) {
@@ -301,7 +334,7 @@
     if (state.catchMode) state.spotMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v44・野池バス分析項目対応";
+    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v46・地図表示復旧版";
   }
 
   function handleMapClick(latlng) {
@@ -877,8 +910,19 @@
     reader.readAsText(file);
   }
 
-  function openMobileMenu() { els.mobileMenu.classList.add("is-open"); els.menuBackdrop.classList.add("is-open"); els.menuToggle.setAttribute("aria-expanded", "true"); }
-  function closeMobileMenu() { els.mobileMenu.classList.remove("is-open"); els.menuBackdrop.classList.remove("is-open"); els.menuToggle.setAttribute("aria-expanded", "false"); }
+  function openMobileMenu() {
+    els.mobileMenu.classList.add("is-open");
+    els.menuBackdrop.classList.add("is-open");
+    els.menuToggle.setAttribute("aria-expanded", "true");
+    invalidateMapSize(260);
+  }
+
+  function closeMobileMenu() {
+    els.mobileMenu.classList.remove("is-open");
+    els.menuBackdrop.classList.remove("is-open");
+    els.menuToggle.setAttribute("aria-expanded", "false");
+    invalidateMapSize(260);
+  }
 
   function openInstallPanel(message = "") {
     updateInstallStatus(message);
@@ -992,7 +1036,7 @@
   function registerServiceWorker() {
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=46-mapfix", { scope: "./" }).then((registration) => registration.update?.()).catch(() => {});
       });
     }
   }
@@ -1005,7 +1049,7 @@
     applySidebarBackground(localStorage.getItem(BACKGROUND_STORAGE_KEY) || "");
     render();
     registerServiceWorker();
-    els.dataStatus.textContent = `v44・釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
+    els.dataStatus.textContent = `v46・地図復旧 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
   }
 
   init();
