@@ -2,8 +2,8 @@
   "use strict";
   window.__MIE_PWA_INSTALL_MANAGED__ = true;
 
-  const APP_VERSION = "v52-icon-cachefix";
-  const CURRENT_CACHE = "bass-spot-log-v52-icon-cachefix";
+  const APP_VERSION = "v53-mapfix";
+  const CURRENT_CACHE = "bass-spot-log-v53-mapfix";
   const installButton = document.querySelector("#installAppButton");
   const installPanel = document.querySelector("#installPanel");
   const installStatus = document.querySelector("#installStatus");

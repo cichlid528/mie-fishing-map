@@ -5,7 +5,7 @@
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
   const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
   const BACKGROUND_STORAGE_KEY = "mie-fishing-map-sidebar-background-v1";
-  const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v7";
+  const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v53";
   const LEGACY_SINGLE_KEY = "mieFishingMap.v1";
   const MIE_CENTER = [34.6761, 136.5086];
 
@@ -174,9 +174,23 @@
     return value && Number.isFinite(Number(value.lat)) && Number.isFinite(Number(value.lng));
   }
 
+  function isWithinMieBounds(value) {
+    if (!validPosition(value)) return false;
+    const lat = Number(value.lat);
+    const lng = Number(value.lng);
+    return lat >= 33.6 && lat <= 35.4 && lng >= 135.7 && lng <= 137.2;
+  }
+
+  function isSafePositionOverride(spot, override) {
+    if (!isWithinMieBounds(override)) return false;
+    const latDiff = Math.abs(Number(override.lat) - Number(spot.lat));
+    const lngDiff = Math.abs(Number(override.lng) - Number(spot.lng));
+    return Math.hypot(latDiff, lngDiff) <= 0.08;
+  }
+
   function applyPositionOverride(spot) {
     const override = state.positionOverrides[spot.id];
-    if (!validPosition(override)) return spot;
+    if (!isSafePositionOverride(spot, override)) return spot;
     return { ...spot, lat: Number(override.lat), lng: Number(override.lng), positionAdjusted: true };
   }
 
@@ -272,6 +286,7 @@
     };
 
     const standardMap = L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png", tileOptions).addTo(map);
+    standardMap.once("load", () => invalidateMapSize(100));
     const aerialMap = L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg", tileOptions);
     L.control.layers({ "標準地図": standardMap, "航空写真": aerialMap }, null, { position: "topright" }).addTo(map);
     map.on("click", (event) => handleMapClick(event.latlng));
@@ -326,7 +341,7 @@
     if (state.spotMode) state.catchMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v52・アイコン修正版";
+    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v53・地図ズレ修正版";
   }
 
   function setCatchMode(value) {
@@ -334,7 +349,7 @@
     if (state.catchMode) state.spotMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v52・アイコン修正版";
+    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v53・地図ズレ修正版";
   }
 
   function handleMapClick(latlng) {
@@ -456,6 +471,7 @@
   }
 
   function renderSpotMarkers() {
+    if (!map || typeof L === "undefined") return;
     const ids = new Set(state.spots.map((spot) => spot.id));
     markers.forEach((marker, id) => { if (!ids.has(id)) { marker.remove(); markers.delete(id); } });
     state.spots.forEach((spot) => {
@@ -473,6 +489,7 @@
   }
 
   function renderCatchMarkers() {
+    if (!map || typeof L === "undefined") return;
     catchMarkers.forEach((marker) => marker.remove());
     catchMarkers = new Map();
     state.catches.forEach((record, index) => {
@@ -1050,7 +1067,7 @@
     applySidebarBackground(localStorage.getItem(BACKGROUND_STORAGE_KEY) || "");
     render();
     registerServiceWorker();
-    els.dataStatus.textContent = `v52・アイコン修正 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
+    els.dataStatus.textContent = `v53・地図ズレ修正 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
   }
 
   init();
