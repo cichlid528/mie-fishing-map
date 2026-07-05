@@ -2,8 +2,7 @@
   "use strict";
   window.__MIE_PWA_INSTALL_MANAGED__ = true;
 
-  const APP_VERSION = "v56-mie-fixed";
-  const CURRENT_CACHE = "bass-spot-log-v56-mie-fixed";
+  const APP_VERSION = "v58-nocache-mie";
   const installButton = document.querySelector("#installAppButton");
   const installPanel = document.querySelector("#installPanel");
   const installStatus = document.querySelector("#installStatus");
@@ -34,45 +33,25 @@
     installPanel?.setAttribute("aria-hidden", "true");
   }
 
-  async function clearOldCaches() {
-    if (!("caches" in window)) return;
-    const keys = await caches.keys();
-    await Promise.all(keys
-      .filter((key) => key.startsWith("bass-spot-log-") && key !== CURRENT_CACHE)
-      .map((key) => caches.delete(key)));
-  }
-
-  async function registerServiceWorker() {
-    if (!("serviceWorker" in navigator)) {
-      setStatus("このブラウザはアプリ化に必要なService Workerに対応していません。");
-      return;
-    }
-    if (!window.isSecureContext) {
-      setStatus("HTTPSのGitHub Pages URLで開いてください。");
-      return;
-    }
-
+  async function clearOldAppCache() {
     try {
-      await clearOldCaches();
-      const registration = await navigator.serviceWorker.register(`./sw.js?${APP_VERSION}`, { scope: "./" });
-      await registration.update?.();
-      if (isStandalone()) {
-        setStatus("アプリはホーム画面から起動できます。地図が古い場合は一度閉じて開き直してください。");
-      } else if (deferredInstallPrompt) {
-        setStatus("Android / Chromeでは、このボタンからインストールできます。");
-      } else if (isIOS()) {
-        setStatus("iPhoneはSafariの共有ボタンから『ホーム画面に追加』を選んでください。");
-      } else {
-        setStatus("ブラウザのメニューから『アプリをインストール』または『ホーム画面に追加』を選んでください。");
+      if ("serviceWorker" in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.map((registration) => registration.unregister()));
       }
+      if ("caches" in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.filter((key) => key.startsWith("bass-spot-log-")).map((key) => caches.delete(key)));
+      }
+      setStatus(`古いアプリキャッシュを削除しました。最新版 ${APP_VERSION} で表示します。`);
     } catch (error) {
-      setStatus("アプリ更新の準備に失敗しました。再読み込みしてもう一度試してください。");
+      setStatus("古いキャッシュの削除に失敗しました。reset-cache.html を開いてください。");
     }
   }
 
   async function installApp() {
     if (isStandalone()) {
-      openInstallPanel("すでにホーム画面のアイコンからアプリとして起動しています。");
+      openInstallPanel("すでにホーム画面のアイコンからアプリとして起動しています。古い表示なら一度閉じて、reset-cache.html?auto=1 を開いてください。");
       return;
     }
     if (deferredInstallPrompt) {
@@ -103,5 +82,5 @@
   installButton?.addEventListener("click", installApp);
   closeInstallPanelButton?.addEventListener("click", closeInstallPanel);
   closeInstallDoneButton?.addEventListener("click", closeInstallPanel);
-  window.addEventListener("load", registerServiceWorker);
+  window.addEventListener("load", clearOldAppCache);
 })();

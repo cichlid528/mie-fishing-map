@@ -1,7 +1,6 @@
-# v56 三重県固定表示版（READMEは変更しない）
+# v58 キャッシュ停止・三重県固定表示版（READMEは変更しない）
 
-このZIPには `README.md` は入れていません。
-既存のREADMEは上書きしないでください。
+このZIPには `README.md` は入れていません。既存のREADMEは上書きしないでください。
 
 ## アップロード対象
 
@@ -18,24 +17,19 @@ GitHubリポジトリ直下に、ZIPの中身を上書きしてください。
 - .nojekyll
 - UPLOAD_STEPS_NO_README.md
 
+## 重要
+
+今回の版は、古いService Workerキャッシュが地図を壊す可能性を潰すため、アプリシェルのService Workerキャッシュを停止します。
+釣果・追加釣り場・写真・背景画像などの localStorage は消しません。
+
 ## 反映後に最初に開くURL
 
 https://cichlid528.github.io/mie-fishing-map/reset-cache.html?auto=1
 
-このページで古いService Workerとキャッシュを消してから、最新版を開き直します。
-
 ## 通常確認URL
 
-https://cichlid528.github.io/mie-fishing-map/?v=56-mie-fixed
-
-## 修正内容
-
-- 初期表示を三重県中央に固定
-- 最小ズームを固定して、日本海側までズームアウトしないように修正
-- 三重県外へ大きく移動できないように制限
-- 三重県の範囲を見分けやすいように境界線と外側マスクを追加
-- バージョンを v56-mie-fixed に統一
+https://cichlid528.github.io/mie-fishing-map/?v=58-nocache-mie
 
 ## コミットメッセージ
 
-fix: 地図表示を三重県中央に固定
+fix: 古いキャッシュを停止して三重県マップ表示を固定

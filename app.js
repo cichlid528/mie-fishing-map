@@ -5,25 +5,16 @@
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
   const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
   const BACKGROUND_STORAGE_KEY = "mie-fishing-map-sidebar-background-v1";
-  const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v53";
+  const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v58";
   const LEGACY_SINGLE_KEY = "mieFishingMap.v1";
 
-  // v56: 初期表示を必ず三重県中央へ戻し、ズームアウトしすぎない固定値に変更。
+  // v58: Service Workerキャッシュを止め、三重県中央を固定表示。
   // Leafletは [緯度, 経度] の順番。三重県はおおよそ緯度33.7〜35.3、経度135.8〜137.1。
-  const MIE_CENTER = [34.56, 136.49];
+  const MIE_CENTER = [34.6761, 136.5086];
   const MIE_HOME_ZOOM = 10;
   const MIE_MIN_ZOOM = 10;
-  const MIE_VIEW_BOUNDS = [[33.62, 135.75], [35.34, 137.08]];
-  const MIE_HARD_BOUNDS = [[33.54, 135.62], [35.46, 137.22]];
-  const MIE_OUTLINE = [
-    [35.26, 136.45], [35.20, 136.60], [35.10, 136.72], [34.98, 136.74],
-    [34.88, 136.66], [34.78, 136.54], [34.66, 136.58], [34.55, 136.72],
-    [34.48, 136.92], [34.36, 136.91], [34.24, 136.80], [34.12, 136.58],
-    [33.96, 136.36], [33.77, 136.17], [33.72, 135.96], [33.86, 135.86],
-    [34.05, 136.00], [34.24, 136.08], [34.42, 136.15], [34.55, 136.08],
-    [34.68, 136.18], [34.78, 136.34], [34.93, 136.43], [35.08, 136.42],
-    [35.20, 136.35]
-  ];
+  const MIE_HOME_BOUNDS = [[33.72, 135.82], [35.28, 137.02]];
+  const MIE_NAV_BOUNDS = [[33.62, 135.72], [35.38, 137.18]];
 
   const seedSpots = [
     { id: "ano-river", name: "安濃川", type: "川", area: "津市・芸濃町周辺", lat: 34.727056, lng: 136.515436, zoom: 13 },
@@ -273,53 +264,49 @@
     }, delay);
   }
 
-  function getMieBounds() {
-    return L.latLngBounds(MIE_VIEW_BOUNDS);
+  function getMieHomeBounds() {
+    return L.latLngBounds(MIE_HOME_BOUNDS);
   }
 
-  function getMieHardBounds() {
-    return L.latLngBounds(MIE_HARD_BOUNDS);
+  function getMieNavBounds() {
+    return L.latLngBounds(MIE_NAV_BOUNDS);
+  }
+
+  function isInsideMieNavBounds(lat, lng) {
+    if (typeof L === "undefined") return true;
+    return getMieNavBounds().contains(L.latLng(Number(lat), Number(lng)));
   }
 
   function lockMieView() {
     if (!map || typeof L === "undefined") return;
-    const hardBounds = getMieHardBounds();
-    map.setMaxBounds(hardBounds);
+    const navBounds = getMieNavBounds();
+    map.setMaxBounds(navBounds);
     map.setMinZoom(MIE_MIN_ZOOM);
     if (map.getZoom() < MIE_MIN_ZOOM) map.setZoom(MIE_MIN_ZOOM, { animate: false });
-    if (!hardBounds.contains(map.getCenter())) {
-      map.setView(MIE_CENTER, MIE_HOME_ZOOM, { animate: false });
-    } else {
-      map.panInsideBounds(hardBounds, { animate: false });
+    if (!navBounds.contains(map.getCenter())) {
+      resetMieView();
     }
   }
 
   function resetMieView() {
     if (!map || typeof L === "undefined") return;
     map.setView(MIE_CENTER, MIE_HOME_ZOOM, { animate: false });
-    lockMieView();
+    map.panInsideBounds(getMieNavBounds(), { animate: false });
   }
 
   function addMieBoundaryLayer() {
     if (!map || typeof L === "undefined") return;
-    const outside = [[89, -179], [89, 179], [-89, 179], [-89, -179]];
-    L.polygon([outside, MIE_OUTLINE], {
-      pane: "overlayPane",
-      stroke: false,
-      fillColor: "#edf4f0",
-      fillOpacity: 0.45,
-      interactive: false
-    }).addTo(map);
-    L.polygon(MIE_OUTLINE, {
+    const home = getMieHomeBounds();
+    L.rectangle(home, {
       color: "#0f7b63",
-      weight: 3,
-      opacity: 0.9,
+      weight: 2,
+      opacity: 0.55,
       fill: false,
       interactive: false
     }).addTo(map);
     L.marker(MIE_CENTER, {
       interactive: false,
-      icon: L.divIcon({ className: "mie-area-label", html: '<span>三重県限定</span>', iconSize: [112, 32], iconAnchor: [56, 16] })
+      icon: L.divIcon({ className: "mie-area-label", html: '<span>三重県マップ</span>', iconSize: [112, 32], iconAnchor: [56, 16] })
     }).addTo(map);
   }
 
@@ -334,8 +321,7 @@
       try { map.remove(); } catch (error) {}
     }
 
-    const mieBounds = getMieBounds();
-    const hardBounds = getMieHardBounds();
+    const navBounds = getMieNavBounds();
     map = L.map("map", {
       zoomControl: true,
       preferCanvas: true,
@@ -343,17 +329,15 @@
       fadeAnimation: false,
       markerZoomAnimation: false,
       minZoom: MIE_MIN_ZOOM,
-      maxBounds: hardBounds,
-      maxBoundsViscosity: 1.0,
+      maxBounds: navBounds,
+      maxBoundsViscosity: 0.9,
       worldCopyJump: false,
       bounceAtZoomLimits: false
     }).setView(MIE_CENTER, MIE_HOME_ZOOM);
     map.attributionControl.setPosition("topright");
-    lockMieView();
 
     const tileOptions = {
       maxZoom: 18,
-      bounds: mieBounds,
       noWrap: true,
       keepBuffer: 2,
       updateWhenIdle: true,
@@ -366,10 +350,10 @@
     const aerialMap = L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg", tileOptions);
     L.control.layers({ "標準地図": standardMap, "航空写真": aerialMap }, null, { position: "topright" }).addTo(map);
     addMieBoundaryLayer();
-    map.on("moveend zoomend", lockMieView);
+    map.on("moveend", lockMieView);
     map.on("click", (event) => handleMapClick(event.latlng));
 
-    resetMieView();
+    map.whenReady(() => { resetMieView(); invalidateMapSize(100); });
     invalidateMapSize(0);
     invalidateMapSize(250);
     invalidateMapSize(800);
@@ -420,7 +404,7 @@
     if (state.spotMode) state.catchMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v56・三重県固定版";
+    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v58・三重県マップ修正版";
   }
 
   function setCatchMode(value) {
@@ -428,7 +412,7 @@
     if (state.catchMode) state.spotMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v56・三重県固定版";
+    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v58・三重県マップ修正版";
   }
 
   function handleMapClick(latlng) {
@@ -589,7 +573,12 @@
     const spot = state.spots.find((s) => s.id === id);
     if (!spot) return;
     state.selectedSpotId = id;
-    map.setView([Number(spot.lat), Number(spot.lng)], Math.max(map.getZoom(), spot.zoom || 15));
+    if (isInsideMieNavBounds(spot.lat, spot.lng)) {
+      map.setView([Number(spot.lat), Number(spot.lng)], Math.max(map.getZoom(), spot.zoom || 15));
+    } else {
+      els.dataStatus.textContent = "三重県範囲外の座標なので、地図は三重県表示のままにしました。";
+      resetMieView();
+    }
     const marker = markers.get(id);
     if (marker) marker.openPopup();
     showSpotCard(spot);
@@ -760,6 +749,11 @@
       alert("記録位置が未指定です。地図をタップするか、現在地を使ってください。");
       return;
     }
+    if (!isInsideMieNavBounds(record.lat, record.lng)) {
+      alert("三重県外の座標は記録できません。三重県内で指定してください。");
+      resetMieView();
+      return;
+    }
     const idx = state.catches.findIndex((r) => r.id === record.id);
     if (idx >= 0) state.catches[idx] = record; else state.catches.push(record);
     if (record.recordType === "catch" && record.spotId) {
@@ -789,6 +783,7 @@
       custom: true
     };
     if (!validPosition(spot)) { alert("位置が未指定です。地図をタップして登録してください。"); return; }
+    if (!isInsideMieNavBounds(spot.lat, spot.lng)) { alert("三重県外の座標は登録できません。三重県内で指定してください。"); resetMieView(); return; }
     const idx = state.spots.findIndex((s) => s.id === id);
     if (idx >= 0) state.spots[idx] = spot; else state.spots.push(spot);
     persistCustomSpots();
@@ -926,6 +921,12 @@
     try {
       const pos = await getCurrentPosition();
       const { latitude, longitude, accuracy } = pos.coords;
+      if (!isInsideMieNavBounds(latitude, longitude)) {
+        resetMieView();
+        els.dataStatus.textContent = "現在地が三重県範囲外のため、地図は三重県表示のままにしました。";
+        if (!openPanel) setCatchLocationStatus("", "");
+        return;
+      }
       updateCurrentLocationMarker(latitude, longitude, accuracy);
       map.setView([latitude, longitude], Math.max(map.getZoom(), 17));
       if (openPanel) {
@@ -1146,7 +1147,7 @@
     applySidebarBackground(localStorage.getItem(BACKGROUND_STORAGE_KEY) || "");
     render();
     registerServiceWorker();
-    els.dataStatus.textContent = `v56・三重県固定 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
+    els.dataStatus.textContent = `v58・三重県マップ修正 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
   }
 
   init();
