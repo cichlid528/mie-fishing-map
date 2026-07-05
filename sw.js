@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bass-spot-log-";
-const VERSION = "v74-two-maplayers-all-devices";
+const VERSION = "v75-menu-photo-readable";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());

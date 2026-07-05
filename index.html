@@ -11,8 +11,8 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQDP4nD8xQV9qVtAkM5M5OgFHJt0f9I=" crossorigin="">
-    <link rel="stylesheet" href="style.css?v=v74-two-maplayers-all-devices">
-    <style id="v74-two-maplayers-all-devices-fix">
+    <link rel="stylesheet" href="style.css?v=v75-menu-photo-readable">
+    <style id="v75-menu-photo-readable-fix">
       @media (max-width: 920px) {
         #menuToggle.mobile-menu-button { display: inline-flex !important; position: fixed !important; top: calc(12px + env(safe-area-inset-top)) !important; left: calc(12px + env(safe-area-inset-left)) !important; z-index: 2147483600 !important; pointer-events: auto !important; touch-action: manipulation !important; background: rgba(255,255,255,.99) !important; color: #073f33 !important; -webkit-text-fill-color: #073f33 !important; }
         .map-tools { position: fixed !important; top: calc(68px + env(safe-area-inset-top)) !important; right: calc(10px + env(safe-area-inset-right)) !important; z-index: 2147483400 !important; pointer-events: none !important; }
@@ -46,7 +46,7 @@
         }
       }
 
-      /* v74: スマホの操作ボタンを右上から左下へ移動し、重なりを回避 */
+      /* v75: スマホの操作ボタンを右上から左下へ移動し、重なりを回避 */
       @media (max-width: 920px) {
         .map-tools {
           display: flex !important;
@@ -76,6 +76,42 @@
           white-space: nowrap !important;
         }
         body.menu-open .map-tools { display: none !important; }
+      }
+
+
+      /* v75: メニュー背景写真を見やすくする */
+      .sidebar, #mobileMenu.sidebar {
+        background:
+          linear-gradient(180deg, rgba(5, 30, 25, .34), rgba(5, 44, 36, .18)),
+          var(--sidebar-bg-image, radial-gradient(circle at 20% 10%, rgba(255,255,255,.22), transparent 32%), linear-gradient(135deg, #0f7b63, #164d45)) !important;
+        background-size: cover !important;
+        background-position: center !important;
+        background-repeat: no-repeat !important;
+        color: #fff !important;
+        text-shadow: 0 1px 3px rgba(0,0,0,.48) !important;
+      }
+      .sidebar::before, #mobileMenu.sidebar::before {
+        content: "" !important;
+        position: absolute !important;
+        inset: 0 !important;
+        z-index: -1 !important;
+        pointer-events: none !important;
+        background: radial-gradient(circle at 18% 12%, rgba(255,255,255,.16), transparent 34%), linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,.02)) !important;
+      }
+      .controls, .sidebar-footer, .sidebar-actions {
+        background: rgba(4, 32, 27, .18) !important;
+        backdrop-filter: blur(2px) saturate(1.05) !important;
+        -webkit-backdrop-filter: blur(2px) saturate(1.05) !important;
+      }
+      .filter-chip, .list-tab, .data-button, .stats-grid span, .icon-button {
+        background-color: rgba(255,255,255,.24) !important;
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,.25), 0 4px 14px rgba(0,0,0,.10) !important;
+      }
+      .filter-chip.is-active, .list-tab.is-active {
+        background-color: rgba(255,255,255,.94) !important;
+        color: #073f33 !important;
+        -webkit-text-fill-color: #073f33 !important;
+        text-shadow: none !important;
       }
     </style>
   </head>
@@ -113,7 +149,7 @@
             <button class="filter-chip" type="button" data-filter="港">港・漁港</button>
             <button class="filter-chip" type="button" data-filter="マリーナ">マリーナ</button>
           </div>
-          <p id="dataStatus" class="data-status" aria-live="polite">v74・標準地図/航空写真のみ</p>
+          <p id="dataStatus" class="data-status" aria-live="polite">v75・背景写真を見やすく調整</p>
           <p class="notice-banner">掲載情報は釣りの許可を意味しません。現地看板・管理者・自治体・漁協の最新情報を必ず確認してください。</p>
           <div class="stats-grid" aria-label="記録集計">
             <span><strong id="spotCount">0</strong><small>釣り場</small></span>
@@ -138,7 +174,7 @@
 
         <footer class="sidebar-footer">
           <span id="visibleCount">0件</span>
-          <span>v74・標準地図/航空写真のみ</span>
+          <span>v75・背景写真を見やすく調整</span>
         </footer>
 
         <section class="settings-row sidebar-actions" aria-label="設定">
@@ -260,7 +296,7 @@
     </section>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="pwa-install.js?v=v74-two-maplayers-all-devices"></script>
-    <script src="app.js?v=v74-two-maplayers-all-devices"></script>
+    <script src="pwa-install.js?v=v75-menu-photo-readable"></script>
+    <script src="app.js?v=v75-menu-photo-readable"></script>
   </body>
 </html>
