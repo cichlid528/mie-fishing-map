@@ -11,8 +11,8 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQDP4nD8xQV9qVtAkM5M5OgFHJt0f9I=" crossorigin="">
-    <link rel="stylesheet" href="style.css?v=v71-mobile-menu-front">
-    <style id="v71-mobile-menu-front-fix">
+    <link rel="stylesheet" href="style.css?v=v72-mobile-tools-bottom-left">
+    <style id="v72-mobile-tools-bottom-left-fix">
       @media (max-width: 920px) {
         #menuToggle.mobile-menu-button { display: inline-flex !important; position: fixed !important; top: calc(12px + env(safe-area-inset-top)) !important; left: calc(12px + env(safe-area-inset-left)) !important; z-index: 2147483600 !important; pointer-events: auto !important; touch-action: manipulation !important; background: rgba(255,255,255,.99) !important; color: #073f33 !important; -webkit-text-fill-color: #073f33 !important; }
         .map-tools { position: fixed !important; top: calc(68px + env(safe-area-inset-top)) !important; right: calc(10px + env(safe-area-inset-right)) !important; z-index: 2147483400 !important; pointer-events: none !important; }
@@ -22,6 +22,38 @@
         body.menu-open #menuToggle.mobile-menu-button { display: none !important; }
       }
       @media (min-width: 921px) { #menuToggle.mobile-menu-button { display: none !important; } }
+
+      /* v72: スマホの操作ボタンを右上から左下へ移動し、重なりを回避 */
+      @media (max-width: 920px) {
+        .map-tools {
+          display: flex !important;
+          position: fixed !important;
+          top: auto !important;
+          right: auto !important;
+          bottom: calc(18px + env(safe-area-inset-bottom)) !important;
+          left: calc(10px + env(safe-area-inset-left)) !important;
+          z-index: 2147483400 !important;
+          flex-direction: column !important;
+          align-items: flex-start !important;
+          justify-content: flex-end !important;
+          gap: 8px !important;
+          max-width: min(230px, calc(100vw - 20px)) !important;
+          pointer-events: none !important;
+        }
+        .map-tools > button,
+        #locateCatchButton,
+        #addSpotMode,
+        #addCatchMode {
+          pointer-events: auto !important;
+          min-height: 42px !important;
+          max-width: min(220px, calc(100vw - 20px)) !important;
+          padding: 9px 12px !important;
+          font-size: .82rem !important;
+          line-height: 1.1 !important;
+          white-space: nowrap !important;
+        }
+        body.menu-open .map-tools { display: none !important; }
+      }
     </style>
   </head>
   <body>
@@ -58,7 +90,7 @@
             <button class="filter-chip" type="button" data-filter="港">港・漁港</button>
             <button class="filter-chip" type="button" data-filter="マリーナ">マリーナ</button>
           </div>
-          <p id="dataStatus" class="data-status" aria-live="polite">v71・国土地理院マップ</p>
+          <p id="dataStatus" class="data-status" aria-live="polite">v72・国土地理院マップ</p>
           <p class="notice-banner">掲載情報は釣りの許可を意味しません。現地看板・管理者・自治体・漁協の最新情報を必ず確認してください。</p>
           <div class="stats-grid" aria-label="記録集計">
             <span><strong id="spotCount">0</strong><small>釣り場</small></span>
@@ -83,7 +115,7 @@
 
         <footer class="sidebar-footer">
           <span id="visibleCount">0件</span>
-          <span>v71・国土地理院マップ</span>
+          <span>v72・国土地理院マップ</span>
         </footer>
 
         <section class="settings-row sidebar-actions" aria-label="設定">
@@ -205,7 +237,7 @@
     </section>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="pwa-install.js?v=v71-mobile-menu-front"></script>
-    <script src="app.js?v=v71-mobile-menu-front"></script>
+    <script src="pwa-install.js?v=v72-mobile-tools-bottom-left"></script>
+    <script src="app.js?v=v72-mobile-tools-bottom-left"></script>
   </body>
 </html>
