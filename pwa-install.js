@@ -1,8 +1,10 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v47-refresh";
-  const CURRENT_CACHE = "bass-spot-log-v47-refresh";
+  window.__MIE_PWA_INSTALL_MANAGED__ = true;
+
+  const APP_VERSION = "v49-stable";
+  const CURRENT_CACHE = "bass-spot-log-v49-stable";
   const installButton = document.querySelector("#installAppButton");
   const installPanel = document.querySelector("#installPanel");
   const installStatus = document.querySelector("#installStatus");

@@ -326,7 +326,7 @@
     if (state.spotMode) state.catchMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v46・地図表示復旧版";
+    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v49・安定復旧版";
   }
 
   function setCatchMode(value) {
@@ -334,7 +334,7 @@
     if (state.catchMode) state.spotMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v46・地図表示復旧版";
+    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v49・安定復旧版";
   }
 
   function handleMapClick(latlng) {
@@ -1026,17 +1026,18 @@
     els.closeInfoDone.addEventListener("click", () => closePanel(els.infoPanel));
     els.exportDataButton.addEventListener("click", exportBackup);
     els.importDataFile.addEventListener("change", () => importBackup(els.importDataFile.files?.[0]));
-    els.installAppButton.addEventListener("click", handleInstallClick);
+    if (!window.__MIE_PWA_INSTALL_MANAGED__) els.installAppButton.addEventListener("click", handleInstallClick);
     els.closeInstallPanel.addEventListener("click", () => closePanel(els.installPanel));
     els.closeInstallDone.addEventListener("click", () => closePanel(els.installPanel));
 
-    window.addEventListener("beforeinstallprompt", (event) => { event.preventDefault(); state.deferredInstallPrompt = event; updateInstallStatus(); });
+    if (!window.__MIE_PWA_INSTALL_MANAGED__) window.addEventListener("beforeinstallprompt", (event) => { event.preventDefault(); state.deferredInstallPrompt = event; updateInstallStatus(); });
   }
 
   function registerServiceWorker() {
+    if (window.__MIE_PWA_INSTALL_MANAGED__) return;
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js?v=46-mapfix", { scope: "./" }).then((registration) => registration.update?.()).catch(() => {});
+        
       });
     }
   }
@@ -1049,7 +1050,7 @@
     applySidebarBackground(localStorage.getItem(BACKGROUND_STORAGE_KEY) || "");
     render();
     registerServiceWorker();
-    els.dataStatus.textContent = `v46・地図復旧 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
+    els.dataStatus.textContent = `v49・安定復旧 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
   }
 
   init();
