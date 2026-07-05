@@ -223,3 +223,21 @@ textarea { resize: vertical; }
   .catch-panel { align-items: stretch; padding: 10px; }
   .catch-form { max-height: none; }
 }
+
+
+.mie-area-label { pointer-events: none; }
+.mie-area-label span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 104px;
+  min-height: 30px;
+  border-radius: 999px;
+  padding: 5px 10px;
+  background: rgba(255, 255, 255, .92);
+  color: var(--green-dark);
+  font-size: .82rem;
+  font-weight: 900;
+  box-shadow: 0 8px 22px rgba(12, 54, 43, .18);
+  border: 1px solid rgba(15, 123, 99, .25);
+}

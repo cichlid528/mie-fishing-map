@@ -1,10 +1,10 @@
-const CACHE_NAME = "bass-spot-log-v55-mie-boundsfix";
+const CACHE_NAME = "bass-spot-log-v56-mie-fixed";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./reset-cache.html",
-  "./style.css?v=55-mie-boundsfix",
-  "./app.js?v=55-mie-boundsfix",
+  "./style.css?v=56-mie-fixed",
+  "./app.js?v=56-mie-fixed",
   "./manifest.json",
   "./icons/icon-192.png",
   "./icons/icon-512.png",

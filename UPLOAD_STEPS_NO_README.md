@@ -1,4 +1,4 @@
-# v55 三重県範囲修正版（READMEは変更しない）
+# v56 三重県固定表示版（READMEは変更しない）
 
 このZIPには `README.md` は入れていません。
 既存のREADMEは上書きしないでください。
@@ -26,15 +26,16 @@ https://cichlid528.github.io/mie-fishing-map/reset-cache.html?auto=1
 
 ## 通常確認URL
 
-https://cichlid528.github.io/mie-fishing-map/?v=55-mie-boundsfix
+https://cichlid528.github.io/mie-fishing-map/?v=56-mie-fixed
 
 ## 修正内容
 
-- v54で初期表示が広すぎて日本海側まで見える問題を修正
-- 初期表示を三重県中央へ固定
-- 最小ズームを画面幅に合わせて自動調整
-- 地図タイルの読込範囲も三重県周辺に制限
+- 初期表示を三重県中央に固定
+- 最小ズームを固定して、日本海側までズームアウトしないように修正
+- 三重県外へ大きく移動できないように制限
+- 三重県の範囲を見分けやすいように境界線と外側マスクを追加
+- バージョンを v56-mie-fixed に統一
 
 ## コミットメッセージ
 
-fix: 三重県表示範囲を再固定して日本海側表示を防ぐ
+fix: 地図表示を三重県中央に固定
