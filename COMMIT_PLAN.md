@@ -1,15 +1,15 @@
-# Commit Plan
+# Commit plan
 
-おすすめコミット:
+推奨コミット:
 
 ```text
-fix: スマホで崩れる地図表示を復旧
+fix: 古いキャッシュを削除して地図更新を強制
 ```
 
-変更単位を分けるなら:
+分ける場合:
 
 ```text
-fix: Leaflet地図のサイズ再計算を追加
-fix: スマホ向け地図コンテナの高さ指定を修正
-chore: PWAキャッシュをv46へ更新
+fix: Service Workerキャッシュをv47に更新
+feat: PWAインストール処理を追加
+docs: 強制更新手順を追記
 ```

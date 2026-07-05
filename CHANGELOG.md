@@ -1,8 +1,8 @@
 # Changelog
 
-## v46-mapfix
+## v47-refresh
 
-- 地図表示崩れ対策として、地図コンテナの高さ指定を修正
-- Leafletのサイズ再計算を起動時・画面回転時・メニュー開閉時に追加
-- Service Workerキャッシュをv46に更新し、古いキャッシュを削除
-- GitHub Pages向けにCSS/JSのキャッシュバスターを更新
+- 古いService Workerキャッシュを削除する処理を追加
+- `pwa-install.js` を追加し、Service Worker登録を明示化
+- `style.css` / `app.js` / `sw.js` のバージョンを `v47-refresh` に更新
+- スマホでv46が反映されない場合の強制更新に対応
