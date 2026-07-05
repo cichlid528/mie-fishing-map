@@ -10,13 +10,8 @@
     <title>三重県釣りマップ</title>
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-      integrity="sha256-p4NxAoJBhIINfQDP4nD8xQV9qVtAkM5M5OgFHJt0f9I="
-      crossorigin=""
-    >
-    <link rel="stylesheet" href="style.css?v=43">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQDP4nD8xQV9qVtAkM5M5OgFHJt0f9I=" crossorigin="">
+    <link rel="stylesheet" href="style.css?v=44">
   </head>
   <body>
     <button id="menuBackdrop" class="menu-backdrop" type="button" aria-label="メニューを閉じる"></button>
@@ -28,19 +23,15 @@
             <h1>三重県釣りマップ</h1>
           </div>
           <div class="sidebar-header-actions">
-            <button id="resetView" class="icon-button" type="button" title="三重県全体に戻す" aria-label="三重県全体に戻す">
-              ⌂
-            </button>
-            <button id="closeMenuButton" class="icon-button mobile-close-button" type="button" title="メニューを閉じる" aria-label="メニューを閉じる">
-              ×
-            </button>
+            <button id="resetView" class="icon-button" type="button" title="三重県全体に戻す" aria-label="三重県全体に戻す">⌂</button>
+            <button id="closeMenuButton" class="icon-button mobile-close-button" type="button" title="メニューを閉じる" aria-label="メニューを閉じる">×</button>
           </div>
         </header>
 
         <section class="controls" aria-label="検索と絞り込み">
           <label class="search-box">
             <span>検索</span>
-            <input id="searchInput" type="search" placeholder="池・川・ダム・港名">
+            <input id="searchInput" type="search" placeholder="池・川・ダム・港名・ルアー・条件">
           </label>
           <div class="filter-row" role="group" aria-label="種別フィルター">
             <button class="filter-chip is-active" type="button" data-filter="all">すべて</button>
@@ -50,8 +41,13 @@
             <button class="filter-chip" type="button" data-filter="港">港・漁港</button>
             <button class="filter-chip" type="button" data-filter="マリーナ">マリーナ</button>
           </div>
-          <p id="dataStatus" class="data-status" aria-live="polite">地理院地図の名称位置に補正済み</p>
+          <p id="dataStatus" class="data-status" aria-live="polite">v44・野池バス分析項目対応</p>
           <p class="notice-banner">掲載情報は釣りの許可を意味しません。現地看板・管理者・自治体・漁協の最新情報を必ず確認してください。</p>
+          <div class="stats-grid" aria-label="記録集計">
+            <span><strong id="spotCount">0</strong><small>釣り場</small></span>
+            <span><strong id="recordCount">0</strong><small>記録</small></span>
+            <span><strong id="bigBassCount">0</strong><small>40up</small></span>
+          </div>
           <div class="list-tabs" role="tablist" aria-label="リスト切り替え">
             <button id="spotTab" class="list-tab is-active" type="button" aria-selected="true">釣り場</button>
             <button id="catchTab" class="list-tab" type="button" aria-selected="false">記録</button>
@@ -59,15 +55,10 @@
         </section>
 
         <section id="spotListHead" class="list-head" aria-label="チェック項目の説明">
-          <span>名称</span>
-          <span>釣れた</span>
-          <span>魚種</span>
-          <span>禁止</span>
-          <span>駐車</span>
+          <span>名称</span><span>釣れた</span><span>魚種</span><span>禁止</span><span>駐車</span>
         </section>
         <section id="catchListHead" class="catch-list-head is-hidden" aria-label="記録項目の説明">
-          <span>No.</span>
-          <span>場所・内容</span>
+          <span>No.</span><span>場所・内容</span>
         </section>
 
         <section id="spotList" class="spot-list" aria-label="場所一覧"></section>
@@ -75,14 +66,13 @@
 
         <footer class="sidebar-footer">
           <span id="visibleCount">0件</span>
-          <span>v43・現地メモ対応</span>
+          <span>v44・野池バス分析</span>
         </footer>
 
         <section class="settings-row sidebar-actions" aria-label="設定">
           <button id="installAppButton" class="data-button install-button" type="button">アプリをダウンロード</button>
           <button id="openInfoPanel" class="data-button" type="button">注意・規約</button>
           <button id="changeBackgroundButton" class="data-button" type="button">背景画像を変更</button>
-          <button id="autoAlignPositionsButton" class="data-button" type="button">地図名へ位置補正</button>
           <button id="exportDataButton" class="data-button" type="button">バックアップ保存</button>
           <label class="data-button import-data-label" for="importDataFile">バックアップ読込</label>
           <input id="importDataFile" class="visually-hidden-file" type="file" accept="application/json,.json">
@@ -104,353 +94,106 @@
     <section id="spotPanel" class="catch-panel" aria-label="釣り場登録" aria-hidden="true">
       <form id="spotForm" class="catch-form">
         <header class="catch-form-header">
-          <div>
-            <p class="kicker">Fishing Spot</p>
-            <h2>釣り場を追加</h2>
-          </div>
+          <div><p class="kicker">Fishing Spot</p><h2>釣り場を追加</h2></div>
           <button id="closeSpotPanel" class="icon-button" type="button" title="閉じる" aria-label="閉じる">×</button>
         </header>
-
-        <input id="spotLat" type="hidden">
-        <input id="spotLng" type="hidden">
-
+        <input id="spotLat" type="hidden"><input id="spotLng" type="hidden"><input id="spotIdInput" type="hidden">
         <p class="panel-warning">掲載されている場所でも、釣り禁止・立入禁止・私有地の場合があります。登録前と釣行前に現地の看板や管理者情報を確認してください。</p>
-
         <div class="form-grid">
-          <label>
-            <span>名称</span>
-            <input id="spotNameInput" type="text" placeholder="例: 未命名の池、〇〇池">
-          </label>
-
-          <label>
-            <span>種別</span>
-            <select id="spotTypeInput">
-              <option>池</option>
-              <option>川</option>
-              <option>ダム</option>
-              <option>港</option>
-              <option>マリーナ</option>
-            </select>
-          </label>
-
-          <label>
-            <span>地名</span>
-            <input id="spotAreaInput" type="text" placeholder="例: 津市〇〇町">
-          </label>
-
-          <label>
-            <span>メモ</span>
-            <textarea id="spotMemoInput" rows="2" placeholder="名前がない水辺、進入口、目印など"></textarea>
-          </label>
+          <label><span>名称</span><input id="spotNameInput" type="text" placeholder="例: 未命名の池、〇〇池" required></label>
+          <label><span>種別</span><select id="spotTypeInput"><option>池</option><option>川</option><option>ダム</option><option>港</option><option>マリーナ</option></select></label>
+          <label><span>地名</span><input id="spotAreaInput" type="text" placeholder="例: 津市〇〇町"></label>
+          <label class="full-width"><span>メモ</span><textarea id="spotMemoInput" rows="2" placeholder="進入口、目印、足場、駐車注意など"></textarea></label>
         </div>
-
-        <div class="catch-actions">
-          <button id="deleteSpot" class="delete-button" type="button">削除</button>
-          <button class="save-button" type="submit">保存</button>
-        </div>
+        <div class="catch-actions"><button id="deleteSpot" class="delete-button" type="button">削除</button><button class="save-button" type="submit">保存</button></div>
       </form>
     </section>
 
     <section id="catchPanel" class="catch-panel" aria-label="現地メモ・釣果記録" aria-hidden="true">
       <form id="catchForm" class="catch-form">
         <header class="catch-form-header">
-          <div>
-            <p class="kicker">Location Log</p>
-            <h2>現地メモ・釣果を記録</h2>
-          </div>
+          <div><p class="kicker">Location Log</p><h2>現地メモ・釣果を記録</h2></div>
           <button id="closeCatchPanel" class="icon-button" type="button" title="閉じる" aria-label="閉じる">×</button>
         </header>
-
-        <input id="catchLat" type="hidden">
-        <input id="catchLng" type="hidden">
+        <input id="catchLat" type="hidden"><input id="catchLng" type="hidden"><input id="catchIdInput" type="hidden">
         <div class="catch-location-box">
           <p id="catchLocationStatus" class="catch-location-status" aria-live="polite">地図をタップするか、現在地ボタンで記録位置を指定してください。</p>
           <button id="useCurrentLocationButton" class="location-inline-button" type="button">現在地を使う</button>
         </div>
 
         <div class="form-grid">
-          <label>
-            <span>記録タイプ</span>
-            <select id="catchRecordType">
-              <option value="note">現地メモ</option>
-              <option value="catch">釣果</option>
-            </select>
-          </label>
-
-          <label>
-            <span>周辺メモ種別</span>
-            <select id="catchPlaceKind">
-              <option value="">選択してください</option>
-              <option>コンビニ</option>
-              <option>スーパー</option>
-              <option>曲がり角</option>
-              <option>入口・進入口</option>
-              <option>駐車場</option>
-              <option>トイレ</option>
-              <option>自販機</option>
-              <option>釣具店</option>
-              <option>目印</option>
-              <option>危険・注意</option>
-              <option>その他</option>
-            </select>
-          </label>
-
-          <label class="full-width location-note-field">
-            <span>名称・内容</span>
-            <input id="catchPlaceName" type="text" placeholder="例: コンビニあり、スーパーあり、ここを左折、橋の手前で曲がる">
-          </label>
-
-          <label>
-            <span>近くの釣り場</span>
-            <select id="catchSpot"></select>
-          </label>
-
-          <label>
-            <span>日時</span>
-            <input id="catchTime" type="datetime-local">
-          </label>
-
-          <label class="fishing-field">
-            <span>何で釣れたか</span>
-            <select id="catchBait">
-              <option value="">選択してください</option>
-              <option>ワーム</option>
-              <option>ミノー</option>
-              <option>クランクベイト</option>
-              <option>スピナーベイト</option>
-              <option>バイブレーション</option>
-              <option>ラバージグ</option>
-              <option>トップウォーター</option>
-              <option>その他</option>
-            </select>
-          </label>
-
-          <label class="fishing-field">
-            <span>天気</span>
-            <select id="catchWeather">
-              <option value="">選択してください</option>
-              <option>晴れ</option>
-              <option>曇り</option>
-              <option>雨</option>
-              <option>小雨</option>
-              <option>強風</option>
-              <option>雪</option>
-            </select>
-          </label>
-
-          <label class="fishing-field">
-            <span>風</span>
-            <select id="catchWind">
-              <option value="">選択してください</option>
-              <option>無風</option>
-              <option>弱い</option>
-              <option>普通</option>
-              <option>強い</option>
-            </select>
-          </label>
-
-          <label class="fishing-field">
-            <span>水の状態</span>
-            <select id="catchWater">
-              <option value="">選択してください</option>
-              <option>クリア</option>
-              <option>普通</option>
-              <option>濁り</option>
-              <option>増水</option>
-              <option>減水</option>
-            </select>
-          </label>
-
-          <label class="fishing-field">
-            <span>サイズ</span>
-            <select id="catchSize">
-              <option value="">選択してください</option>
-              <option>20cm未満</option>
-              <option>20cm台</option>
-              <option>30cm台</option>
-              <option>40cm台</option>
-              <option>50cm以上</option>
-              <option>未計測</option>
-            </select>
-          </label>
-
-          <label class="full-width">
-            <span>備考・メモ</span>
-            <textarea id="catchMemo" rows="2" placeholder="例: コンビニあり、スーパーあり、ここを左折、駐車できる、足場注意など"></textarea>
-          </label>
+          <label><span>記録タイプ</span><select id="catchRecordType"><option value="note">現地メモ</option><option value="catch">釣果</option></select></label>
+          <label><span>周辺メモ種別</span><select id="catchPlaceKind"><option value="">選択してください</option><option>コンビニ</option><option>スーパー</option><option>曲がり角</option><option>入口・進入口</option><option>駐車場</option><option>トイレ</option><option>自販機</option><option>釣具店</option><option>目印</option><option>危険・注意</option><option>その他</option></select></label>
+          <label class="full-width location-note-field"><span>名称・内容</span><input id="catchPlaceName" type="text" placeholder="例: コンビニあり、ここを左折、橋の手前で曲がる"></label>
+          <label><span>近くの釣り場</span><select id="catchSpot"></select></label>
+          <label><span>日時</span><input id="catchTime" type="datetime-local"></label>
+          <label class="fishing-field"><span>魚種</span><select id="catchSpecies"><option>ブラックバス</option><option>ブルーギル</option><option>ナマズ</option><option>ライギョ</option><option>シーバス</option><option>キス</option><option>アジ</option><option>その他</option></select></label>
+          <label class="fishing-field"><span>何で釣れたか</span><select id="catchBait"><option value="">選択してください</option><option>ワーム</option><option>ミノー</option><option>クランクベイト</option><option>スピナーベイト</option><option>バイブレーション</option><option>ラバージグ</option><option>チャター</option><option>ビッグベイト</option><option>トップウォーター</option><option>その他</option></select></label>
+          <label class="fishing-field"><span>ルアー名</span><input id="catchLureName" type="text" placeholder="例: カットテール、フリックシェイク"></label>
+          <label class="fishing-field"><span>色</span><input id="catchLureColor" type="text" placeholder="例: グリパン、スカッパノン"></label>
+          <label class="fishing-field"><span>重さ</span><input id="catchLureWeight" type="text" placeholder="例: 3.5g、1/4oz"></label>
+          <label class="fishing-field"><span>サイズ実寸cm</span><input id="catchSizeCm" type="number" inputmode="decimal" min="0" step="0.1" placeholder="例: 46.5"></label>
+          <label class="fishing-field"><span>サイズ分類</span><select id="catchSize"><option value="">選択してください</option><option>20cm未満</option><option>20cm台</option><option>30cm台</option><option>40cm台</option><option>50cm以上</option><option>未計測</option></select></label>
+          <label class="fishing-field"><span>天気</span><select id="catchWeather"><option value="">選択してください</option><option>晴れ</option><option>曇り</option><option>雨</option><option>小雨</option><option>強風</option><option>雪</option></select></label>
+          <label class="fishing-field"><span>風</span><select id="catchWind"><option value="">選択してください</option><option>無風</option><option>弱い</option><option>普通</option><option>強い</option></select></label>
+          <label class="fishing-field"><span>水の状態</span><select id="catchWater"><option value="">選択してください</option><option>クリア</option><option>普通</option><option>濁り</option><option>増水</option><option>減水</option></select></label>
+          <label class="fishing-field"><span>水位</span><select id="catchWaterLevel"><option value="">選択してください</option><option>満水</option><option>普通</option><option>減水</option><option>大減水</option><option>増水</option></select></label>
+          <label class="fishing-field"><span>ベイト確認</span><select id="catchBaitfish"><option value="">選択してください</option><option>ギル</option><option>小魚</option><option>エビ</option><option>カエル</option><option>虫</option><option>不明</option></select></label>
+          <label class="fishing-field"><span>カバー・地形</span><select id="catchCover"><option value="">選択してください</option><option>アシ</option><option>オーバーハング</option><option>沈み木</option><option>護岸</option><option>ウィード</option><option>ブレイク</option><option>流れ込み</option><option>堰堤</option><option>シェード</option></select></label>
+          <label class="fishing-field"><span>反応場所</span><select id="catchReaction"><option value="">選択してください</option><option>岸際</option><option>ブレイク</option><option>流れ込み</option><option>堰堤</option><option>シェード</option><option>カバー奥</option><option>沖</option></select></label>
+          <label class="fishing-field"><span>プレッシャー</span><select id="catchPressure"><option value="">選択してください</option><option>低い</option><option>普通</option><option>高い</option><option>人多い</option><option>先行者あり</option><option>足跡あり</option></select></label>
+          <label class="fishing-field"><span>時間帯</span><select id="catchTimeBand"><option value="">自動/選択</option><option>朝</option><option>昼</option><option>夕方</option><option>夜</option></select></label>
+          <label class="full-width"><span>備考・メモ</span><textarea id="catchMemo" rows="2" placeholder="例: 風が当たる角、岸際に差していた、足場注意など"></textarea></label>
 
           <div class="catch-photo-field">
             <span class="catch-photo-title">添付写真</span>
             <div class="photo-picker-grid">
-              <label class="photo-picker" for="catchPhoto">
-                <span>写真フォルダーから選択</span>
-                <input id="catchPhoto" type="file" accept="image/*">
-              </label>
-              <label class="photo-picker" for="catchCamera">
-                <span>カメラで撮影</span>
-                <input id="catchCamera" type="file" accept="image/*" capture="environment">
-              </label>
+              <label class="photo-picker" for="catchPhoto"><span>写真フォルダーから選択</span><input id="catchPhoto" type="file" accept="image/*"></label>
+              <label class="photo-picker" for="catchCamera"><span>カメラで撮影</span><input id="catchCamera" type="file" accept="image/*" capture="environment"></label>
             </div>
-            <figure id="catchPhotoPreview" class="catch-photo-preview is-hidden">
-              <img id="catchPhotoImage" alt="添付する釣果写真">
-              <button id="removeCatchPhoto" type="button">写真を外す</button>
-            </figure>
-            <p id="catchPhotoStatus" class="catch-photo-status" aria-live="polite">写真フォルダーから選ぶか、カメラで撮影すると、この場所の記録に添付してこの端末に保存します</p>
+            <figure id="catchPhotoPreview" class="catch-photo-preview is-hidden"><img id="catchPhotoImage" alt="添付する釣果写真"><button id="removeCatchPhoto" type="button">写真を外す</button></figure>
+            <p id="catchPhotoStatus" class="catch-photo-status" aria-live="polite">写真を選ぶと、この端末に圧縮保存します</p>
           </div>
         </div>
-
-        <div class="catch-actions">
-          <button id="deleteCatch" class="delete-button" type="button">削除</button>
-          <button class="save-button" type="submit">保存</button>
-        </div>
-      </form>
-    </section>
-
-    <section id="fishPanel" class="catch-panel" aria-label="魚種選択" aria-hidden="true">
-      <form id="fishForm" class="catch-form">
-        <header class="catch-form-header">
-          <div>
-            <p class="kicker">Fish Species</p>
-            <h2>釣れた魚種を選択</h2>
-          </div>
-          <button id="closeFishPanel" class="icon-button" type="button" title="閉じる" aria-label="閉じる">×</button>
-        </header>
-
-        <p id="fishPanelSpotName" class="panel-help">釣り場を選択中</p>
-        <div id="fishSpeciesGroups" class="species-groups" aria-label="魚種一覧"></div>
-
-        <label class="other-species-field">
-          <span>その他の魚種</span>
-          <input id="otherFishInput" type="text" placeholder="例: ボラ、アカメ、手長エビなど">
-        </label>
-
-        <div class="catch-actions">
-          <button id="clearFishSelection" class="delete-button" type="button">魚種を消す</button>
-          <button class="save-button" type="submit">保存</button>
-        </div>
+        <div class="catch-actions"><button id="deleteCatch" class="delete-button" type="button">削除</button><button class="save-button" type="submit">保存</button></div>
       </form>
     </section>
 
     <section id="backgroundPanel" class="catch-panel" aria-label="背景画像変更" aria-hidden="true">
       <form id="backgroundForm" class="catch-form">
-        <header class="catch-form-header">
-          <div>
-            <p class="kicker">Background</p>
-            <h2>背景画像を変更</h2>
-          </div>
-          <button id="closeBackgroundPanel" class="icon-button" type="button" title="閉じる" aria-label="閉じる">×</button>
-        </header>
-
+        <header class="catch-form-header"><div><p class="kicker">Background</p><h2>背景画像を変更</h2></div><button id="closeBackgroundPanel" class="icon-button" type="button" title="閉じる" aria-label="閉じる">×</button></header>
         <p class="panel-help">左側メニューの背景画像を、カメラ撮影または写真フォルダーから変更できます。</p>
         <div class="background-picker-grid">
-          <label class="photo-picker" for="backgroundCamera">
-            <span>カメラで撮影して背景にする</span>
-            <input id="backgroundCamera" type="file" accept="image/*" capture="environment">
-          </label>
-          <label class="photo-picker" for="backgroundPicker">
-            <span>写真フォルダーから選ぶ</span>
-            <input id="backgroundPicker" type="file" accept="image/*">
-          </label>
+          <label class="photo-picker" for="backgroundCamera"><span>カメラで撮影して背景にする</span><input id="backgroundCamera" type="file" accept="image/*" capture="environment"></label>
+          <label class="photo-picker" for="backgroundPicker"><span>写真フォルダーから選ぶ</span><input id="backgroundPicker" type="file" accept="image/*"></label>
         </div>
-
         <p id="backgroundStatus" class="catch-photo-status" aria-live="polite">画像は圧縮してこの端末に保存します</p>
-
-        <div class="catch-actions">
-          <button id="resetBackgroundButton" class="delete-button" type="button">初期背景に戻す</button>
-          <button class="save-button" type="button" id="closeBackgroundDone">閉じる</button>
-        </div>
+        <div class="catch-actions"><button id="resetBackgroundButton" class="delete-button" type="button">初期背景に戻す</button><button class="save-button" type="button" id="closeBackgroundDone">閉じる</button></div>
       </form>
     </section>
-
 
     <section id="installPanel" class="catch-panel" aria-label="アプリのダウンロード" aria-hidden="true">
       <form class="catch-form info-form">
-        <header class="catch-form-header">
-          <div>
-            <p class="kicker">Install App</p>
-            <h2>アプリをダウンロード</h2>
-          </div>
-          <button id="closeInstallPanel" class="icon-button" type="button" title="閉じる" aria-label="閉じる">×</button>
-        </header>
-
-        <div class="info-content install-content">
-          <section>
-            <h3>Android / Chrome</h3>
-            <p>この画面の「アプリをダウンロード」ボタンでインストール画面が出る場合は、そのまま進めてください。</p>
-            <p>出ない場合は、Chrome右上の「︙」から「アプリをインストール」または「ホーム画面に追加」を選んでください。</p>
-          </section>
-
-          <section>
-            <h3>iPhone / Safari</h3>
-            <p>iPhoneでは自動のインストール画面が出にくいです。Safariで開いて、共有ボタンから「ホーム画面に追加」を選んでください。</p>
-            <ol class="install-steps">
-              <li>Safariでこのアプリを開く</li>
-              <li>下の共有ボタンを押す</li>
-              <li>「ホーム画面に追加」を押す</li>
-              <li>右上の「追加」を押す</li>
-            </ol>
-          </section>
-
-          <section>
-            <h3>現在の状態</h3>
-            <p id="installStatus" class="catch-photo-status" aria-live="polite">端末の状態を確認しています。</p>
-          </section>
-        </div>
-
-        <div class="catch-actions">
-          <button class="save-button" type="button" id="closeInstallDone">閉じる</button>
-        </div>
+        <header class="catch-form-header"><div><p class="kicker">Install App</p><h2>アプリをダウンロード</h2></div><button id="closeInstallPanel" class="icon-button" type="button" title="閉じる" aria-label="閉じる">×</button></header>
+        <div class="info-content install-content"><section><h3>Android / Chrome</h3><p>この画面のボタンでインストール画面が出る場合は、そのまま進めてください。出ない場合はChrome右上の「︙」から「アプリをインストール」または「ホーム画面に追加」を選んでください。</p></section><section><h3>iPhone / Safari</h3><p>Safariで開いて、共有ボタンから「ホーム画面に追加」を選んでください。</p></section><section><h3>現在の状態</h3><p id="installStatus" class="catch-photo-status" aria-live="polite">端末の状態を確認しています。</p></section></div>
+        <div class="catch-actions"><button class="save-button" type="button" id="closeInstallDone">閉じる</button></div>
       </form>
     </section>
-
 
     <section id="infoPanel" class="catch-panel" aria-label="注意・利用規約・プライバシー" aria-hidden="true">
       <form class="catch-form info-form">
-        <header class="catch-form-header">
-          <div>
-            <p class="kicker">Safety & Privacy</p>
-            <h2>注意・規約・バックアップ</h2>
-          </div>
-          <button id="closeInfoPanel" class="icon-button" type="button" title="閉じる" aria-label="閉じる">×</button>
-        </header>
-
+        <header class="catch-form-header"><div><p class="kicker">Safety & Privacy</p><h2>注意・規約・バックアップ</h2></div><button id="closeInfoPanel" class="icon-button" type="button" title="閉じる" aria-label="閉じる">×</button></header>
         <div class="info-content">
-          <section>
-            <h3>釣行時の注意</h3>
-            <p>掲載されている釣り場情報は、釣りの許可を意味するものではありません。釣行前に、現地の看板・管理者・自治体・漁協などの最新情報を必ず確認してください。</p>
-            <p>私有地への無断立ち入り、迷惑駐車、ゴミの放置は禁止です。禁止・危険・立入制限の表示がある場所では釣りをしないでください。</p>
-          </section>
-
-          <section>
-            <h3>利用規約の要点</h3>
-            <p>このアプリの地図・釣り場・釣果メモは、個人の釣行管理を目的とした参考情報です。実際に釣行するかどうかは、利用者自身で最新情報を確認して判断してください。</p>
-          </section>
-
-          <section>
-            <h3>プライバシー</h3>
-            <p>釣果、写真、追加した釣り場、背景画像、魚種選択は基本的にこの端末内に保存されます。クラウド送信はしていません。</p>
-            <p>写真や位置情報は個人情報につながる場合があります。共有する前に、場所が特定されても問題ないか確認してください。</p>
-          </section>
-
-          <section>
-            <h3>データバックアップ</h3>
-            <p>端末変更、ブラウザのデータ削除、Safari/Chromeの保存領域整理で記録が消えることがあります。大事な記録は「バックアップ保存」でJSONファイルを保管してください。</p>
-            <p id="backupStatus" class="catch-photo-status" aria-live="polite">バックアップの保存・読込結果をここに表示します。</p>
-          </section>
+          <section><h3>釣行時の注意</h3><p>掲載されている釣り場情報は、釣りの許可を意味するものではありません。釣行前に、現地の看板・管理者・自治体・漁協などの最新情報を必ず確認してください。</p><p>私有地への無断立ち入り、迷惑駐車、ゴミの放置は禁止です。禁止・危険・立入制限の表示がある場所では釣りをしないでください。</p></section>
+          <section><h3>野池バス記録</h3><p>水位、ベイト、カバー、反応場所、プレッシャー、ルアー名・色・重さ、実寸cmを残すと、別の池でも再現性を上げやすくなります。</p></section>
+          <section><h3>プライバシー</h3><p>釣果、写真、追加した釣り場、背景画像は基本的にこの端末内に保存されます。クラウド送信はしていません。</p><p>写真や位置情報は個人情報につながる場合があります。共有する前に、場所が特定されても問題ないか確認してください。</p></section>
+          <section><h3>データバックアップ</h3><p>端末変更、ブラウザのデータ削除、Safari/Chromeの保存領域整理で記録が消えることがあります。大事な記録は「バックアップ保存」でJSONファイルを保管してください。</p><p id="backupStatus" class="catch-photo-status" aria-live="polite">バックアップの保存・読込結果をここに表示します。</p></section>
         </div>
-
-        <div class="catch-actions">
-          <button class="save-button" type="button" id="closeInfoDone">閉じる</button>
-        </div>
+        <div class="catch-actions"><button class="save-button" type="button" id="closeInfoDone">閉じる</button></div>
       </form>
     </section>
 
-
-    <script
-      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-      crossorigin=""
-    ></script>
-    <script src="app.js?v=43"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="app.js?v=44"></script>
   </body>
 </html>
