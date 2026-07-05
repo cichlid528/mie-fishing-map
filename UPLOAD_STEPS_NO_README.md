@@ -1,4 +1,4 @@
-# v67 操作ボタン前面修正版（READMEは変更しない）
+# v60 国土地理院・地形陰影マップ版（READMEは変更しない）
 
 このZIPには `README.md` は入れていません。
 既存のREADMEは上書きしないでください。
@@ -22,10 +22,12 @@ GitHubリポジトリ直下に、ZIPの中身を上書きしてください。
 
 https://cichlid528.github.io/mie-fishing-map/reset-cache.html?auto=1
 
+このページで古いService Workerとキャッシュを消してから、最新版を開き直します。
+
 ## 通常確認URL
 
-https://cichlid528.github.io/mie-fishing-map/?v=67-ui-above-map
+https://cichlid528.github.io/mie-fishing-map/?v=60-gsi-terrain
 
 ## コミットメッセージ
 
-fix: 操作ボタンを地図より前面に固定
+feat: 国土地理院の地形陰影マップ表示に変更

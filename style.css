@@ -21,20 +21,13 @@ body { color: var(--ink); background: #edf4f0; overflow: hidden; }
 button, input, select, textarea { font: inherit; }
 button { cursor: pointer; }
 
-.app-shell { display: grid; grid-template-columns: 1fr; width: 100vw; height: 100vh; height: 100dvh; min-height: 0; }
+.app-shell { display: grid; grid-template-columns: 380px 1fr; height: 100vh; height: 100dvh; min-height: 0; }
 .sidebar {
-  position: fixed;
-  inset: 0 auto 0 0;
+  position: relative;
   z-index: 20;
   display: flex;
   flex-direction: column;
-  width: min(390px, 92vw);
-  max-width: 92vw;
   min-width: 0;
-  height: 100vh;
-  height: 100dvh;
-  transform: translateX(-105%);
-  transition: transform .22s ease;
   background:
     linear-gradient(180deg, rgba(8, 54, 44, .86), rgba(15, 123, 99, .80)),
     var(--sidebar-bg-image, radial-gradient(circle at 20% 10%, rgba(255,255,255,.25), transparent 30%), linear-gradient(135deg, #0f7b63, #164d45));
@@ -44,7 +37,6 @@ button { cursor: pointer; }
   box-shadow: var(--shadow);
   isolation: isolate;
 }
-.sidebar.is-open { transform: translateX(0); }
 .sidebar::before { content: ""; position: absolute; inset: 0; background: rgba(0, 0, 0, .1); z-index: -1; }
 .sidebar-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 18px 12px; }
 .sidebar-header h1 { margin: 0; font-size: 1.45rem; letter-spacing: .02em; }
@@ -52,7 +44,7 @@ button { cursor: pointer; }
 .sidebar-header-actions { display: flex; gap: 8px; }
 .icon-button { width: 38px; height: 38px; border: 0; border-radius: 999px; background: rgba(255,255,255,.16); color: inherit; font-weight: 800; box-shadow: inset 0 0 0 1px rgba(255,255,255,.2); }
 .icon-button:hover { background: rgba(255,255,255,.25); }
-.mobile-close-button { display: inline-block; }
+.mobile-close-button { display: none; }
 
 .controls { padding: 0 16px 12px; }
 .search-box { display: block; }
@@ -109,7 +101,7 @@ textarea { resize: vertical; }
 .data-button:hover { background: rgba(255,255,255,.25); }
 .visually-hidden-file { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 
-.map-pane { position: relative; min-width: 0; min-height: 0; width: 100vw; height: 100vh; height: 100dvh; }
+.map-pane { position: relative; min-width: 0; min-height: 0; height: 100%; }
 #map { position: absolute; inset: 0; height: 100%; width: 100%; min-height: 320px; background: #cfded8; }
 .leaflet-container { height: 100%; width: 100%; }
 
@@ -158,7 +150,7 @@ textarea { resize: vertical; }
 .leaflet-popup-content { margin: 12px 16px; line-height: 1.35; }
 .leaflet-popup-tip-container { width: 40px; height: 20px; position: absolute; left: 50%; margin-left: -20px; overflow: hidden; pointer-events: none; }
 .leaflet-popup-tip { width: 17px; height: 17px; padding: 1px; margin: -10px auto 0; transform: rotate(45deg); background: #fff; box-shadow: 0 3px 14px rgba(0,0,0,.4); }
-.mobile-menu-button { display: inline-block; position: absolute; z-index: 10; top: 14px; left: 14px; border: 0; border-radius: 999px; padding: 11px 14px; background: #fff; color: var(--green-dark); font-weight: 900; box-shadow: var(--shadow); }
+.mobile-menu-button { display: none; position: absolute; z-index: 10; top: 14px; left: 14px; border: 0; border-radius: 999px; padding: 11px 14px; background: #fff; color: var(--green-dark); font-weight: 900; box-shadow: var(--shadow); }
 .map-tools { position: absolute; z-index: 10; top: 14px; right: 14px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; max-width: min(560px, calc(100% - 28px)); }
 .locate-button, .spot-mode-button, .catch-mode-button { background: #fff; color: var(--green-dark); box-shadow: var(--shadow); }
 .spot-mode-button.is-active, .catch-mode-button.is-active { background: var(--orange); color: #432500; }
@@ -212,13 +204,15 @@ textarea { resize: vertical; }
 .info-content h3 { margin: 0 0 6px; color: var(--green-dark); }
 .info-content p { margin: 5px 0; line-height: 1.55; }
 .is-hidden, .hidden { display: none !important; }
-.menu-backdrop { display: none; position: fixed; inset: 0; z-index: 15; border: 0; background: rgba(0,0,0,.35); }
-.menu-backdrop.is-open { display: block; }
+.menu-backdrop { display: none; }
 
 @media (max-width: 920px) {
   body { overflow: hidden; }
-  .app-shell { height: 100vh; height: 100dvh; }
+  .app-shell { grid-template-columns: 1fr; height: 100vh; height: 100dvh; }
   .map-pane { height: 100vh; height: 100dvh; }
+  .sidebar { position: fixed; inset: 0 auto 0 0; width: min(390px, 92vw); transform: translateX(-105%); transition: transform .22s ease; }
+  .sidebar.is-open { transform: translateX(0); }
+  .menu-backdrop { position: fixed; inset: 0; z-index: 15; border: 0; background: rgba(0,0,0,.35); }
   .menu-backdrop.is-open { display: block; }
   .mobile-close-button, .mobile-menu-button { display: inline-block; }
   .map-tools { top: 64px; right: 10px; justify-content: flex-end; }
@@ -246,315 +240,4 @@ textarea { resize: vertical; }
   font-weight: 900;
   box-shadow: 0 8px 22px rgba(12, 54, 43, .18);
   border: 1px solid rgba(15, 123, 99, .25);
-}
-
-
-/* v66 GSI live fullscreen override: PCでもスマホでも地図を画面いっぱいに固定する */
-html, body {
-  width: 100% !important;
-  height: 100% !important;
-  min-height: 100% !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  overflow: hidden !important;
-}
-body { position: fixed !important; inset: 0 !important; width: 100vw !important; height: 100vh !important; height: 100dvh !important; }
-.app-shell {
-  display: block !important;
-  grid-template-columns: none !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  height: 100dvh !important;
-  min-width: 100vw !important;
-  min-height: 100vh !important;
-  min-height: 100dvh !important;
-  margin: 0 !important;
-  padding: 0 !important;
-}
-.map-pane {
-  position: fixed !important;
-  inset: 0 !important;
-  z-index: 1 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  height: 100dvh !important;
-  min-width: 100vw !important;
-  min-height: 100vh !important;
-  min-height: 100dvh !important;
-  margin: 0 !important;
-  padding: 0 !important;
-}
-#map, #map.leaflet-container, .leaflet-container {
-  position: absolute !important;
-  inset: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  height: 100dvh !important;
-  min-width: 100vw !important;
-  min-height: 100vh !important;
-  min-height: 100dvh !important;
-  margin: 0 !important;
-  padding: 0 !important;
-}
-.sidebar {
-  position: fixed !important;
-  inset: 0 auto 0 0 !important;
-  width: min(390px, 92vw) !important;
-  max-width: 92vw !important;
-  height: 100vh !important;
-  height: 100dvh !important;
-  z-index: 50 !important;
-  transform: translateX(-105%) !important;
-}
-.sidebar.is-open { transform: translateX(0) !important; }
-.menu-backdrop { position: fixed !important; inset: 0 !important; z-index: 45 !important; }
-.mobile-menu-button { display: inline-flex !important; position: fixed !important; z-index: 60 !important; }
-.map-tools { position: fixed !important; z-index: 55 !important; }
-.spot-card { position: fixed !important; z-index: 56 !important; }
-.leaflet-control-container { position: relative !important; z-index: 20 !important; }
-
-/* v66 visible buttons override: 地図上の白飛び・文字消えを防ぐ */
-.map-pane .mobile-menu-button,
-.map-pane .locate-button,
-.map-pane .spot-mode-button,
-.map-pane .catch-mode-button,
-.leaflet-control-zoom a,
-.leaflet-bar a,
-.leaflet-control-layers,
-.leaflet-control-layers-toggle {
-  opacity: 1 !important;
-  visibility: visible !important;
-  filter: none !important;
-  mix-blend-mode: normal !important;
-  -webkit-text-fill-color: #073f33 !important;
-  color: #073f33 !important;
-  background-color: rgba(255, 255, 255, 0.96) !important;
-  border: 2px solid rgba(7, 63, 51, 0.42) !important;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255,255,255,0.75) inset !important;
-  text-shadow: none !important;
-}
-
-.map-pane .mobile-menu-button,
-.map-pane .locate-button,
-.map-pane .spot-mode-button,
-.map-pane .catch-mode-button {
-  min-height: 44px !important;
-  border-radius: 999px !important;
-  padding: 10px 14px !important;
-  font-weight: 950 !important;
-  font-size: 0.92rem !important;
-  line-height: 1.15 !important;
-  white-space: nowrap !important;
-  backdrop-filter: blur(4px);
-}
-
-.map-pane .mobile-menu-button::before,
-.map-pane .locate-button::before,
-.map-pane .spot-mode-button::before,
-.map-pane .catch-mode-button::before {
-  display: inline-block;
-  margin-right: 4px;
-}
-
-.map-pane .spot-mode-button.is-active,
-.map-pane .catch-mode-button.is-active {
-  background-color: #ff9b3f !important;
-  color: #301900 !important;
-  -webkit-text-fill-color: #301900 !important;
-  border-color: rgba(48, 25, 0, 0.55) !important;
-}
-
-.map-tools {
-  gap: 8px !important;
-  align-items: flex-start !important;
-}
-
-.leaflet-control-zoom a,
-.leaflet-bar a {
-  width: 34px !important;
-  height: 34px !important;
-  line-height: 30px !important;
-  font-size: 20px !important;
-  font-weight: 900 !important;
-}
-
-.leaflet-control-layers {
-  padding: 7px !important;
-}
-
-.leaflet-control-layers label,
-.leaflet-control-layers span {
-  color: #073f33 !important;
-  -webkit-text-fill-color: #073f33 !important;
-  font-weight: 800 !important;
-}
-
-.catch-form .icon-button,
-.catch-actions .save-button,
-.location-inline-button {
-  opacity: 1 !important;
-  visibility: visible !important;
-  background-color: #0f7b63 !important;
-  color: #ffffff !important;
-  -webkit-text-fill-color: #ffffff !important;
-  border: 0 !important;
-  box-shadow: 0 6px 18px rgba(0,0,0,.22) !important;
-}
-
-.catch-actions .delete-button,
-.catch-photo-preview button {
-  opacity: 1 !important;
-  visibility: visible !important;
-  background-color: #ffebeb !important;
-  color: #a12626 !important;
-  -webkit-text-fill-color: #a12626 !important;
-  border: 1px solid rgba(161,38,38,.28) !important;
-}
-
-.sidebar .icon-button {
-  background: rgba(255,255,255,.20) !important;
-  color: #ffffff !important;
-  -webkit-text-fill-color: #ffffff !important;
-}
-
-@media (max-width: 560px) {
-  .map-tools {
-    top: 68px !important;
-    right: 8px !important;
-    flex-direction: column !important;
-    align-items: flex-end !important;
-    max-width: calc(100vw - 16px) !important;
-  }
-  .map-pane .mobile-menu-button {
-    top: 10px !important;
-    left: 10px !important;
-  }
-  .map-pane .locate-button,
-  .map-pane .spot-mode-button,
-  .map-pane .catch-mode-button {
-    max-width: 190px !important;
-    font-size: 0.84rem !important;
-    padding: 9px 11px !important;
-  }
-}
-
-
-/* v67 hard UI layer: Leafletのタイル/ペインより操作ボタンを必ず前面へ出す */
-.map-pane {
-  isolation: isolate !important;
-}
-#map,
-#map.leaflet-container,
-.map-pane > #map {
-  z-index: 0 !important;
-}
-#map .leaflet-pane,
-#map .leaflet-map-pane,
-#map .leaflet-tile-pane,
-#map .leaflet-overlay-pane,
-#map .leaflet-marker-pane,
-#map .leaflet-shadow-pane,
-#map .leaflet-tooltip-pane,
-#map .leaflet-popup-pane {
-  z-index: auto;
-}
-#map .leaflet-control-container,
-#map .leaflet-top,
-#map .leaflet-bottom {
-  z-index: 1000 !important;
-}
-.map-pane > .mobile-menu-button,
-#menuToggle.mobile-menu-button {
-  display: inline-flex !important;
-  position: fixed !important;
-  top: 14px !important;
-  left: 14px !important;
-  z-index: 2147483000 !important;
-  pointer-events: auto !important;
-  touch-action: manipulation !important;
-  align-items: center !important;
-  justify-content: center !important;
-  min-height: 46px !important;
-  min-width: 110px !important;
-  padding: 10px 16px !important;
-  border: 2px solid rgba(7, 63, 51, 0.55) !important;
-  border-radius: 999px !important;
-  background: rgba(255,255,255,0.98) !important;
-  color: #073f33 !important;
-  -webkit-text-fill-color: #073f33 !important;
-  font-weight: 950 !important;
-  box-shadow: 0 12px 34px rgba(0,0,0,.42), 0 0 0 2px rgba(255,255,255,.9) inset !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-  transform: none !important;
-}
-.map-pane > .map-tools,
-#mapTools,
-.map-tools {
-  position: fixed !important;
-  top: 14px !important;
-  right: 14px !important;
-  z-index: 2147482900 !important;
-  pointer-events: none !important;
-  display: flex !important;
-  gap: 8px !important;
-  flex-wrap: wrap !important;
-  justify-content: flex-end !important;
-}
-.map-pane > .map-tools > button,
-.map-tools > button,
-#locateCatchButton,
-#addSpotMode,
-#addCatchMode {
-  position: relative !important;
-  z-index: 2147483001 !important;
-  pointer-events: auto !important;
-  touch-action: manipulation !important;
-  min-height: 46px !important;
-  padding: 10px 14px !important;
-  border: 2px solid rgba(7, 63, 51, 0.55) !important;
-  border-radius: 999px !important;
-  background: rgba(255,255,255,0.98) !important;
-  color: #073f33 !important;
-  -webkit-text-fill-color: #073f33 !important;
-  font-weight: 950 !important;
-  box-shadow: 0 12px 34px rgba(0,0,0,.42), 0 0 0 2px rgba(255,255,255,.9) inset !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-}
-.map-pane > .map-tools > button.is-active,
-.map-tools > button.is-active,
-#addSpotMode.is-active,
-#addCatchMode.is-active {
-  background: #ff9b3f !important;
-  color: #301900 !important;
-  -webkit-text-fill-color: #301900 !important;
-}
-.sidebar {
-  z-index: 2147482800 !important;
-}
-.menu-backdrop {
-  z-index: 2147482700 !important;
-}
-.spot-card,
-.catch-panel {
-  z-index: 2147482600 !important;
-}
-@media (max-width: 700px) {
-  .map-pane > .map-tools,
-  .map-tools {
-    top: 70px !important;
-    right: 10px !important;
-    left: auto !important;
-    max-width: calc(100vw - 20px) !important;
-    flex-direction: column !important;
-    align-items: flex-end !important;
-  }
-  .map-pane > .map-tools > button,
-  .map-tools > button {
-    max-width: 210px !important;
-    min-height: 42px !important;
-    font-size: .84rem !important;
-    padding: 9px 12px !important;
-  }
 }
