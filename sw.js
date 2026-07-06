@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bass-spot-log-";
-const VERSION = "v103-icon-refresh";
+const VERSION = "v104-ui-zoom-lock";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());

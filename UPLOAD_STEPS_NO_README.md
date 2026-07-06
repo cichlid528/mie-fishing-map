@@ -1,4 +1,4 @@
-# v103 アップロード手順
+# v104 アップロード手順
 
 1. ZIPを解凍します。
 2. 中身をGitHubリポジトリ `mie-fishing-map` の直下へ上書きアップロードします。
@@ -9,7 +9,7 @@ https://cichlid528.github.io/mie-fishing-map/reset-cache.html?auto=1
 
 5. その後、下のURLで確認します。
 
-https://cichlid528.github.io/mie-fishing-map/?v=v103-icon-refresh
+https://cichlid528.github.io/mie-fishing-map/?v=v104-ui-zoom-lock
 
 ## アイコンがスマホのホーム画面で古いままの場合
 

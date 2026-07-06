@@ -2,7 +2,7 @@
   "use strict";
   window.__MIE_PWA_INSTALL_MANAGED__ = true;
 
-  const APP_VERSION = "v103-icon-refresh";
+  const APP_VERSION = "v104-ui-zoom-lock";
   const installButton = document.querySelector("#installAppButton");
   const installPanel = document.querySelector("#installPanel");
   const installStatus = document.querySelector("#installStatus");

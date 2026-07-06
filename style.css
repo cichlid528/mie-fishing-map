@@ -2856,3 +2856,65 @@ label span {
     font-size: .94rem !important;
   }
 }
+
+/* v104: 地図の拡大縮小は残し、メニュー/UIのブラウザ拡大を防止 */
+html,
+body {
+  touch-action: manipulation !important;
+  overscroll-behavior: none !important;
+  -webkit-text-size-adjust: 100% !important;
+  text-size-adjust: 100% !important;
+}
+.app-shell,
+.sidebar,
+#mobileMenu,
+.controls,
+.spot-list,
+.catch-list,
+.spot-card,
+.catch-panel,
+.catch-form,
+#spotPanel,
+#catchPanel,
+#backgroundPanel,
+#installPanel,
+#infoPanel,
+.map-tools,
+.mobile-menu-button,
+.menu-backdrop {
+  -webkit-text-size-adjust: 100% !important;
+  text-size-adjust: 100% !important;
+}
+.sidebar,
+#mobileMenu,
+.controls,
+.spot-list,
+.catch-list,
+.spot-card,
+.catch-form,
+.record-info-popup .leaflet-popup-content {
+  touch-action: pan-y !important;
+  overscroll-behavior: contain !important;
+}
+button,
+input,
+select,
+textarea,
+.filter-chip,
+.list-tab,
+.data-button,
+.icon-button,
+.locate-button,
+.spot-mode-button,
+.catch-mode-button,
+.record-filter-chip,
+.species-category-chip,
+.record-entry-mode-button {
+  touch-action: manipulation !important;
+}
+.map-pane,
+#map,
+#map.leaflet-container,
+.leaflet-container {
+  touch-action: none !important;
+}

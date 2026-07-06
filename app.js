@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v103-icon-refresh";
-  const APP_STATUS_LABEL = "v103・アイコン更新版";
+  const APP_VERSION = "v104-ui-zoom-lock";
+  const APP_STATUS_LABEL = "v104・UI拡大防止版";
 
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
@@ -12,7 +12,7 @@
   const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v86";
   const LEGACY_SINGLE_KEY = "mieFishingMap.v1";
 
-  // v102: 近くの釣り場名称スクロール欄をかなり広く表示。
+  // v104: 地図の拡大縮小は残し、メニュー/UI側のページ拡大を防止。
   const MIE_CENTER = [34.55, 136.48];
   const MIE_HOME_ZOOM = 9;
   const MAP_MIN_ZOOM = 5;
@@ -415,6 +415,11 @@
 
     map = L.map("map", {
       zoomControl: true,
+      touchZoom: true,
+      scrollWheelZoom: true,
+      doubleClickZoom: true,
+      boxZoom: true,
+      keyboard: true,
       preferCanvas: true,
       zoomAnimation: false,
       fadeAnimation: false,
@@ -1878,6 +1883,36 @@
     if (!window.__MIE_PWA_INSTALL_MANAGED__) window.addEventListener("beforeinstallprompt", (event) => { event.preventDefault(); state.deferredInstallPrompt = event; updateInstallStatus(); });
   }
 
+
+  function setupUiZoomLock() {
+    const isMapTarget = (target) => Boolean(target?.closest?.("#map"));
+    const stopUiPageZoom = (event) => {
+      if (isMapTarget(event.target)) return;
+      event.preventDefault();
+    };
+
+    // iPhone/iPad Safariのピンチ操作で、メニューやフォームだけが拡大されるのを防ぐ。
+    ["gesturestart", "gesturechange", "gestureend"].forEach((eventName) => {
+      document.addEventListener(eventName, stopUiPageZoom, { passive: false });
+    });
+
+    // PCのタッチパッド/マウスでCtrl+ホイールした時も、UI側のブラウザ拡大を止める。
+    document.addEventListener("wheel", (event) => {
+      if (!event.ctrlKey && !event.metaKey) return;
+      if (isMapTarget(event.target)) return;
+      event.preventDefault();
+    }, { passive: false });
+
+    // UIボタン周辺のダブルタップ拡大を抑える。地図上のダブルタップ拡大はLeafletに任せる。
+    let lastUiTouchEnd = 0;
+    document.addEventListener("touchend", (event) => {
+      if (isMapTarget(event.target)) return;
+      const now = Date.now();
+      if (now - lastUiTouchEnd <= 350) event.preventDefault();
+      lastUiTouchEnd = now;
+    }, { passive: false });
+  }
+
   function registerServiceWorker() {
     if (window.__MIE_PWA_INSTALL_MANAGED__) return;
     if ("serviceWorker" in navigator) {
@@ -1890,6 +1925,7 @@
   function init() {
     initEls();
     setMobileViewportHeight();
+    setupUiZoomLock();
     forceFullscreenLayout();
     loadState();
     initMap();
