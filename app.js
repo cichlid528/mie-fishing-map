@@ -2,6 +2,7 @@
   "use strict";
 
   const APP_VERSION = "v101-large-spot-picker";
+  const APP_STATUS_LABEL = "v101・釣り場欄拡大版";
 
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
@@ -447,7 +448,7 @@
       { position: "topright" }
     ).addTo(map);
 
-    els.dataStatus.textContent = "v97・釣り場名5段表示";
+    els.dataStatus.textContent = APP_STATUS_LABEL;
 
     addMieBoundaryLayer();
     map.on("click", (event) => handleMapClick(event.latlng));
@@ -550,7 +551,7 @@
     if (state.spotMode) state.catchMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v97・釣り場名5段表示";
+    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : APP_STATUS_LABEL;
   }
 
   function setCatchMode(value) {
@@ -560,7 +561,7 @@
     if (state.catchMode) state.spotMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v97・釣り場名5段表示";
+    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : APP_STATUS_LABEL;
   }
 
   function handleMapClick(latlng) {
@@ -1899,7 +1900,7 @@
     window.addEventListener("load", () => { setMobileViewportHeight(); forceFullscreenLayout(); });
     window.addEventListener("resize", () => { setMobileViewportHeight(); forceFullscreenLayout(); });
     registerServiceWorker();
-    els.dataStatus.textContent = `v97・釣り場名5段表示 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
+    els.dataStatus.textContent = `${APP_STATUS_LABEL} / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
     updateBackupReminder();
   }
 

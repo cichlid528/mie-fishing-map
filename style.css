@@ -2230,7 +2230,7 @@ body.position-adjusting .leaflet-container { cursor: crosshair !important; }
   }
 }
 
-/* v97: 記録フォームの「近くの釣り場」名称リストを本当に5段表示にする */
+/* v101: 記録フォームの「近くの釣り場」名称リストを本当に5段表示にする */
 .catch-spot-select-field {
   grid-column: 1 / -1;
 }
@@ -2292,7 +2292,7 @@ body.position-adjusting .leaflet-container { cursor: crosshair !important; }
   }
 }
 
-/* v97: 釣り場リストボタンの地名表示 */
+/* v101: 釣り場リストボタンの地名表示 */
 .catch-spot-picker button small {
   display: block;
   font-weight: 700;
