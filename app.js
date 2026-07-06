@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v123-label-name-pond-add";
-  const APP_STATUS_LABEL = "v123・池名自動登録版";
+  const APP_VERSION = "v125-list-focus-hard-fix";
+  const APP_STATUS_LABEL = "v125・一覧クリック地図移動修正版";
   const GSI_POND_VECTOR_URLS = [
     // v121: スマホで外部PBF解析ライブラリが失敗しても動くよう、GeoJSONを先に試す。
     "https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/{z}/{x}/{y}.geojson",
@@ -207,7 +207,9 @@
     speciesSearch: "",
     spotSpeciesEditSpotId: "",
     spotSpeciesReturnSpotId: "",
-    backupMeta: {}
+    backupMeta: {},
+    listFocusSuppressSpotId: "",
+    listFocusSuppressUntil: 0
   };
 
   let map;
@@ -1094,7 +1096,7 @@
       const s = spotState(spot.id);
       const candidate = isPondCandidate(spot);
       return `<div class="spot-item ${spot.id === state.selectedSpotId ? "is-selected" : ""} ${candidate ? "is-candidate" : ""}" data-spot-id="${escapeHtml(spot.id)}">
-        <button class="spot-main spot-open-button" type="button" data-spot-id="${escapeHtml(spot.id)}" aria-label="${escapeHtml(spot.name)}を地図で開く"><strong>${escapeHtml(spot.name)}${candidate ? '<span class="candidate-badge">候補</span>' : ""}</strong><small>${escapeHtml(spotTypeText(spot))} / ${escapeHtml(spot.area || "地名未設定")}</small></button>
+        <button class="spot-main spot-open-button" type="button" data-spot-id="${escapeHtml(spot.id)}" aria-label="${escapeHtml(spot.name)}へ地図を移動"><strong>${escapeHtml(spot.name)}${candidate ? '<span class="candidate-badge">候補</span>' : ""}</strong><small>${escapeHtml(spotTypeText(spot))} / ${escapeHtml(spot.area || "地名未設定")}</small></button>
         ${spotFlagControl(spot.id, "caught", Boolean(s.caught), "釣れた", "✓")}
         ${spotSpeciesControl(spot.id, s.species)}
         ${spotFlagControl(spot.id, "noFishing", Boolean(s.noFishing), "禁止", "禁", "—", true)}
@@ -1276,7 +1278,44 @@
       els.dataStatus.textContent = "三重県範囲外の座標なので、地図は三重県表示のままにしました。";
       resetMieView();
     }
-    showSpotCard(spot);
+
+    const suppressedFromList = state.listFocusSuppressSpotId === id && Date.now() < Number(state.listFocusSuppressUntil || 0);
+    if (suppressedFromList || options.showCard === false || options.source === "list") {
+      hideSpotCard();
+    } else {
+      showSpotCard(spot);
+    }
+
+    renderSpotList();
+    invalidateMapSize(80);
+    invalidateMapSize(260);
+  }
+
+  function focusSpotFromList(id) {
+    const spot = state.spots.find((s) => s.id === id);
+    if (!spot) return;
+    state.selectedSpotId = id;
+    state.listFocusSuppressSpotId = id;
+    state.listFocusSuppressUntil = Date.now() + 1600;
+    try { map?.closePopup?.(); } catch (error) {}
+    document.body.classList.remove("map-popup-open", "record-popup-open");
+    hideSpotCard();
+    closeMobileMenu();
+    if (map && isInsideMieNavBounds(spot.lat, spot.lng)) {
+      const targetZoom = Math.max(map.getZoom(), spot.zoom || 16);
+      map.setView([Number(spot.lat), Number(spot.lng)], targetZoom, { animate: true });
+      els.dataStatus.textContent = `${spot.name} に移動しました。`;
+    } else if (map) {
+      els.dataStatus.textContent = "三重県範囲外の座標なので、地図は三重県表示のままにしました。";
+      resetMieView();
+    }
+    window.setTimeout(() => {
+      if (state.listFocusSuppressSpotId === id) {
+        hideSpotCard();
+        state.listFocusSuppressSpotId = "";
+        state.listFocusSuppressUntil = 0;
+      }
+    }, 500);
     renderSpotList();
     invalidateMapSize(80);
     invalidateMapSize(260);
@@ -2012,8 +2051,19 @@
       const speciesButton = event.target.closest("button[data-species-button]");
       if (speciesButton) { openSpotSpeciesPanel(speciesButton.dataset.spotId); return; }
       if (event.target.closest("input[data-flag-toggle], .flag-check, .spot-species-control")) return;
-      const item = event.target.closest("[data-spot-id]");
-      if (item) selectSpot(item.dataset.spotId);
+      const openButton = event.target.closest(".spot-open-button");
+      if (openButton) {
+        event.preventDefault();
+        event.stopPropagation();
+        focusSpotFromList(openButton.dataset.spotId);
+        return;
+      }
+      const item = event.target.closest(".spot-item[data-spot-id]");
+      if (item) {
+        event.preventDefault();
+        event.stopPropagation();
+        focusSpotFromList(item.dataset.spotId);
+      }
     });
     els.catchList.addEventListener("click", (event) => {
       const item = event.target.closest("[data-record-id]");
@@ -2555,7 +2605,7 @@
     const currentZoom = Math.round(map?.getZoom?.() || 16);
     const center = map?.getCenter?.() || { lat: MIE_CENTER[0], lng: MIE_CENTER[1] };
 
-    // v123: 画面中央に合わせた「○○池」の地図ラベル名を拾いやすくするため、
+    // v124: 画面中央に合わせた「○○池」の地図ラベル名を拾いやすくするため、
     // 中央周辺だけを複数ズームで確認する。広範囲取得はスマホで重くなるので避ける。
     const zooms = [...new Set([
       Math.max(14, Math.min(16, currentZoom)),
@@ -2735,7 +2785,7 @@
         return;
       }
 
-      // v123: ボタンで先に画面中央へ置いた仮の池候補がある場合、近い地図ラベル名で上書きする。
+      // v124: ボタンで先に画面中央へ置いた仮の池候補がある場合、近い地図ラベル名で上書きする。
       const centerAddedIndex = state.customSpots.findIndex((spot) =>
         spot?.gsiCenterAdded && Number.isFinite(Number(spot.lat)) && Number.isFinite(Number(spot.lng)) &&
         gsiPondDistanceMeters(candidate.lat, candidate.lng, Number(spot.lat), Number(spot.lng)) <= 350
