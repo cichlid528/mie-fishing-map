@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v94-five-row-spot-card";
+  const APP_VERSION = "v95-full-height-spot-card";
 
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
@@ -11,7 +11,7 @@
   const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v86";
   const LEGACY_SINGLE_KEY = "mieFishingMap.v1";
 
-  // v94: 釣り場詳細カードをさらに大きくし、スマホで約5段分見えるようにする。
+  // v95: 釣り場詳細カードを画面下部いっぱいの大型シートにする。
   const MIE_CENTER = [34.55, 136.48];
   const MIE_HOME_ZOOM = 9;
   const MAP_MIN_ZOOM = 5;
@@ -447,7 +447,7 @@
       { position: "topright" }
     ).addTo(map);
 
-    els.dataStatus.textContent = "v94・詳細カード5段表示";
+    els.dataStatus.textContent = "v95・詳細カード大表示";
 
     addMieBoundaryLayer();
     map.on("click", (event) => handleMapClick(event.latlng));
@@ -550,7 +550,7 @@
     if (state.spotMode) state.catchMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v94・詳細カード5段表示";
+    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v95・詳細カード大表示";
   }
 
   function setCatchMode(value) {
@@ -560,7 +560,7 @@
     if (state.catchMode) state.spotMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v94・詳細カード5段表示";
+    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v95・詳細カード大表示";
   }
 
   function handleMapClick(latlng) {
@@ -1872,7 +1872,7 @@
     window.addEventListener("load", () => { setMobileViewportHeight(); forceFullscreenLayout(); });
     window.addEventListener("resize", () => { setMobileViewportHeight(); forceFullscreenLayout(); });
     registerServiceWorker();
-    els.dataStatus.textContent = `v94・詳細カード5段表示 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
+    els.dataStatus.textContent = `v95・詳細カード大表示 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
     updateBackupReminder();
   }
 
