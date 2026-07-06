@@ -1,4 +1,4 @@
-# v93 アップロード手順
+# v94 アップロード手順
 
 1. ZIPを解凍します。
 2. 中身をGitHubリポジトリ `mie-fishing-map` の直下へ上書きアップロードします。
@@ -9,4 +9,4 @@ https://cichlid528.github.io/mie-fishing-map/reset-cache.html?auto=1
 
 5. その後、下のURLで確認します。
 
-https://cichlid528.github.io/mie-fishing-map/?v=v93-larger-spot-card
+https://cichlid528.github.io/mie-fishing-map/?v=v94-five-row-spot-card
