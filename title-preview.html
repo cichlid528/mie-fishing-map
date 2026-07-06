@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>タイトル画面プレビュー v108</title>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>タイトル画面プレビュー v109</title>
 <style>
 html,body{margin:0;min-height:100%;height:100%;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#04151f;overflow:hidden;}
 
@@ -347,9 +347,116 @@ html,body{margin:0;min-height:100%;height:100%;font-family:system-ui,-apple-syst
   }
 }
 
+
+/* v109: 「地図を開く」ボタンを押してからマップへ進む起動シークエンス。画像比率に合わせてタップ範囲を固定。 */
+.app-start-screen {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  background: #06131b !important;
+}
+.app-start-screen::before { display: none !important; }
+.app-start-card {
+  position: relative !important;
+  inset: auto !important;
+  width: min(100vw, calc(100dvh * .6666667)) !important;
+  height: auto !important;
+  aspect-ratio: 2 / 3 !important;
+  max-width: 100vw !important;
+  max-height: 100dvh !important;
+  display: block !important;
+  overflow: hidden !important;
+  transition: transform .42s ease, filter .42s ease !important;
+}
+.app-start-art {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  pointer-events: none !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+}
+.app-start-button {
+  position: absolute !important;
+  left: 50% !important;
+  top: 72.1% !important;
+  bottom: auto !important;
+  transform: translateX(-50%) !important;
+  width: 58% !important;
+  height: 7.4% !important;
+  min-height: 44px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+  box-shadow: none !important;
+  opacity: .01 !important;
+  cursor: pointer !important;
+  touch-action: manipulation !important;
+  z-index: 4 !important;
+}
+.app-start-button:focus-visible {
+  opacity: 1 !important;
+  background: rgba(255, 226, 150, .18) !important;
+  outline: 3px solid rgba(255, 226, 150, .78) !important;
+  outline-offset: 3px !important;
+}
+.app-start-screen.is-launching {
+  pointer-events: none !important;
+}
+.app-start-screen.is-launching .app-start-card {
+  transform: scale(1.018) !important;
+  filter: brightness(.74) saturate(1.04) !important;
+}
+.app-start-screen.is-launching::after {
+  content: "地図へ移動しています…" !important;
+  display: inline-flex !important;
+  position: absolute !important;
+  left: 50% !important;
+  bottom: calc(5.2% + env(safe-area-inset-bottom)) !important;
+  transform: translateX(-50%) !important;
+  z-index: 5 !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 36px !important;
+  border-radius: 999px !important;
+  padding: 8px 15px !important;
+  background: rgba(2, 18, 26, .72) !important;
+  color: rgba(255,255,255,.94) !important;
+  -webkit-text-fill-color: rgba(255,255,255,.94) !important;
+  border: 1px solid rgba(255, 226, 150, .28) !important;
+  box-shadow: 0 10px 28px rgba(0,0,0,.28) !important;
+  font-weight: 900 !important;
+  font-size: .92rem !important;
+  letter-spacing: .04em !important;
+  backdrop-filter: blur(6px) saturate(1.08) !important;
+  -webkit-backdrop-filter: blur(6px) saturate(1.08) !important;
+}
+@media (min-aspect-ratio: 2/3) {
+  .app-start-card {
+    width: calc(100dvh * .6666667) !important;
+    height: 100dvh !important;
+  }
+}
+@media (max-aspect-ratio: 2/3) {
+  .app-start-card {
+    width: 100vw !important;
+    height: calc(100vw * 1.5) !important;
+  }
+}
+@media (max-height: 620px) {
+  .app-start-button { top: 72.0% !important; height: 7.8% !important; }
+  .app-start-screen.is-launching::after { bottom: calc(3.5% + env(safe-area-inset-bottom)) !important; }
+}
+
 </style></head><body>
 <div id="appStartScreen" class="app-start-screen" aria-live="polite">
       <section class="app-start-card" aria-label="三重県釣りマップ 起動画面">
+        <img class="app-start-art" src="assets/title-screen-yoshiyuki-tanaka-v108.png" alt="三重県釣りマップ 起動画面">
         <div class="app-start-badge">GPS MAP &amp; CATCH LOG</div>
         <div class="app-start-icon-wrap" aria-hidden="true">
           <img class="app-start-icon" src="icons/icon-192-v103.png" alt="">

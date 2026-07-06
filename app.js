@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v108-title-art-yoshiyuki";
-  const APP_STATUS_LABEL = "v108・タイトル画面採用版";
+  const APP_VERSION = "v109-start-button-sequence";
+  const APP_STATUS_LABEL = "v109・起動ボタン遷移版";
 
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
@@ -1888,27 +1888,67 @@
 
   function setupStartScreen() {
     const screen = els.appStartScreen;
+    const openButton = els.startScreenSkip;
     if (!screen) return;
-    const startAt = Date.now();
     let closed = false;
+    let launching = false;
+    document.body.classList.add("start-screen-active");
+
     const finish = () => {
       if (!screen) return;
       screen.classList.add("is-hidden");
       screen.setAttribute("aria-hidden", "true");
+      screen.removeAttribute("aria-busy");
+      document.body.classList.remove("start-screen-active", "start-screen-launching");
+      document.body.classList.add("start-screen-done");
+      invalidateMapSize(0);
+      invalidateMapSize(160);
+      invalidateMapSize(520);
     };
+
     closeStartScreen = (fast = false) => {
       if (closed) return;
       closed = true;
-      const minVisibleMs = fast ? 0 : 1700;
-      const wait = Math.max(0, minVisibleMs - (Date.now() - startAt));
-      window.setTimeout(() => {
-        screen.classList.add("is-closing");
-        window.setTimeout(finish, 460);
-      }, wait);
+      screen.classList.add("is-closing");
+      window.setTimeout(finish, fast ? 360 : 460);
     };
-    els.startScreenSkip?.addEventListener("click", () => closeStartScreen(true));
-    // iPhoneのPWA起動で地図へすぐ飛んで見えるのを防ぐため、最低表示時間を確保する。
-    window.setTimeout(() => closeStartScreen(false), 4200);
+
+    const launchToMap = () => {
+      if (launching || closed) return;
+      launching = true;
+      screen.classList.add("is-launching");
+      screen.setAttribute("aria-busy", "true");
+      document.body.classList.add("start-screen-launching");
+      if (openButton) {
+        openButton.disabled = true;
+        openButton.setAttribute("aria-label", "地図を開いています");
+      }
+
+      window.setTimeout(() => {
+        try { closeMobileMenu(); } catch (error) {}
+        try { [els.catchPanel, els.spotPanel, els.backgroundPanel, els.installPanel, els.infoPanel].forEach(closePanel); } catch (error) {}
+        try { hideSpotCard(); } catch (error) {}
+        try {
+          if (map) {
+            map.closePopup();
+            map.setView(MIE_CENTER, MIE_HOME_ZOOM, { animate: false });
+          }
+        } catch (error) {}
+        closeStartScreen(true);
+      }, 560);
+    };
+
+    openButton?.setAttribute("aria-label", "地図を開く");
+    openButton?.addEventListener("click", launchToMap);
+    openButton?.addEventListener("touchend", (event) => {
+      event.preventDefault();
+      launchToMap();
+    }, { passive: false });
+
+    window.addEventListener("load", () => {
+      screen.classList.add("is-ready");
+      if (openButton) openButton.disabled = false;
+    });
   }
 
 
@@ -2017,7 +2057,6 @@
     registerServiceWorker();
     els.dataStatus.textContent = `${APP_STATUS_LABEL} / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
     updateBackupReminder();
-    closeStartScreen(false);
   }
 
   init();
