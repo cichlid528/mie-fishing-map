@@ -1712,3 +1712,71 @@ body.position-adjusting .leaflet-container { cursor: crosshair !important; }
     max-width: min(190px, calc(100vw - 20px)) !important;
   }
 }
+
+
+/* v85: 国土地理院の湖沼データ/湖沼図レイヤーをスマホでも扱いやすくする */
+.leaflet-control-layers-overlays label {
+  font-weight: 800 !important;
+  color: #073f33 !important;
+}
+.leaflet-control-layers-overlays span {
+  white-space: nowrap !important;
+}
+@media (max-width: 920px) {
+  .leaflet-control-layers {
+    max-width: min(230px, calc(100vw - 20px)) !important;
+    font-size: 12px !important;
+  }
+  .leaflet-control-layers-overlays label {
+    line-height: 1.35 !important;
+  }
+}
+
+
+/* v86: 池候補（未確認ポイント）を釣り場ポイントとして分かりやすく表示 */
+.custom-marker.candidate {
+  background: #f2c94c !important;
+  color: #3a2a00 !important;
+  border-color: #fff8d5 !important;
+  box-shadow: 0 6px 16px rgba(95, 70, 0, .34) !important;
+}
+.spot-item.is-candidate {
+  box-shadow: inset 4px 0 0 rgba(242, 201, 76, .95), 0 10px 26px rgba(0,0,0,.08) !important;
+}
+.candidate-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 6px;
+  border-radius: 999px;
+  padding: 2px 7px;
+  background: #fff4c2;
+  color: #5d4200;
+  font-size: .72rem;
+  font-weight: 950;
+  vertical-align: middle;
+  text-shadow: none !important;
+}
+.candidate-warning,
+.spot-source-note {
+  border-radius: 12px;
+  padding: 9px 10px;
+  margin: 8px 0;
+  line-height: 1.45;
+  text-shadow: none !important;
+}
+.candidate-warning {
+  background: #fff4c2;
+  color: #5d4200;
+  font-weight: 850;
+}
+.spot-source-note {
+  background: #eef7f4;
+  color: #315248;
+  font-size: .84rem;
+  font-weight: 750;
+}
+@media (max-width: 920px) {
+  .candidate-badge { font-size: .68rem; padding: 2px 6px; }
+  .candidate-warning, .spot-source-note { font-size: .84rem; }
+}

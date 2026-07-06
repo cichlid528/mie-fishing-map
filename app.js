@@ -1,13 +1,13 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v84-mobile-stability";
+  const APP_VERSION = "v86-pond-candidates";
 
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
   const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
   const BACKGROUND_STORAGE_KEY = "mie-fishing-map-sidebar-background-v1";
-  const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v80";
+  const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v86";
   const LEGACY_SINGLE_KEY = "mieFishingMap.v1";
 
   // v83: 位置調整中バーと、記録ポップアップの見やすさ改善に対応。
@@ -36,34 +36,34 @@
     { id: "hinachi-dam", name: "比奈知ダム", type: "ダム", area: "名張市", lat: 34.613780, lng: 136.155521, zoom: 15 },
     { id: "shorenji-dam", name: "青蓮寺ダム", type: "ダム", area: "名張市", lat: 34.604084, lng: 136.119925, zoom: 15 },
     { id: "isakadamu", name: "伊坂ダム", type: "ダム", area: "四日市市", lat: 35.0386, lng: 136.6186, zoom: 15 },
-    { id: "shakujo-lake", name: "錫杖湖", type: "池", area: "津市芸濃町", lat: 34.806622, lng: 136.378553, zoom: 15, source: "国土地理院" },
-    { id: "okukahada-lake", name: "奥香肌湖", type: "池", area: "松阪市飯高町", lat: 34.376861, lng: 136.196586, zoom: 14, source: "国土地理院" },
-    { id: "shorenji-lake", name: "青蓮寺湖", type: "池", area: "名張市", lat: 34.600869, lng: 136.118850, zoom: 15, source: "国土地理院" },
-    { id: "hinachi-lake", name: "ひなち湖", type: "池", area: "名張市", lat: 34.614467, lng: 136.164028, zoom: 15, source: "国土地理院" },
-    { id: "nanairo-reservoir", name: "七色貯水池", type: "池", area: "熊野市・紀和町周辺", lat: 33.991304, lng: 136.004799, zoom: 14, source: "国土地理院" },
-    { id: "isaka-reservoir", name: "伊坂貯水池", type: "池", area: "四日市市", lat: 35.041625, lng: 136.616311, zoom: 15, source: "国土地理院" },
-    { id: "gokatsura-pond", name: "五桂池", type: "池", area: "多気町五桂", lat: 34.466625, lng: 136.545533, zoom: 15, source: "三重県ため池DB" },
-    { id: "ishigaki-pond", name: "石垣池", type: "池", area: "鈴鹿市西玉垣町", lat: 34.856058, lng: 136.564767, zoom: 15, source: "三重県ため池DB" },
-    { id: "official-pond-001", name: "なめり湖", type: "池", area: "松阪市嬉野森本町", lat: 34.585853, lng: 136.429147, zoom: 16, source: "三重県ため池DB" },
-    { id: "official-pond-002", name: "真泥池", type: "池", area: "伊賀市真泥", lat: 34.761728, lng: 136.193772, zoom: 16, source: "三重県ため池DB" },
-    { id: "official-pond-003", name: "滝谷池", type: "池", area: "伊賀市槇山", lat: 34.882522, lng: 136.115892, zoom: 16, source: "三重県ため池DB" },
-    { id: "official-pond-004", name: "横山池", type: "池", area: "津市芸濃町椋本", lat: 34.815886, lng: 136.419051, zoom: 16, source: "三重県ため池DB" },
-    { id: "official-pond-005", name: "風早池", type: "池", area: "津市戸木町", lat: 34.689244, lng: 136.453000, zoom: 16, source: "三重県ため池DB" },
-    { id: "official-pond-006", name: "笠田大溜", type: "池", area: "いなべ市員弁町笠田新田", lat: 35.130256, lng: 136.559475, zoom: 16, source: "三重県ため池DB" },
-    { id: "official-pond-007", name: "大正池", type: "池", area: "伊賀市丸柱", lat: 34.856969, lng: 136.135019, zoom: 16, source: "三重県ため池DB" },
-    { id: "official-pond-008", name: "古田池", type: "池", area: "松阪市嬉野宮野町", lat: 34.612864, lng: 136.407917, zoom: 16, source: "三重県ため池DB" },
-    { id: "official-pond-009", name: "津賀池", type: "池", area: "鈴鹿市津賀町", lat: 34.897558, lng: 136.508433, zoom: 16, source: "三重県ため池DB" },
-    { id: "official-pond-010", name: "惣谷池", type: "池", area: "津市白山町上ﾉ村", lat: 34.677294, lng: 136.324125, zoom: 16, source: "三重県ため池DB" },
-    { id: "official-pond-011", name: "牛尾崎池", type: "池", area: "度会郡玉城町上田辺", lat: 34.498581, lng: 136.620492, zoom: 16, source: "三重県ため池DB" },
-    { id: "official-pond-012", name: "大杣池", type: "池", area: "伊賀市柘植町", lat: 34.843558, lng: 136.283369, zoom: 16, source: "三重県ため池DB" },
-    { id: "official-pond-013", name: "鴉山池", type: "池", area: "伊賀市柘植町", lat: 34.842808, lng: 136.274119, zoom: 16, source: "三重県ため池DB" },
-    { id: "official-pond-014", name: "七郷池", type: "池", area: "津市安濃町草生", lat: 34.752133, lng: 136.415111, zoom: 16, source: "三重県ため池DB" },
-    { id: "official-pond-015", name: "高束池", type: "池", area: "松阪市飯南町粥見", lat: 34.444714, lng: 136.366378, zoom: 16, source: "三重県ため池DB" },
-    { id: "official-pond-016", name: "汁谷池", type: "池", area: "度会郡玉城町宮古", lat: 34.458917, lng: 136.628175, zoom: 16, source: "三重県ため池DB" },
-    { id: "official-pond-017", name: "竹谷池", type: "池", area: "伊賀市柘植町", lat: 34.834647, lng: 136.261289, zoom: 16, source: "三重県ため池DB" },
-    { id: "official-pond-018", name: "両ヶ池", type: "池", area: "いなべ市大安町平塚", lat: 35.103506, lng: 136.526503, zoom: 16, source: "三重県ため池DB" },
-    { id: "official-pond-019", name: "山田池", type: "池", area: "津市森町北谷", lat: 34.686578, lng: 136.422500, zoom: 16, source: "三重県ため池DB" },
-    { id: "official-pond-020", name: "嘉古部池", type: "池", area: "津市美里町三郷", lat: 34.729759, lng: 136.393052, zoom: 16, source: "三重県ため池DB" },
+    { id: "shakujo-lake", name: "錫杖湖", type: "池", area: "津市芸濃町", lat: 34.806622, lng: 136.378553, zoom: 15, source: "国土地理院", candidate: true },
+    { id: "okukahada-lake", name: "奥香肌湖", type: "池", area: "松阪市飯高町", lat: 34.376861, lng: 136.196586, zoom: 14, source: "国土地理院", candidate: true },
+    { id: "shorenji-lake", name: "青蓮寺湖", type: "池", area: "名張市", lat: 34.600869, lng: 136.118850, zoom: 15, source: "国土地理院", candidate: true },
+    { id: "hinachi-lake", name: "ひなち湖", type: "池", area: "名張市", lat: 34.614467, lng: 136.164028, zoom: 15, source: "国土地理院", candidate: true },
+    { id: "nanairo-reservoir", name: "七色貯水池", type: "池", area: "熊野市・紀和町周辺", lat: 33.991304, lng: 136.004799, zoom: 14, source: "国土地理院", candidate: true },
+    { id: "isaka-reservoir", name: "伊坂貯水池", type: "池", area: "四日市市", lat: 35.041625, lng: 136.616311, zoom: 15, source: "国土地理院", candidate: true },
+    { id: "gokatsura-pond", name: "五桂池", type: "池", area: "多気町五桂", lat: 34.466625, lng: 136.545533, zoom: 15, source: "三重県ため池DB", candidate: true },
+    { id: "ishigaki-pond", name: "石垣池", type: "池", area: "鈴鹿市西玉垣町", lat: 34.856058, lng: 136.564767, zoom: 15, source: "三重県ため池DB", candidate: true },
+    { id: "official-pond-001", name: "なめり湖", type: "池", area: "松阪市嬉野森本町", lat: 34.585853, lng: 136.429147, zoom: 16, source: "三重県ため池DB", candidate: true },
+    { id: "official-pond-002", name: "真泥池", type: "池", area: "伊賀市真泥", lat: 34.761728, lng: 136.193772, zoom: 16, source: "三重県ため池DB", candidate: true },
+    { id: "official-pond-003", name: "滝谷池", type: "池", area: "伊賀市槇山", lat: 34.882522, lng: 136.115892, zoom: 16, source: "三重県ため池DB", candidate: true },
+    { id: "official-pond-004", name: "横山池", type: "池", area: "津市芸濃町椋本", lat: 34.815886, lng: 136.419051, zoom: 16, source: "三重県ため池DB", candidate: true },
+    { id: "official-pond-005", name: "風早池", type: "池", area: "津市戸木町", lat: 34.689244, lng: 136.453000, zoom: 16, source: "三重県ため池DB", candidate: true },
+    { id: "official-pond-006", name: "笠田大溜", type: "池", area: "いなべ市員弁町笠田新田", lat: 35.130256, lng: 136.559475, zoom: 16, source: "三重県ため池DB", candidate: true },
+    { id: "official-pond-007", name: "大正池", type: "池", area: "伊賀市丸柱", lat: 34.856969, lng: 136.135019, zoom: 16, source: "三重県ため池DB", candidate: true },
+    { id: "official-pond-008", name: "古田池", type: "池", area: "松阪市嬉野宮野町", lat: 34.612864, lng: 136.407917, zoom: 16, source: "三重県ため池DB", candidate: true },
+    { id: "official-pond-009", name: "津賀池", type: "池", area: "鈴鹿市津賀町", lat: 34.897558, lng: 136.508433, zoom: 16, source: "三重県ため池DB", candidate: true },
+    { id: "official-pond-010", name: "惣谷池", type: "池", area: "津市白山町上ﾉ村", lat: 34.677294, lng: 136.324125, zoom: 16, source: "三重県ため池DB", candidate: true },
+    { id: "official-pond-011", name: "牛尾崎池", type: "池", area: "度会郡玉城町上田辺", lat: 34.498581, lng: 136.620492, zoom: 16, source: "三重県ため池DB", candidate: true },
+    { id: "official-pond-012", name: "大杣池", type: "池", area: "伊賀市柘植町", lat: 34.843558, lng: 136.283369, zoom: 16, source: "三重県ため池DB", candidate: true },
+    { id: "official-pond-013", name: "鴉山池", type: "池", area: "伊賀市柘植町", lat: 34.842808, lng: 136.274119, zoom: 16, source: "三重県ため池DB", candidate: true },
+    { id: "official-pond-014", name: "七郷池", type: "池", area: "津市安濃町草生", lat: 34.752133, lng: 136.415111, zoom: 16, source: "三重県ため池DB", candidate: true },
+    { id: "official-pond-015", name: "高束池", type: "池", area: "松阪市飯南町粥見", lat: 34.444714, lng: 136.366378, zoom: 16, source: "三重県ため池DB", candidate: true },
+    { id: "official-pond-016", name: "汁谷池", type: "池", area: "度会郡玉城町宮古", lat: 34.458917, lng: 136.628175, zoom: 16, source: "三重県ため池DB", candidate: true },
+    { id: "official-pond-017", name: "竹谷池", type: "池", area: "伊賀市柘植町", lat: 34.834647, lng: 136.261289, zoom: 16, source: "三重県ため池DB", candidate: true },
+    { id: "official-pond-018", name: "両ヶ池", type: "池", area: "いなべ市大安町平塚", lat: 35.103506, lng: 136.526503, zoom: 16, source: "三重県ため池DB", candidate: true },
+    { id: "official-pond-019", name: "山田池", type: "池", area: "津市森町北谷", lat: 34.686578, lng: 136.422500, zoom: 16, source: "三重県ため池DB", candidate: true },
+    { id: "official-pond-020", name: "嘉古部池", type: "池", area: "津市美里町三郷", lat: 34.729759, lng: 136.393052, zoom: 16, source: "三重県ため池DB", candidate: true },
     { id: "nanairo-dam", name: "七色ダム", type: "ダム", area: "熊野市・紀和町周辺", lat: 33.962596, lng: 136.002566, zoom: 14 },
     { id: "port-yokkaichi", name: "四日市港", type: "港", area: "四日市市", lat: 34.9577, lng: 136.6421, zoom: 15 },
     { id: "port-shiroko", name: "白子漁港", type: "港", area: "鈴鹿市白子", lat: 34.8288, lng: 136.6048, zoom: 17 },
@@ -77,14 +77,14 @@
     { id: "kawakami-dam", name: "川上ダム", type: "ダム", area: "伊賀市", lat: 34.7003, lng: 136.1404, zoom: 15, source: "国土地理院目視調整" },
     { id: "nakazato-dam", name: "中里ダム", type: "ダム", area: "いなべ市藤原町", lat: 35.1516, lng: 136.4997, zoom: 15, source: "国土地理院目視調整" },
     { id: "nagaragawa-estuary-barrage", name: "長良川河口堰", type: "ダム", area: "桑名市長島町", lat: 35.0707, lng: 136.6917, zoom: 15, source: "国土地理院目視調整" },
-    { id: "kasado-reservoir", name: "加佐登調整池", type: "池", area: "鈴鹿市加佐登", lat: 34.8874, lng: 136.5315, zoom: 16, source: "国土地理院目視調整" },
-    { id: "kameyama-sunshine-pond", name: "亀山サンシャインパーク池", type: "池", area: "亀山市布気町", lat: 34.8578, lng: 136.4848, zoom: 16, source: "国土地理院目視調整" },
-    { id: "kameyama-park-pond", name: "亀山公園池", type: "池", area: "亀山市若山町", lat: 34.8587, lng: 136.4527, zoom: 16, source: "国土地理院目視調整" },
-    { id: "nanbu-kyuryo-park-pond", name: "南部丘陵公園池", type: "池", area: "四日市市波木町", lat: 34.9398, lng: 136.5825, zoom: 16, source: "国土地理院目視調整" },
-    { id: "tarusaka-park-pond", name: "垂坂公園池", type: "池", area: "四日市市垂坂町", lat: 35.0115, lng: 136.6122, zoom: 16, source: "国土地理院目視調整" },
-    { id: "chusei-green-park-pond", name: "中勢グリーンパーク池", type: "池", area: "津市あのつ台", lat: 34.7601, lng: 136.5022, zoom: 16, source: "国土地理院目視調整" },
-    { id: "mie-prefectural-forest-pond", name: "三重県民の森池", type: "池", area: "菰野町千草", lat: 35.0335, lng: 136.4594, zoom: 16, source: "国土地理院目視調整" },
-    { id: "daibutsuyama-park-pond", name: "大仏山公園池", type: "池", area: "明和町・伊勢市周辺", lat: 34.5136, lng: 136.6367, zoom: 16, source: "国土地理院目視調整" },
+    { id: "kasado-reservoir", name: "加佐登調整池", type: "池", area: "鈴鹿市加佐登", lat: 34.8874, lng: 136.5315, zoom: 16, source: "国土地理院目視調整", candidate: true },
+    { id: "kameyama-sunshine-pond", name: "亀山サンシャインパーク池", type: "池", area: "亀山市布気町", lat: 34.8578, lng: 136.4848, zoom: 16, source: "国土地理院目視調整", candidate: true },
+    { id: "kameyama-park-pond", name: "亀山公園池", type: "池", area: "亀山市若山町", lat: 34.8587, lng: 136.4527, zoom: 16, source: "国土地理院目視調整", candidate: true },
+    { id: "nanbu-kyuryo-park-pond", name: "南部丘陵公園池", type: "池", area: "四日市市波木町", lat: 34.9398, lng: 136.5825, zoom: 16, source: "国土地理院目視調整", candidate: true },
+    { id: "tarusaka-park-pond", name: "垂坂公園池", type: "池", area: "四日市市垂坂町", lat: 35.0115, lng: 136.6122, zoom: 16, source: "国土地理院目視調整", candidate: true },
+    { id: "chusei-green-park-pond", name: "中勢グリーンパーク池", type: "池", area: "津市あのつ台", lat: 34.7601, lng: 136.5022, zoom: 16, source: "国土地理院目視調整", candidate: true },
+    { id: "mie-prefectural-forest-pond", name: "三重県民の森池", type: "池", area: "菰野町千草", lat: 35.0335, lng: 136.4594, zoom: 16, source: "国土地理院目視調整", candidate: true },
+    { id: "daibutsuyama-park-pond", name: "大仏山公園池", type: "池", area: "明和町・伊勢市周辺", lat: 34.5136, lng: 136.6367, zoom: 16, source: "国土地理院目視調整", candidate: true },
     { id: "kuwana-port", name: "桑名港", type: "港", area: "桑名市", lat: 35.0639, lng: 136.7005, zoom: 16, source: "国土地理院文字位置目安" },
     { id: "tomisu-hara-port", name: "富洲原港", type: "港", area: "四日市市富洲原", lat: 35.0108, lng: 136.6639, zoom: 16, source: "国土地理院文字位置目安" },
     { id: "kasumigaura-wharf", name: "霞ヶ浦ふ頭", type: "港", area: "四日市市霞", lat: 34.9727, lng: 136.6483, zoom: 16, source: "国土地理院文字位置目安" },
@@ -395,6 +395,8 @@
       { position: "topright" }
     ).addTo(map);
 
+    els.dataStatus.textContent = "v86・池候補を未確認ポイントとして表示";
+
     addMieBoundaryLayer();
     map.on("click", (event) => handleMapClick(event.latlng));
     map.on("popupopen", () => {
@@ -430,10 +432,21 @@
     return "池";
   }
 
+  function isPondCandidate(spot) {
+    if (!spot || !spot.candidate) return false;
+    return !spotState(spot.id).pondVerified;
+  }
+
+  function spotTypeText(spot) {
+    if (isPondCandidate(spot)) return "池候補";
+    return spot?.type || "池";
+  }
+
   function makeSpotIcon(spot) {
+    const candidate = isPondCandidate(spot);
     return L.divIcon({
       className: "",
-      html: `<div class="custom-marker ${markerClass(spot.type)}">${markerLabel(spot.type)}</div>`,
+      html: `<div class="custom-marker ${markerClass(spot.type)}${candidate ? " candidate" : ""}">${candidate ? "候" : markerLabel(spot.type)}</div>`,
       iconSize: [30, 30], iconAnchor: [15, 15], popupAnchor: [0, -14]
     });
   }
@@ -482,7 +495,7 @@
     if (state.spotMode) state.catchMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v84・スマホ安定化";
+    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v86・池候補表示";
   }
 
   function setCatchMode(value) {
@@ -492,7 +505,7 @@
     if (state.catchMode) state.spotMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v84・スマホ安定化";
+    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v86・池候補表示";
   }
 
   function handleMapClick(latlng) {
@@ -530,9 +543,11 @@
   function filteredSpots() {
     const q = state.search.trim().toLowerCase();
     return state.spots.filter((spot) => {
-      const typeOk = state.activeFilter === "all" || spot.type === state.activeFilter;
+      const candidate = isPondCandidate(spot);
+      let typeOk = state.activeFilter === "all" || spot.type === state.activeFilter;
+      if (state.activeFilter === "池候補") typeOk = candidate;
       const s = spotState(spot.id);
-      const text = [spot.name, spot.area, spot.memo, spot.type, s.species, s.memo].join(" ").toLowerCase();
+      const text = [spot.name, spot.area, spot.memo, spot.type, spot.source, candidate ? "池候補 未確認" : "", s.species, s.memo].join(" ").toLowerCase();
       return typeOk && (!q || text.includes(q));
     });
   }
@@ -604,8 +619,9 @@
     els.visibleCount.textContent = `${list.length}件`;
     els.spotList.innerHTML = list.length ? list.map((spot) => {
       const s = spotState(spot.id);
-      return `<div class="spot-item ${spot.id === state.selectedSpotId ? "is-selected" : ""}" data-spot-id="${escapeHtml(spot.id)}">
-        <button class="spot-main spot-open-button" type="button" data-spot-id="${escapeHtml(spot.id)}" aria-label="${escapeHtml(spot.name)}を地図で開く"><strong>${escapeHtml(spot.name)}</strong><small>${escapeHtml(spot.type)} / ${escapeHtml(spot.area || "地名未設定")}</small></button>
+      const candidate = isPondCandidate(spot);
+      return `<div class="spot-item ${spot.id === state.selectedSpotId ? "is-selected" : ""} ${candidate ? "is-candidate" : ""}" data-spot-id="${escapeHtml(spot.id)}">
+        <button class="spot-main spot-open-button" type="button" data-spot-id="${escapeHtml(spot.id)}" aria-label="${escapeHtml(spot.name)}を地図で開く"><strong>${escapeHtml(spot.name)}${candidate ? '<span class="candidate-badge">候補</span>' : ""}</strong><small>${escapeHtml(spotTypeText(spot))} / ${escapeHtml(spot.area || "地名未設定")}</small></button>
         ${spotFlagControl(spot.id, "caught", Boolean(s.caught), "釣れた", "✓")}
         ${spotSpeciesControl(spot.id, s.species)}
         ${spotFlagControl(spot.id, "noFishing", Boolean(s.noFishing), "禁止", "禁", "—", true)}
@@ -747,7 +763,7 @@
         return;
       }
       const marker = L.marker(latlng, { icon: makeSpotIcon(spot) }).addTo(map);
-      marker.bindPopup(`<strong>${escapeHtml(spot.name)}</strong><br>${escapeHtml(spot.type)} / ${escapeHtml(spot.area || "")}`);
+      marker.bindPopup(`<strong>${escapeHtml(spot.name)}</strong><br>${escapeHtml(spotTypeText(spot))} / ${escapeHtml(spot.area || "")}${isPondCandidate(spot) ? "<br>未確認の池候補" : ""}`);
       marker.on("click", () => selectSpot(spot.id));
       markers.set(spot.id, marker);
     });
@@ -791,10 +807,13 @@
   function showSpotCard(spot) {
     document.body.classList.add("spot-card-open");
     const s = spotState(spot.id);
+    const candidate = isPondCandidate(spot);
     const recordCount = state.catches.filter((r) => r.spotId === spot.id).length;
-    els.spotCard.innerHTML = `<h2>${escapeHtml(spot.name)}</h2>
-      <p><strong>${escapeHtml(spot.type)}</strong> / ${escapeHtml(spot.area || "地名未設定")}</p>
+    els.spotCard.innerHTML = `<h2>${escapeHtml(spot.name)}${candidate ? '<span class="candidate-badge">池候補</span>' : ""}</h2>
+      <p><strong>${escapeHtml(spotTypeText(spot))}</strong> / ${escapeHtml(spot.area || "地名未設定")}</p>
+      ${candidate ? '<p class="candidate-warning">未確認の池候補です。釣行前に現地看板・管理者・私有地・立入禁止情報を必ず確認してください。</p>' : ""}
       ${spot.memo ? `<p>${escapeHtml(spot.memo)}</p>` : ""}
+      ${spot.source ? `<p class="spot-source-note">出典/登録元: ${escapeHtml(spot.source)}</p>` : ""}
       ${spot.positionAdjusted ? '<p class="position-adjusted-badge">位置調整済み</p>' : ""}
       <p class="catch-photo-status">記録 ${recordCount}件 / ${Number(spot.lat).toFixed(6)}, ${Number(spot.lng).toFixed(6)}</p>
       <div class="card-flags">
@@ -805,6 +824,7 @@
       </div>
       <div class="card-actions">
         <button type="button" data-action="record">ここで記録</button>
+        ${spot.candidate ? (s.pondVerified ? '<button type="button" data-action="unverifyPond">池候補に戻す</button>' : '<button type="button" data-action="verifyPond">確認済みにする</button>') : ""}
         <button type="button" data-action="move">位置調整</button>
         ${spot.positionAdjusted && !spot.custom ? '<button type="button" data-action="resetPosition">位置初期化</button>' : ""}
         ${spot.custom ? '<button type="button" data-action="edit">編集</button><button class="danger" type="button" data-action="delete">削除</button>' : ""}
@@ -1441,6 +1461,8 @@
       const spot = state.spots.find((s) => s.id === state.selectedSpotId);
       if (action === "close") hideSpotCard();
       if (action === "record") openCatchPanel(null, L.latLng(spot.lat, spot.lng), { recordType: "catch" });
+      if (action === "verifyPond") { spotState(spot.id).pondVerified = true; persistSavedState(); showSpotCard(spot); renderSpotList(); renderSpotMarkers(); }
+      if (action === "unverifyPond") { spotState(spot.id).pondVerified = false; persistSavedState(); showSpotCard(spot); renderSpotList(); renderSpotMarkers(); }
       if (action === "move") startSpotPositionAdjust(spot.id);
       if (action === "resetPosition") resetSpotPosition(spot.id);
       if (action === "edit") openSpotPanel(spot.id);
@@ -1518,7 +1540,7 @@
     window.addEventListener("load", () => { setMobileViewportHeight(); forceFullscreenLayout(); });
     window.addEventListener("resize", () => { setMobileViewportHeight(); forceFullscreenLayout(); });
     registerServiceWorker();
-    els.dataStatus.textContent = `v84・スマホ安定化 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
+    els.dataStatus.textContent = `v86・池候補表示 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
   }
 
   init();
