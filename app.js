@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v112-spot-card-on-point";
-  const APP_STATUS_LABEL = "v112・ポイント詳細カード版";
+  const APP_VERSION = "v113-mobile-spot-card-fix";
+  const APP_STATUS_LABEL = "v113・スマホポイント詳細カード修正版";
 
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
@@ -527,6 +527,58 @@
 
   function makeCurrentLocationIcon() {
     return L.divIcon({ className: "", html: '<div class="current-location-marker"><span></span></div>', iconSize: [28, 28], iconAnchor: [14, 14] });
+  }
+
+
+  // v113: スマホではLeafletのclickだけだとピンのタップが小さなポップアップ処理に流れる端末があるため、
+  // click / tap / touchend を同じ詳細カード表示にまとめる。
+  let lastSpotMarkerOpenAt = 0;
+  let lastSpotMarkerOpenId = "";
+
+  function openSpotCardFromMarker(spot, event = null) {
+    if (!spot) return;
+    const original = event?.originalEvent || event;
+    try { original?.preventDefault?.(); } catch (error) {}
+    try { original?.stopPropagation?.(); } catch (error) {}
+    try { event?.preventDefault?.(); } catch (error) {}
+    try { event?.stopPropagation?.(); } catch (error) {}
+
+    const now = Date.now();
+    if (lastSpotMarkerOpenId === spot.id && now - lastSpotMarkerOpenAt < 260) return;
+    lastSpotMarkerOpenId = spot.id;
+    lastSpotMarkerOpenAt = now;
+
+    window.requestAnimationFrame(() => {
+      try { map?.closePopup?.(); } catch (error) {}
+      document.body.classList.remove("map-popup-open", "record-popup-open");
+      selectSpot(spot.id, { source: "marker" });
+    });
+  }
+
+  function bindSpotMarkerDomTap(marker, spot) {
+    const el = marker?.getElement?.();
+    if (!el) return;
+    if (el.__mieSpotTapHandler) {
+      try { el.removeEventListener("touchend", el.__mieSpotTapHandler); } catch (error) {}
+      try { el.removeEventListener("pointerup", el.__mieSpotTapHandler); } catch (error) {}
+    }
+    const handler = (event) => openSpotCardFromMarker(spot, event);
+    el.__mieSpotTapHandler = handler;
+    el.addEventListener("touchend", handler, { passive: false });
+    el.addEventListener("pointerup", handler, { passive: false });
+  }
+
+  function bindSpotMarkerCardEvents(marker, spot) {
+    if (!marker || !spot) return;
+    try { marker.unbindPopup?.(); } catch (error) {}
+    try { marker.off?.("click"); } catch (error) {}
+    try { marker.off?.("tap"); } catch (error) {}
+    try { marker.off?.("touchend"); } catch (error) {}
+    marker.on("click", (event) => openSpotCardFromMarker(spot, event));
+    marker.on("tap", (event) => openSpotCardFromMarker(spot, event));
+    marker.on("touchend", (event) => openSpotCardFromMarker(spot, event));
+    marker.on("add", () => bindSpotMarkerDomTap(marker, spot));
+    bindSpotMarkerDomTap(marker, spot);
   }
 
   function updatePositionAdjustBanner(spot = null) {
@@ -1124,16 +1176,14 @@
       const latlng = [Number(spot.lat), Number(spot.lng)];
       if (!validPosition({ lat: latlng[0], lng: latlng[1] })) return;
       if (markers.has(spot.id)) {
-        markers.get(spot.id).setLatLng(latlng).setIcon(makeSpotIcon(spot));
+        const marker = markers.get(spot.id);
+        marker.setLatLng(latlng).setIcon(makeSpotIcon(spot));
+        bindSpotMarkerCardEvents(marker, spot);
         return;
       }
-      const marker = L.marker(latlng, { icon: makeSpotIcon(spot) }).addTo(map);
-      // v112: 釣り場ポイントを押した時は小さなLeafletポップアップではなく、下部の詳細カードを開く。
-      marker.on("click", (event) => {
-        event.originalEvent?.preventDefault?.();
-        event.originalEvent?.stopPropagation?.();
-        selectSpot(spot.id, { source: "marker" });
-      });
+      const marker = L.marker(latlng, { icon: makeSpotIcon(spot), riseOnHover: true }).addTo(map);
+      // v113: PCでもスマホでも、釣り場ポイントを押したら必ず詳細カードを開く。
+      bindSpotMarkerCardEvents(marker, spot);
       markers.set(spot.id, marker);
     });
   }
@@ -1162,17 +1212,18 @@
     state.selectedSpotId = id;
     try { map?.closePopup?.(); } catch (error) {}
     document.body.classList.remove("map-popup-open", "record-popup-open");
-    if (isInsideMieNavBounds(spot.lat, spot.lng)) {
+    closeMobileMenu();
+    if (map && isInsideMieNavBounds(spot.lat, spot.lng)) {
       const targetZoom = Math.max(map.getZoom(), spot.zoom || 15);
       map.setView([Number(spot.lat), Number(spot.lng)], targetZoom, { animate: options.source !== "marker" });
-    } else {
+    } else if (map) {
       els.dataStatus.textContent = "三重県範囲外の座標なので、地図は三重県表示のままにしました。";
       resetMieView();
     }
     showSpotCard(spot);
     renderSpotList();
-    closeMobileMenu();
     invalidateMapSize(80);
+    invalidateMapSize(260);
   }
 
   function showSpotCard(spot) {

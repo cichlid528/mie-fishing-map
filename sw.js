@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bass-spot-log-";
-const VERSION = "v112-spot-card-on-point";
+const VERSION = "v113-mobile-spot-card-fix";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());

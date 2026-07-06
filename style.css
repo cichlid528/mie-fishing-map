@@ -3578,3 +3578,24 @@ button,
 body.map-popup-open.spot-card-open #spotCard.spot-card:not(.is-hidden) {
   display: block !important;
 }
+
+
+/* v113: スマホで地図ポイントを押した時、詳細カードを必ず前面に出す */
+@media (max-width: 920px) {
+  body.spot-card-open:not(.record-popup-open) #spotCard.spot-card:not(.is-hidden),
+  body.map-popup-open.spot-card-open:not(.record-popup-open) #spotCard.spot-card:not(.is-hidden) {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    position: fixed !important;
+    z-index: 2147483300 !important;
+  }
+  body.spot-card-open:not(.record-popup-open) .leaflet-popup:not(.record-info-popup) {
+    display: none !important;
+  }
+  body.spot-card-open:not(.record-popup-open) #menuToggle.mobile-menu-button,
+  body.spot-card-open:not(.record-popup-open) .map-tools {
+    display: none !important;
+  }
+}
