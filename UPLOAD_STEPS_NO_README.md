@@ -1,4 +1,4 @@
-# v102 アップロード手順
+# v103 アップロード手順
 
 1. ZIPを解凍します。
 2. 中身をGitHubリポジトリ `mie-fishing-map` の直下へ上書きアップロードします。
@@ -9,4 +9,8 @@ https://cichlid528.github.io/mie-fishing-map/reset-cache.html?auto=1
 
 5. その後、下のURLで確認します。
 
-https://cichlid528.github.io/mie-fishing-map/?v=v102-compact-five-row-picker
+https://cichlid528.github.io/mie-fishing-map/?v=v103-icon-refresh
+
+## アイコンがスマホのホーム画面で古いままの場合
+
+ブラウザ内のアプリアイコンは新しい画像に変わりますが、すでにホーム画面へ追加済みのアイコンは端末側が強く保持することがあります。古いままなら、ホーム画面の古いアイコンを削除してから、もう一度「ホーム画面に追加」してください。

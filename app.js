@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v102-compact-five-row-picker";
-  const APP_STATUS_LABEL = "v102・一覧5段改善版";
+  const APP_VERSION = "v103-icon-refresh";
+  const APP_STATUS_LABEL = "v103・アイコン更新版";
 
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
