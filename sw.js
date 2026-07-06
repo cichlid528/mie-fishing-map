@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bass-spot-log-";
-const VERSION = "v97-real-five-row-spot-picker";
+const VERSION = "v98-wide-spot-picker";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());

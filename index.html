@@ -11,8 +11,8 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQDP4nD8xQV9qVtAkM5M5OgFHJt0f9I=" crossorigin="">
-    <link rel="stylesheet" href="style.css?v=v97-real-five-row-spot-picker">
-    <style id="v97-real-five-row-spot-picker-fix">
+    <link rel="stylesheet" href="style.css?v=v98-wide-spot-picker">
+    <style id="v98-wide-spot-picker-fix">
       @media (max-width: 920px) {
         #menuToggle.mobile-menu-button { display: inline-flex !important; position: fixed !important; top: calc(12px + env(safe-area-inset-top)) !important; left: calc(12px + env(safe-area-inset-left)) !important; z-index: 2147483600 !important; pointer-events: auto !important; touch-action: manipulation !important; background: rgba(255,255,255,.99) !important; color: #073f33 !important; -webkit-text-fill-color: #073f33 !important; }
         .map-tools { position: fixed !important; top: calc(68px + env(safe-area-inset-top)) !important; right: calc(10px + env(safe-area-inset-right)) !important; z-index: 2147483400 !important; pointer-events: none !important; }
@@ -563,8 +563,8 @@
   clip: rect(0 0 0 0) !important;
 }
 .catch-spot-picker {
-  height: 238px !important;
-  max-height: 238px !important;
+  height: 340px !important;
+  max-height: 340px !important;
   overflow-y: auto !important;
   border: 1px solid rgba(7,63,51,.22) !important;
   border-radius: 14px !important;
@@ -572,12 +572,12 @@
   background: rgba(255,255,255,.98) !important;
   -webkit-overflow-scrolling: touch !important;
   display: grid !important;
-  grid-auto-rows: 44px !important;
+  grid-auto-rows: 58px !important;
   gap: 5px !important;
 }
 .catch-spot-picker button {
   width: 100% !important;
-  min-height: 44px !important;
+  min-height: 58px !important;
   padding: 8px 10px !important;
   border: 1px solid rgba(7,63,51,.14) !important;
   border-radius: 10px !important;
@@ -601,13 +601,42 @@
 }
 @media (max-width: 920px) {
   .catch-spot-picker {
-    height: 250px !important;
-    max-height: 250px !important;
-    grid-auto-rows: 46px !important;
+    height: min(46dvh, 360px) !important;
+    min-height: 320px !important;
+    max-height: 380px !important;
+    grid-auto-rows: 60px !important;
   }
   .catch-spot-picker button {
-    min-height: 46px !important;
-    font-size: .98rem !important;
+    min-height: 60px !important;
+    font-size: 1rem !important;
+  }
+}
+
+/* v98: 近くの釣り場名称選択欄を広く表示 */
+.catch-spot-select-field {
+  grid-column: 1 / -1 !important;
+}
+.catch-spot-select-field .catch-spot-picker {
+  width: 100% !important;
+  height: 340px !important;
+  max-height: 340px !important;
+  grid-auto-rows: 58px !important;
+}
+.catch-spot-select-field .catch-spot-picker button {
+  min-height: 58px !important;
+  padding: 10px 12px !important;
+  font-size: .98rem !important;
+}
+@media (max-width: 920px) {
+  .catch-spot-select-field .catch-spot-picker {
+    height: min(48dvh, 380px) !important;
+    min-height: 320px !important;
+    max-height: 390px !important;
+    grid-auto-rows: 60px !important;
+  }
+  .catch-spot-select-field .catch-spot-picker button {
+    min-height: 60px !important;
+    font-size: 1rem !important;
   }
 }
 
@@ -745,7 +774,7 @@
           <label class="super-record-hidden-field"><span>記録タイプ</span><select id="catchRecordType"><option value="note">現地メモ</option><option value="catch">釣果</option></select></label>
           <label class="super-record-hidden-field"><span>周辺メモ種別</span><select id="catchPlaceKind"><option value="">選択してください</option><option>コンビニ</option><option>スーパー</option><option>曲がり角</option><option>入口・進入口</option><option>駐車場</option><option>トイレ</option><option>自販機</option><option>釣具店</option><option>目印</option><option>危険・注意</option><option>その他</option></select></label>
           <label class="full-width location-note-field super-record-hidden-field"><span>名称・内容</span><input id="catchPlaceName" type="text" placeholder="例: コンビニあり、ここを左折、橋の手前で曲がる"></label>
-          <label class="super-record-hidden-field catch-spot-select-field"><span>近くの釣り場</span><select id="catchSpot" class="visually-hidden-spot-select" aria-hidden="true" tabindex="-1"></select><div id="catchSpotPicker" class="catch-spot-picker" role="listbox" aria-label="近くの釣り場を5段表示で選択"></div><small class="field-hint">釣り場名を5段表示します。上下にスクロールして選択できます。</small></label>
+          <label class="full-width catch-spot-select-field"><span>近くの釣り場</span><select id="catchSpot" class="visually-hidden-spot-select" aria-hidden="true" tabindex="-1"></select><div id="catchSpotPicker" class="catch-spot-picker" role="listbox" aria-label="近くの釣り場を5段表示で選択"></div><small class="field-hint">釣り場名を大きめのスクロール欄で表示します。上下にスクロールして選択できます。</small></label>
           <label class="super-record-hidden-field"><span>日時</span><input id="catchTime" type="datetime-local"></label>
           <label class="fishing-field full-width species-multi-field"><span>魚種（複数選択可）</span><input id="catchSpecies" type="hidden" value="ブラックバス"><div class="species-category-row" role="group" aria-label="魚種カテゴリ">
               <button class="species-category-chip is-active" type="button" data-species-category-filter="popular">よく使う</button>
@@ -876,7 +905,7 @@
     </section>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="pwa-install.js?v=v97-real-five-row-spot-picker"></script>
-    <script src="app.js?v=v97-real-five-row-spot-picker"></script>
+    <script src="pwa-install.js?v=v98-wide-spot-picker"></script>
+    <script src="app.js?v=v98-wide-spot-picker"></script>
   </body>
 </html>
