@@ -1,19 +1,23 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v79-mobile-spot-card-safe";
+  const APP_VERSION = "v80-species-bg-more-points";
 
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
   const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
   const BACKGROUND_STORAGE_KEY = "mie-fishing-map-sidebar-background-v1";
-  const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v78";
+  const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v80";
   const LEGACY_SINGLE_KEY = "mieFishingMap.v1";
 
-  // v79: スマホで詳細カードが操作ボタンに被らないよう位置を調整。
+  // v80: 魚種選択をプルダウン化し、背景写真透過と地図ポイントを追加。
   const MIE_CENTER = [34.55, 136.48];
   const MIE_HOME_ZOOM = 9;
   const MAP_MIN_ZOOM = 5;
+
+  const SPOT_SPECIES_OPTIONS = [
+    "", "ブラックバス", "ブルーギル", "ナマズ", "ライギョ", "シーバス", "キス", "アジ", "メバル", "カサゴ", "チヌ", "マゴチ", "ヒラメ", "その他"
+  ];
 
   const seedSpots = [
     { id: "ano-river", name: "安濃川", type: "川", area: "津市・芸濃町周辺", lat: 34.727056, lng: 136.515436, zoom: 13 },
@@ -69,7 +73,47 @@
     { id: "port-owase", name: "尾鷲港", type: "港", area: "尾鷲市", lat: 34.0713, lng: 136.2025, zoom: 16 },
     { id: "marina-kawage", name: "マリーナ河芸", type: "マリーナ", area: "津市河芸町東千里", lat: 34.798339, lng: 136.562838, zoom: 18 },
     { id: "marina-tsu-yacht", name: "津ヨットハーバー", type: "マリーナ", area: "津市津興", lat: 34.708344, lng: 136.524048, zoom: 17 },
-    { id: "marina-toba", name: "鳥羽マリーナ", type: "マリーナ", area: "鳥羽市千賀町", lat: 34.388732, lng: 136.880716, zoom: 17 }
+    { id: "marina-toba", name: "鳥羽マリーナ", type: "マリーナ", area: "鳥羽市千賀町", lat: 34.388732, lng: 136.880716, zoom: 17 },
+    { id: "kawakami-dam", name: "川上ダム", type: "ダム", area: "伊賀市", lat: 34.7003, lng: 136.1404, zoom: 15, source: "国土地理院目視調整" },
+    { id: "nakazato-dam", name: "中里ダム", type: "ダム", area: "いなべ市藤原町", lat: 35.1516, lng: 136.4997, zoom: 15, source: "国土地理院目視調整" },
+    { id: "nagaragawa-estuary-barrage", name: "長良川河口堰", type: "ダム", area: "桑名市長島町", lat: 35.0707, lng: 136.6917, zoom: 15, source: "国土地理院目視調整" },
+    { id: "kasado-reservoir", name: "加佐登調整池", type: "池", area: "鈴鹿市加佐登", lat: 34.8874, lng: 136.5315, zoom: 16, source: "国土地理院目視調整" },
+    { id: "kameyama-sunshine-pond", name: "亀山サンシャインパーク池", type: "池", area: "亀山市布気町", lat: 34.8578, lng: 136.4848, zoom: 16, source: "国土地理院目視調整" },
+    { id: "kameyama-park-pond", name: "亀山公園池", type: "池", area: "亀山市若山町", lat: 34.8587, lng: 136.4527, zoom: 16, source: "国土地理院目視調整" },
+    { id: "nanbu-kyuryo-park-pond", name: "南部丘陵公園池", type: "池", area: "四日市市波木町", lat: 34.9398, lng: 136.5825, zoom: 16, source: "国土地理院目視調整" },
+    { id: "tarusaka-park-pond", name: "垂坂公園池", type: "池", area: "四日市市垂坂町", lat: 35.0115, lng: 136.6122, zoom: 16, source: "国土地理院目視調整" },
+    { id: "chusei-green-park-pond", name: "中勢グリーンパーク池", type: "池", area: "津市あのつ台", lat: 34.7601, lng: 136.5022, zoom: 16, source: "国土地理院目視調整" },
+    { id: "mie-prefectural-forest-pond", name: "三重県民の森池", type: "池", area: "菰野町千草", lat: 35.0335, lng: 136.4594, zoom: 16, source: "国土地理院目視調整" },
+    { id: "daibutsuyama-park-pond", name: "大仏山公園池", type: "池", area: "明和町・伊勢市周辺", lat: 34.5136, lng: 136.6367, zoom: 16, source: "国土地理院目視調整" },
+    { id: "kuwana-port", name: "桑名港", type: "港", area: "桑名市", lat: 35.0639, lng: 136.7005, zoom: 16, source: "国土地理院文字位置目安" },
+    { id: "tomisu-hara-port", name: "富洲原港", type: "港", area: "四日市市富洲原", lat: 35.0108, lng: 136.6639, zoom: 16, source: "国土地理院文字位置目安" },
+    { id: "kasumigaura-wharf", name: "霞ヶ浦ふ頭", type: "港", area: "四日市市霞", lat: 34.9727, lng: 136.6483, zoom: 16, source: "国土地理院文字位置目安" },
+    { id: "isodu-fishing-port", name: "磯津漁港", type: "港", area: "四日市市磯津", lat: 34.9033, lng: 136.6402, zoom: 16, source: "国土地理院文字位置目安" },
+    { id: "kusu-fishing-port", name: "楠漁港", type: "港", area: "四日市市楠町", lat: 34.8969, lng: 136.6322, zoom: 16, source: "国土地理院文字位置目安" },
+    { id: "chiyozaki-fishing-port", name: "千代崎漁港", type: "港", area: "鈴鹿市南若松町", lat: 34.8481, lng: 136.6214, zoom: 16, source: "国土地理院文字位置目安" },
+    { id: "kawage-fishing-port", name: "河芸漁港", type: "港", area: "津市河芸町", lat: 34.8038, lng: 136.5699, zoom: 16, source: "国土地理院文字位置目安" },
+    { id: "karasu-fishing-port", name: "香良洲漁港", type: "港", area: "津市香良洲町", lat: 34.6665, lng: 136.5386, zoom: 16, source: "国土地理院文字位置目安" },
+    { id: "oyodo-fishing-port", name: "大淀漁港", type: "港", area: "明和町大淀", lat: 34.5402, lng: 136.6570, zoom: 16, source: "国土地理院文字位置目安" },
+    { id: "futami-fishing-port", name: "二見浦漁港", type: "港", area: "伊勢市二見町", lat: 34.5102, lng: 136.7812, zoom: 16, source: "国土地理院文字位置目安" },
+    { id: "matsushita-fishing-port", name: "松下漁港", type: "港", area: "伊勢市二見町松下", lat: 34.5041, lng: 136.8035, zoom: 16, source: "国土地理院文字位置目安" },
+    { id: "sakate-port", name: "坂手港", type: "港", area: "鳥羽市坂手町", lat: 34.4851, lng: 136.8625, zoom: 16, source: "国土地理院文字位置目安" },
+    { id: "arashima-fishing-port", name: "安楽島漁港", type: "港", area: "鳥羽市安楽島町", lat: 34.4759, lng: 136.8659, zoom: 16, source: "国土地理院文字位置目安" },
+    { id: "ijika-fishing-port", name: "石鏡漁港", type: "港", area: "鳥羽市石鏡町", lat: 34.4478, lng: 136.9219, zoom: 16, source: "国土地理院文字位置目安" },
+    { id: "kunizaki-fishing-port", name: "国崎漁港", type: "港", area: "鳥羽市国崎町", lat: 34.4193, lng: 136.9230, zoom: 16, source: "国土地理院文字位置目安" },
+    { id: "osatsu-fishing-port", name: "相差漁港", type: "港", area: "鳥羽市相差町", lat: 34.3890, lng: 136.9053, zoom: 16, source: "国土地理院文字位置目安" },
+    { id: "nakiri-fishing-port", name: "波切漁港", type: "港", area: "志摩市大王町波切", lat: 34.2761, lng: 136.8990, zoom: 16, source: "国土地理院文字位置目安" },
+    { id: "katada-fishing-port", name: "片田漁港", type: "港", area: "志摩市志摩町片田", lat: 34.2498, lng: 136.8394, zoom: 16, source: "国土地理院文字位置目安" },
+    { id: "wagu-fishing-port", name: "和具漁港", type: "港", area: "志摩市志摩町和具", lat: 34.2526, lng: 136.7877, zoom: 16, source: "国土地理院文字位置目安" },
+    { id: "hamajima-port", name: "浜島港", type: "港", area: "志摩市浜島町", lat: 34.2975, lng: 136.7580, zoom: 16, source: "国土地理院文字位置目安" },
+    { id: "gokasho-port", name: "五ヶ所浦漁港", type: "港", area: "南伊勢町五ヶ所浦", lat: 34.3510, lng: 136.7013, zoom: 16, source: "国土地理院文字位置目安" },
+    { id: "nishiki-fishing-port", name: "錦漁港", type: "港", area: "大紀町錦", lat: 34.2116, lng: 136.3969, zoom: 16, source: "国土地理院文字位置目安" },
+    { id: "kiinagashima-port", name: "紀伊長島港", type: "港", area: "紀北町長島", lat: 34.2080, lng: 136.3372, zoom: 16, source: "国土地理院文字位置目安" },
+    { id: "hikimoto-port", name: "引本港", type: "港", area: "紀北町引本浦", lat: 34.1306, lng: 136.2361, zoom: 16, source: "国土地理院文字位置目安" },
+    { id: "kuki-fishing-port", name: "九鬼漁港", type: "港", area: "尾鷲市九鬼町", lat: 33.9965, lng: 136.2517, zoom: 16, source: "国土地理院文字位置目安" },
+    { id: "kata-port", name: "賀田港", type: "港", area: "尾鷲市賀田町", lat: 33.9724, lng: 136.2214, zoom: 16, source: "国土地理院文字位置目安" },
+    { id: "atashika-port", name: "新鹿港", type: "港", area: "熊野市新鹿町", lat: 33.9309, lng: 136.1404, zoom: 16, source: "国土地理院文字位置目安" },
+    { id: "kinomoto-port", name: "木本港", type: "港", area: "熊野市木本町", lat: 33.8898, lng: 136.1016, zoom: 16, source: "国土地理院文字位置目安" },
+    { id: "udono-port", name: "鵜殿港", type: "港", area: "紀宝町鵜殿", lat: 33.7338, lng: 136.0120, zoom: 16, source: "国土地理院文字位置目安" }
   ];
 
   const $ = (id) => document.getElementById(id);
@@ -398,7 +442,7 @@
     if (state.spotMode) state.catchMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v79・詳細カード位置修正";
+    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v80・魚種選択とポイント追加";
   }
 
   function setCatchMode(value) {
@@ -406,7 +450,7 @@
     if (state.catchMode) state.spotMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v79・詳細カード位置修正";
+    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v80・魚種選択とポイント追加";
   }
 
   function handleMapClick(latlng) {
@@ -495,6 +539,20 @@
     </label>`;
   }
 
+  function speciesOptionsHtml(selected = "") {
+    const current = String(selected || "").trim();
+    const options = SPOT_SPECIES_OPTIONS.includes(current) ? SPOT_SPECIES_OPTIONS : [...SPOT_SPECIES_OPTIONS, current];
+    return options.map((name) => `<option value="${escapeHtml(name)}" ${name === current ? "selected" : ""}>${escapeHtml(name || "未設定")}</option>`).join("");
+  }
+
+  function spotSpeciesControl(spotId, species) {
+    return `<label class="spot-species-control ${species ? "on" : ""}" title="魚種を選択">
+      <select class="spot-species-select" data-species-select="1" data-spot-id="${escapeHtml(spotId)}" aria-label="魚種を選択">
+        ${speciesOptionsHtml(species)}
+      </select>
+    </label>`;
+  }
+
   function renderSpotList() {
     const list = filteredSpots();
     els.visibleCount.textContent = `${list.length}件`;
@@ -503,33 +561,34 @@
       return `<div class="spot-item ${spot.id === state.selectedSpotId ? "is-selected" : ""}" data-spot-id="${escapeHtml(spot.id)}">
         <button class="spot-main spot-open-button" type="button" data-spot-id="${escapeHtml(spot.id)}" aria-label="${escapeHtml(spot.name)}を地図で開く"><strong>${escapeHtml(spot.name)}</strong><small>${escapeHtml(spot.type)} / ${escapeHtml(spot.area || "地名未設定")}</small></button>
         ${spotFlagControl(spot.id, "caught", Boolean(s.caught), "釣れた", "✓")}
-        ${spotFlagControl(spot.id, "species", Boolean(s.species), `魚種${s.species ? `: ${s.species}` : ""}`, "有")}
+        ${spotSpeciesControl(spot.id, s.species)}
         ${spotFlagControl(spot.id, "noFishing", Boolean(s.noFishing), "禁止", "禁", "—", true)}
         ${spotFlagControl(spot.id, "parking", Boolean(s.parking), "駐車", "P")}
       </div>`;
     }).join("") : '<p class="empty">該当する釣り場がありません。</p>';
   }
 
-  function updateSpotListFlag(spotId, flag, checked) {
+  function saveSpotListState(spotId) {
     const spot = state.spots.find((s) => s.id === spotId);
     if (!spot) return;
-    const s = spotState(spotId);
-    if (flag === "species") {
-      if (checked) {
-        const next = prompt("釣れた魚種を入力してください", s.species || "ブラックバス");
-        if (next === null) { renderSpotList(); return; }
-        s.species = next.trim() || "ブラックバス";
-      } else {
-        s.species = "";
-      }
-    } else if (["caught", "noFishing", "parking"].includes(flag)) {
-      s[flag] = Boolean(checked);
-    } else {
-      return;
-    }
     persistSavedState();
     if (state.selectedSpotId === spotId) showSpotCard(spot);
     renderSpotList();
+  }
+
+  function updateSpotListFlag(spotId, flag, checked) {
+    const s = spotState(spotId);
+    if (["caught", "noFishing", "parking"].includes(flag)) {
+      s[flag] = Boolean(checked);
+      saveSpotListState(spotId);
+    }
+  }
+
+  function updateSpotSpecies(spotId, species) {
+    const s = spotState(spotId);
+    s.species = String(species || "").trim();
+    if (s.species) s.caught = true;
+    saveSpotListState(spotId);
   }
 
   function recordTitle(record, index) {
@@ -635,11 +694,11 @@
       <p class="catch-photo-status">記録 ${recordCount}件 / ${Number(spot.lat).toFixed(6)}, ${Number(spot.lng).toFixed(6)}</p>
       <div class="card-flags">
         <label><input type="checkbox" data-flag="caught" ${s.caught ? "checked" : ""}>釣れた</label>
+        <label class="spot-card-species"><span>魚種</span><select data-card-species="1" aria-label="魚種を選択">${speciesOptionsHtml(s.species)}</select></label>
         <label><input type="checkbox" data-flag="noFishing" ${s.noFishing ? "checked" : ""}>禁止/注意</label>
         <label><input type="checkbox" data-flag="parking" ${s.parking ? "checked" : ""}>駐車</label>
       </div>
       <div class="card-actions">
-        <button type="button" data-action="species">魚種: ${escapeHtml(s.species || "未設定")}</button>
         <button type="button" data-action="record">ここで記録</button>
         ${spot.custom ? '<button type="button" data-action="edit">編集</button><button class="danger" type="button" data-action="delete">削除</button>' : ""}
         <button type="button" data-action="close">閉じる</button>
@@ -1164,12 +1223,14 @@
     els.spotTab.addEventListener("click", () => { state.activeList = "spots"; renderLists(); });
     els.catchTab.addEventListener("click", () => { state.activeList = "catches"; renderLists(); });
     els.spotList.addEventListener("change", (event) => {
+      const select = event.target.closest("select[data-species-select]");
+      if (select) { updateSpotSpecies(select.dataset.spotId, select.value); return; }
       const input = event.target.closest("input[data-flag-toggle]");
       if (!input) return;
       updateSpotListFlag(input.dataset.spotId, input.dataset.flagToggle, input.checked);
     });
     els.spotList.addEventListener("click", (event) => {
-      if (event.target.closest("input[data-flag-toggle], .flag-check")) return;
+      if (event.target.closest("input[data-flag-toggle], select[data-species-select], .flag-check, .spot-species-control")) return;
       const item = event.target.closest("[data-spot-id]");
       if (item) selectSpot(item.dataset.spotId);
     });
@@ -1178,8 +1239,11 @@
       if (item) openCatchPanel(item.dataset.recordId);
     });
     els.spotCard.addEventListener("change", (event) => {
+      if (!state.selectedSpotId) return;
+      const speciesSelect = event.target.closest("select[data-card-species]");
+      if (speciesSelect) { updateSpotSpecies(state.selectedSpotId, speciesSelect.value); return; }
       const input = event.target.closest("input[data-flag]");
-      if (!input || !state.selectedSpotId) return;
+      if (!input) return;
       spotState(state.selectedSpotId)[input.dataset.flag] = input.checked;
       persistSavedState();
       renderSpotList();
@@ -1192,11 +1256,6 @@
       if (action === "record") openCatchPanel(null, L.latLng(spot.lat, spot.lng), { recordType: "catch" });
       if (action === "edit") openSpotPanel(spot.id);
       if (action === "delete") { els.spotIdInput.value = spot.id; deleteSelectedSpot(); }
-      if (action === "species") {
-        const s = spotState(spot.id);
-        const next = prompt("釣れた魚種を入力してください", s.species || "ブラックバス");
-        if (next !== null) { s.species = next.trim(); persistSavedState(); showSpotCard(spot); renderSpotList(); }
-      }
     });
 
     els.resetView.addEventListener("click", resetMieView);
@@ -1263,7 +1322,7 @@
     window.addEventListener("load", forceFullscreenLayout);
     window.addEventListener("resize", forceFullscreenLayout);
     registerServiceWorker();
-    els.dataStatus.textContent = `v79・詳細カード位置修正 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
+    els.dataStatus.textContent = `v80・魚種選択とポイント追加 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
   }
 
   init();

@@ -1052,7 +1052,7 @@ body.panel-open {
 }
 
 
-/* v79: スマホで釣り場詳細カードが左下の操作ボタンに被らないよう、安全位置へ移動 */
+/* v79/v80: スマホで釣り場詳細カードが左下の操作ボタンに被らないよう、安全位置へ移動 */
 @media (max-width: 920px) {
   #spotCard.spot-card,
   .spot-card {
@@ -1108,4 +1108,118 @@ body.panel-open {
     bottom: calc(160px + env(safe-area-inset-bottom)) !important;
     max-height: 36dvh !important;
   }
+}
+
+
+/* v80: 魚種を選ぶプルダウンと、背景写真がもっと透けて見えるメニュー表示 */
+.spot-item {
+  grid-template-columns: minmax(0, 1fr) 44px minmax(82px, 112px) 44px 44px !important;
+}
+.spot-species-control {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 0 !important;
+  height: 34px !important;
+  border-radius: 999px !important;
+  border: 2px solid rgba(15, 123, 99, .18) !important;
+  background: rgba(255,255,255,.94) !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.65), 0 3px 10px rgba(0,0,0,.08) !important;
+  overflow: hidden !important;
+}
+.spot-species-control.on {
+  background: #dff5ed !important;
+  border-color: rgba(15, 123, 99, .40) !important;
+}
+.spot-species-select {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  padding: 0 18px 0 8px !important;
+  background: transparent !important;
+  color: #073f33 !important;
+  -webkit-text-fill-color: #073f33 !important;
+  font-size: .74rem !important;
+  font-weight: 900 !important;
+  text-align: center !important;
+  appearance: auto !important;
+  cursor: pointer !important;
+}
+.spot-card-species {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  min-height: 34px !important;
+}
+.spot-card-species select {
+  min-width: 112px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  padding: 7px 10px !important;
+  background: rgba(255,255,255,.96) !important;
+  color: #073f33 !important;
+  -webkit-text-fill-color: #073f33 !important;
+  font-weight: 900 !important;
+}
+.sidebar,
+#mobileMenu.sidebar {
+  background:
+    linear-gradient(180deg, rgba(5, 30, 25, .12), rgba(5, 44, 36, .04)),
+    var(--sidebar-bg-image, radial-gradient(circle at 20% 10%, rgba(255,255,255,.20), transparent 32%), linear-gradient(135deg, #0f7b63, #164d45)) !important;
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  color: #fff !important;
+  text-shadow: 0 2px 5px rgba(0,0,0,.62) !important;
+}
+.sidebar::before,
+#mobileMenu.sidebar::before {
+  background:
+    radial-gradient(circle at 18% 12%, rgba(255,255,255,.10), transparent 34%),
+    linear-gradient(180deg, rgba(0,0,0,.02), rgba(0,0,0,0)) !important;
+}
+.controls,
+.sidebar-footer,
+.sidebar-actions,
+.list-head,
+.catch-list-head,
+.empty {
+  background: rgba(4, 32, 27, .08) !important;
+  backdrop-filter: blur(1px) saturate(1.02) !important;
+  -webkit-backdrop-filter: blur(1px) saturate(1.02) !important;
+}
+.filter-chip,
+.list-tab,
+.data-button,
+.stats-grid span,
+.icon-button {
+  background-color: rgba(255,255,255,.18) !important;
+}
+.filter-chip.is-active,
+.list-tab.is-active,
+.search-box input {
+  background-color: rgba(255,255,255,.92) !important;
+  text-shadow: none !important;
+}
+@media (max-width: 920px) {
+  #mobileMenu.sidebar {
+    background:
+      linear-gradient(180deg, rgba(5, 30, 25, .10), rgba(5, 44, 36, .03)),
+      var(--sidebar-bg-image, radial-gradient(circle at 20% 10%, rgba(255,255,255,.20), transparent 32%), linear-gradient(135deg, #0f7b63, #164d45)) !important;
+  }
+}
+@media (max-width: 520px) {
+  .spot-item { grid-template-columns: minmax(0, 1fr) 36px minmax(78px, 92px) 36px 36px !important; gap: 5px !important; padding: 10px !important; }
+  .spot-species-control { height: 31px !important; }
+  .spot-species-select { font-size: .68rem !important; padding-left: 5px !important; padding-right: 14px !important; }
+  .flag { min-width: 30px !important; height: 30px !important; font-size: .72rem !important; }
+}
+/* v80: 魚種プルダウンに合わせてヘッダー列幅も調整 */
+.list-head {
+  grid-template-columns: minmax(0, 1fr) 44px minmax(82px, 112px) 44px 44px !important;
+}
+@media (max-width: 520px) {
+  .list-head { grid-template-columns: minmax(0, 1fr) 36px minmax(78px, 92px) 36px 36px !important; gap: 5px !important; }
 }
