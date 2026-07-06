@@ -1,4 +1,4 @@
-# v105 アップロード手順
+# v106 アップロード手順
 
 1. ZIPを解凍します。
 2. 中身をGitHubリポジトリ `mie-fishing-map` の直下へ上書きアップロードします。
@@ -9,8 +9,8 @@ https://cichlid528.github.io/mie-fishing-map/reset-cache.html?auto=1
 
 5. その後、下のURLで確認します。
 
-https://cichlid528.github.io/mie-fishing-map/?v=v105-ui-zoom-hard-lock
+https://cichlid528.github.io/mie-fishing-map/?v=v106-start-title-screen
 
-## アイコンがスマホのホーム画面で古いままの場合
+## 今回の変更
 
-ブラウザ内のアプリアイコンは新しい画像に変わりますが、すでにホーム画面へ追加済みのアイコンは端末側が強く保持することがあります。古いままなら、ホーム画面の古いアイコンを削除してから、もう一度「ホーム画面に追加」してください。
+iPhone/PWAでアプリを起動した時、地図へすぐ入る前にタイトル画面を表示するようにしました。

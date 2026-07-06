@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bass-spot-log-";
-const VERSION = "v105-ui-zoom-hard-lock";
+const VERSION = "v106-start-title-screen";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());

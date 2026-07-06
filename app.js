@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v105-ui-zoom-hard-lock";
-  const APP_STATUS_LABEL = "v105・UIズーム固定版";
+  const APP_VERSION = "v106-start-title-screen";
+  const APP_STATUS_LABEL = "v106・起動画面追加版";
 
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
@@ -332,7 +332,7 @@
 
   function initEls() {
     [
-      "searchInput", "visibleCount", "spotList", "catchList", "spotListHead", "catchListHead", "spotTab", "catchTab",
+      "appStartScreen", "startScreenSkip", "searchInput", "visibleCount", "spotList", "catchList", "spotListHead", "catchListHead", "spotTab", "catchTab",
       "spotCount", "recordCount", "bigBassCount", "dataStatus", "spotCard", "mobileMenu", "menuToggle", "menuBackdrop", "closeMenuButton",
       "resetView", "locateCatchButton", "addSpotMode", "addCatchMode", "positionAdjustBanner", "positionAdjustText", "cancelPositionAdjustButton", "spotPanel", "spotForm", "spotLat", "spotLng", "spotIdInput",
       "spotNameInput", "spotTypeInput", "spotAreaInput", "spotMemoInput", "deleteSpot", "closeSpotPanel",
@@ -1884,8 +1884,37 @@
   }
 
 
+  let closeStartScreen = () => {};
+
+  function setupStartScreen() {
+    const screen = els.appStartScreen;
+    if (!screen) return;
+    const startAt = Date.now();
+    let closed = false;
+    const finish = () => {
+      if (!screen) return;
+      screen.classList.add("is-hidden");
+      screen.setAttribute("aria-hidden", "true");
+    };
+    closeStartScreen = (fast = false) => {
+      if (closed) return;
+      closed = true;
+      const minVisibleMs = fast ? 0 : 1700;
+      const wait = Math.max(0, minVisibleMs - (Date.now() - startAt));
+      window.setTimeout(() => {
+        screen.classList.add("is-closing");
+        window.setTimeout(finish, 460);
+      }, wait);
+    };
+    els.startScreenSkip?.addEventListener("click", () => closeStartScreen(true));
+    // iPhoneのPWA起動で地図へすぐ飛んで見えるのを防ぐため、最低表示時間を確保する。
+    window.setTimeout(() => closeStartScreen(false), 4200);
+  }
+
+
   function setupUiZoomLock() {
     const uiSelector = [
+      ".app-start-screen", ".app-start-card",
       ".sidebar", "#mobileMenu", ".controls", ".spot-list", ".catch-list", ".spot-card",
       ".catch-panel", ".catch-form", "#spotPanel", "#catchPanel", "#backgroundPanel", "#installPanel", "#infoPanel",
       ".map-tools", ".mobile-menu-button", ".menu-backdrop", ".leaflet-control-container", ".leaflet-popup"
@@ -1973,6 +2002,7 @@
 
   function init() {
     initEls();
+    setupStartScreen();
     setMobileViewportHeight();
     setupUiZoomLock();
     forceFullscreenLayout();
@@ -1987,6 +2017,7 @@
     registerServiceWorker();
     els.dataStatus.textContent = `${APP_STATUS_LABEL} / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
     updateBackupReminder();
+    closeStartScreen(false);
   }
 
   init();
