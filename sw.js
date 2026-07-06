@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bass-spot-log-";
-const VERSION = "v90-easy-record-filters";
+const VERSION = "v91-super-quick-backup";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());

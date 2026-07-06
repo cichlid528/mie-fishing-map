@@ -1,16 +1,17 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v90-easy-record-filters";
+  const APP_VERSION = "v91-super-quick-backup";
 
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
   const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
   const BACKGROUND_STORAGE_KEY = "mie-fishing-map-sidebar-background-v1";
+  const BACKUP_META_STORAGE_KEY = "mie-fishing-map-backup-meta-v1";
   const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v86";
   const LEGACY_SINGLE_KEY = "mieFishingMap.v1";
 
-  // v90: かんたん記録、魚種カテゴリ、記録フィルターを追加。
+  // v91: 超かんたん記録とバックアップ警告を追加。
   const MIE_CENTER = [34.55, 136.48];
   const MIE_HOME_ZOOM = 9;
   const MAP_MIN_ZOOM = 5;
@@ -154,8 +155,9 @@
     pendingPhotoPromise: null,
     deferredInstallPrompt: null,
     recordFilter: "all",
-    recordEntryMode: "quick",
-    speciesCategoryFilter: "popular"
+    recordEntryMode: "super",
+    speciesCategoryFilter: "popular",
+    backupMeta: {}
   };
 
   let map;
@@ -295,6 +297,7 @@
     state.customSpots = safeParse(localStorage.getItem(CUSTOM_SPOT_STORAGE_KEY), []);
     state.catches = safeParse(localStorage.getItem(CATCH_STORAGE_KEY), []).map(normalizeRecord);
     state.positionOverrides = safeParse(localStorage.getItem(POSITION_STORAGE_KEY), {});
+    state.backupMeta = safeParse(localStorage.getItem(BACKUP_META_STORAGE_KEY), {});
 
     const legacy = safeParse(localStorage.getItem(LEGACY_SINGLE_KEY), null);
     if (legacy && state.customSpots.length === 0 && Array.isArray(legacy.spots)) {
@@ -323,6 +326,7 @@
   }
   function persistCatches() { saveJson(CATCH_STORAGE_KEY, state.catches); }
   function persistPositionOverrides() { saveJson(POSITION_STORAGE_KEY, state.positionOverrides); }
+  function persistBackupMeta() { saveJson(BACKUP_META_STORAGE_KEY, state.backupMeta || {}); }
 
   function initEls() {
     [
@@ -336,7 +340,7 @@
       "catchBaitfish", "catchCover", "catchReaction", "catchPressure", "catchTimeBand", "catchMemo", "catchPhoto", "catchCamera",
       "catchPhotoPreview", "catchPhotoImage", "removeCatchPhoto", "catchPhotoStatus", "deleteCatch", "closeCatchPanel",
       "changeBackgroundButton", "backgroundPanel", "backgroundCamera", "backgroundPicker", "backgroundStatus", "resetBackgroundButton", "closeBackgroundPanel", "closeBackgroundDone",
-      "openInfoPanel", "infoPanel", "closeInfoPanel", "closeInfoDone", "backupStatus", "exportDataButton", "importDataFile",
+      "openInfoPanel", "infoPanel", "closeInfoPanel", "closeInfoDone", "backupStatus", "backupReminder", "exportDataButton", "importDataFile",
       "installAppButton", "installPanel", "installStatus", "closeInstallPanel", "closeInstallDone"
     ].forEach((id) => { els[id] = $(id); });
     els.filterButtons = [...document.querySelectorAll(".filter-chip")];
@@ -442,7 +446,7 @@
       { position: "topright" }
     ).addTo(map);
 
-    els.dataStatus.textContent = "v90・かんたん記録";
+    els.dataStatus.textContent = "v91・超かんたん記録";
 
     addMieBoundaryLayer();
     map.on("click", (event) => handleMapClick(event.latlng));
@@ -545,7 +549,7 @@
     if (state.spotMode) state.catchMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v90・かんたん記録";
+    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v91・超かんたん記録";
   }
 
   function setCatchMode(value) {
@@ -555,7 +559,7 @@
     if (state.catchMode) state.spotMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v90・かんたん記録";
+    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v91・超かんたん記録";
   }
 
   function handleMapClick(latlng) {
@@ -1105,20 +1109,26 @@
   function closeSpotPanel() { closePanel(els.spotPanel); els.spotForm.reset(); }
 
   function updateRecordEntryModeUI() {
-    const quick = state.recordEntryMode !== "detail";
+    const mode = ["super", "quick", "detail"].includes(state.recordEntryMode) ? state.recordEntryMode : "super";
+    const superQuick = mode === "super";
+    const quick = mode !== "detail";
+    els.catchForm?.classList.toggle("is-super-quick-record", superQuick);
     els.catchForm?.classList.toggle("is-quick-record", quick);
-    els.catchForm?.classList.toggle("is-detail-record", !quick);
+    els.catchForm?.classList.toggle("is-detail-record", mode === "detail");
     document.querySelectorAll(".advanced-fishing-field").forEach((field) => {
       field.classList.toggle("is-quick-hidden", quick);
     });
+    document.querySelectorAll(".super-record-hidden-field").forEach((field) => {
+      field.classList.toggle("is-super-hidden", superQuick);
+    });
     els.recordEntryButtons?.forEach((button) => {
-      button.classList.toggle("is-active", button.dataset.recordEntryMode === state.recordEntryMode);
-      button.setAttribute("aria-pressed", String(button.dataset.recordEntryMode === state.recordEntryMode));
+      button.classList.toggle("is-active", button.dataset.recordEntryMode === mode);
+      button.setAttribute("aria-pressed", String(button.dataset.recordEntryMode === mode));
     });
   }
 
-  function setRecordEntryMode(mode = "quick") {
-    state.recordEntryMode = mode === "detail" ? "detail" : "quick";
+  function setRecordEntryMode(mode = "super") {
+    state.recordEntryMode = mode === "detail" ? "detail" : (mode === "quick" ? "quick" : "super");
     updateRecordEntryModeUI();
   }
 
@@ -1158,7 +1168,8 @@
     if (els.catchPhoto) els.catchPhoto.value = "";
     if (els.catchCamera) els.catchCamera.value = "";
     updateRecordTypeUI();
-    setRecordEntryMode(record ? "detail" : (options.recordMode || "quick"));
+    const defaultRecordMode = record ? "detail" : (options.recordMode || (els.catchRecordType.value === "catch" ? "super" : "quick"));
+    setRecordEntryMode(defaultRecordMode);
     setCatchLocationStatus(lat, lng);
     els.deleteCatch.classList.toggle("is-hidden", !record);
     openPanel(els.catchPanel);
@@ -1167,7 +1178,7 @@
   function closeCatchPanel() {
     closePanel(els.catchPanel);
     els.catchForm.reset();
-    setRecordEntryMode("quick");
+    setRecordEntryMode("super");
     setCatchSpeciesValue("ブラックバス");
     state.pendingPhoto = "";
     state.pendingPhotoPromise = null;
@@ -1260,6 +1271,7 @@
       persistSavedState();
     }
     persistCatches();
+    updateBackupReminder();
     render();
     closeCatchPanel();
     els.dataStatus.textContent = record.photo ? "写真付きで記録を保存しました。" : "記録を保存しました。";
@@ -1474,6 +1486,52 @@
     }
   }
 
+  function backupDateText(value) {
+    if (!value) return "未実施";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "未実施";
+    return `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, "0")}/${String(date.getDate()).padStart(2, "0")}`;
+  }
+
+  function backupReminderState() {
+    const count = state.catches.length;
+    const lastAt = state.backupMeta?.lastBackupAt || "";
+    const lastCount = Number(state.backupMeta?.catchCount || 0);
+    const lastTime = lastAt ? new Date(lastAt).getTime() : NaN;
+    const days = Number.isFinite(lastTime) ? Math.floor((Date.now() - lastTime) / 86400000) : Infinity;
+    const added = Math.max(0, count - lastCount);
+    if (count === 0) return { level: "ok", text: "記録が増えたら、バックアップ保存でJSONを残せます。" };
+    if (!lastAt || !Number.isFinite(lastTime)) return { level: "warn", text: `記録${count}件。まだバックアップがありません。早めに保存してください。` };
+    if (added >= 10) return { level: "warn", text: `前回バックアップから記録が${added}件増えています。バックアップ推奨です。` };
+    if (days >= 30) return { level: "warn", text: `最終バックアップから${days}日経っています。バックアップ推奨です。` };
+    return { level: "ok", text: `最終バックアップ: ${backupDateText(lastAt)} / 追加記録${added}件` };
+  }
+
+  function updateBackupReminder() {
+    const info = backupReminderState();
+    if (els.backupReminder) {
+      els.backupReminder.textContent = info.text;
+      els.backupReminder.classList.toggle("is-warning", info.level === "warn");
+      els.backupReminder.classList.toggle("is-ok", info.level !== "warn");
+    }
+    if (els.exportDataButton) {
+      els.exportDataButton.classList.toggle("needs-backup", info.level === "warn");
+    }
+    if (els.backupStatus && !els.backupStatus.dataset.manualMessage) {
+      els.backupStatus.textContent = info.text;
+    }
+  }
+
+  function markBackupExported() {
+    state.backupMeta = {
+      lastBackupAt: new Date().toISOString(),
+      catchCount: state.catches.length,
+      spotCount: state.spots.length
+    };
+    persistBackupMeta();
+    updateBackupReminder();
+  }
+
   function buildBackupData() {
     return {
       app: "mie-fishing-map",
@@ -1483,6 +1541,7 @@
       customSpots: state.customSpots,
       catches: state.catches,
       positionOverrides: state.positionOverrides,
+      backupMeta: state.backupMeta || {},
       backgroundImage: localStorage.getItem(BACKGROUND_STORAGE_KEY) || ""
     };
   }
@@ -1500,7 +1559,11 @@
     const pad = (v) => String(v).padStart(2, "0");
     const stamp = `${now.getFullYear()}${pad(now.getMonth()+1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}`;
     downloadTextFile(`mie-fishing-map-backup-${stamp}.json`, JSON.stringify(buildBackupData(), null, 2));
-    els.backupStatus.textContent = "バックアップJSONを書き出しました。";
+    markBackupExported();
+    if (els.backupStatus) {
+      els.backupStatus.dataset.manualMessage = "1";
+      els.backupStatus.textContent = "バックアップJSONを書き出しました。次回の釣行前に別の場所へ保管しておくと安心です。";
+    }
   }
 
   function importBackup(file) {
@@ -1519,6 +1582,8 @@
         saveJson(CUSTOM_SPOT_STORAGE_KEY, state.customSpots);
         saveJson(CATCH_STORAGE_KEY, state.catches);
         saveJson(POSITION_STORAGE_KEY, state.positionOverrides);
+        state.backupMeta = data.backupMeta && typeof data.backupMeta === "object" ? data.backupMeta : { lastBackupAt: data.exportedAt || new Date().toISOString(), catchCount: state.catches.length, spotCount: state.spots.length };
+        persistBackupMeta();
         if (/^data:image\//.test(data.backgroundImage || "")) localStorage.setItem(BACKGROUND_STORAGE_KEY, data.backgroundImage);
         else localStorage.removeItem(BACKGROUND_STORAGE_KEY);
         els.backupStatus.textContent = "バックアップを読み込みました。画面を再読み込みします。";
@@ -1725,7 +1790,8 @@
     window.addEventListener("load", () => { setMobileViewportHeight(); forceFullscreenLayout(); });
     window.addEventListener("resize", () => { setMobileViewportHeight(); forceFullscreenLayout(); });
     registerServiceWorker();
-    els.dataStatus.textContent = `v90・かんたん記録 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
+    els.dataStatus.textContent = `v91・超かんたん記録 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
+    updateBackupReminder();
   }
 
   init();

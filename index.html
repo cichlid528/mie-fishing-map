@@ -11,8 +11,8 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQDP4nD8xQV9qVtAkM5M5OgFHJt0f9I=" crossorigin="">
-    <link rel="stylesheet" href="style.css?v=v90-easy-record-filters">
-    <style id="v90-easy-record-filters-fix">
+    <link rel="stylesheet" href="style.css?v=v91-super-quick-backup">
+    <style id="v91-super-quick-backup-fix">
       @media (max-width: 920px) {
         #menuToggle.mobile-menu-button { display: inline-flex !important; position: fixed !important; top: calc(12px + env(safe-area-inset-top)) !important; left: calc(12px + env(safe-area-inset-left)) !important; z-index: 2147483600 !important; pointer-events: auto !important; touch-action: manipulation !important; background: rgba(255,255,255,.99) !important; color: #073f33 !important; -webkit-text-fill-color: #073f33 !important; }
         .map-tools { position: fixed !important; top: calc(68px + env(safe-area-inset-top)) !important; right: calc(10px + env(safe-area-inset-right)) !important; z-index: 2147483400 !important; pointer-events: none !important; }
@@ -234,7 +234,7 @@
 }
 
 
-/* v90: かんたん記録・魚種カテゴリ・記録フィルター */
+/* v91: 超かんたん記録・バックアップ警告 */
 .record-filter-row,
 .species-category-row,
 .record-entry-mode-row {
@@ -323,6 +323,53 @@
   }
 }
 
+
+/* v91: 超かんたん記録・バックアップ警告 */
+.super-record-hidden-field.is-super-hidden,
+.advanced-fishing-field.is-quick-hidden {
+  display: none !important;
+}
+.backup-reminder {
+  grid-column: 1 / -1;
+  margin: 2px 0 0;
+  padding: 9px 10px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.16);
+  color: rgba(255,255,255,.92);
+  font-size: .82rem;
+  font-weight: 850;
+  line-height: 1.35;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.18);
+}
+.backup-reminder.is-warning {
+  background: rgba(255, 224, 102, .22);
+  color: #fff7c9;
+  box-shadow: inset 0 0 0 1px rgba(255, 224, 102, .36), 0 8px 18px rgba(0,0,0,.16);
+}
+.backup-reminder.is-ok {
+  background: rgba(130, 210, 175, .20);
+}
+.data-button.needs-backup {
+  background: rgba(255, 224, 102, .28) !important;
+  color: #fff8d5 !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 224, 102, .42), 0 8px 22px rgba(0,0,0,.22) !important;
+}
+.catch-form.is-super-quick-record .catch-photo-field {
+  border-color: rgba(15,111,95,.26);
+}
+.catch-form.is-super-quick-record .species-multi-field .multi-choice-grid {
+  max-height: min(34dvh, 260px);
+}
+@media (max-width: 920px) {
+  .backup-reminder {
+    font-size: .78rem;
+    padding: 8px 9px;
+  }
+  .catch-form.is-super-quick-record .species-multi-field .multi-choice-grid {
+    max-height: min(30dvh, 220px);
+  }
+}
+
 </style>
   </head>
   <body>
@@ -364,7 +411,7 @@
             <button class="filter-chip" type="button" data-filter="港">港・漁港</button>
             <button class="filter-chip" type="button" data-filter="マリーナ">マリーナ</button>
           </div>
-          <p id="dataStatus" class="data-status" aria-live="polite">v90・かんたん記録</p>
+          <p id="dataStatus" class="data-status" aria-live="polite">v91・超かんたん記録</p>
           <p class="notice-banner">掲載情報は釣りの許可を意味しません。現地看板・管理者・自治体・漁協の最新情報を必ず確認してください。</p>
           <div class="stats-grid" aria-label="記録集計">
             <span><strong id="spotCount">0</strong><small>釣り場</small></span>
@@ -397,7 +444,7 @@
 
         <footer class="sidebar-footer">
           <span id="visibleCount">0件</span>
-          <span>v90・かんたん記録</span>
+          <span>v91・超かんたん記録</span>
         </footer>
 
         <section class="settings-row sidebar-actions" aria-label="設定">
@@ -407,6 +454,7 @@
           <button id="exportDataButton" class="data-button" type="button">バックアップ保存</button>
           <label class="data-button import-data-label" for="importDataFile">バックアップ読込</label>
           <input id="importDataFile" class="visually-hidden-file" type="file" accept="application/json,.json">
+          <p id="backupReminder" class="backup-reminder" aria-live="polite">バックアップ状態を確認しています。</p>
         </section>
       </aside>
 
@@ -446,17 +494,18 @@
           <button id="useCurrentLocationButton" class="location-inline-button" type="button">現在地を使う</button>
         </div>
         <div class="record-entry-mode-row" role="group" aria-label="入力モード">
-          <button class="record-entry-mode-button is-active" type="button" data-record-entry-mode="quick" aria-pressed="true">かんたん記録</button>
+          <button class="record-entry-mode-button is-active" type="button" data-record-entry-mode="super" aria-pressed="true">超かんたん</button>
+          <button class="record-entry-mode-button" type="button" data-record-entry-mode="quick" aria-pressed="false">かんたん記録</button>
           <button class="record-entry-mode-button" type="button" data-record-entry-mode="detail" aria-pressed="false">詳細入力</button>
-          <span class="quick-record-hint">現場では魚種・サイズ・写真・メモだけで素早く保存できます。</span>
+          <span class="quick-record-hint">超かんたんは、魚種・サイズ・写真・メモだけで素早く保存できます。</span>
         </div>
 
         <div class="form-grid">
-          <label><span>記録タイプ</span><select id="catchRecordType"><option value="note">現地メモ</option><option value="catch">釣果</option></select></label>
-          <label><span>周辺メモ種別</span><select id="catchPlaceKind"><option value="">選択してください</option><option>コンビニ</option><option>スーパー</option><option>曲がり角</option><option>入口・進入口</option><option>駐車場</option><option>トイレ</option><option>自販機</option><option>釣具店</option><option>目印</option><option>危険・注意</option><option>その他</option></select></label>
-          <label class="full-width location-note-field"><span>名称・内容</span><input id="catchPlaceName" type="text" placeholder="例: コンビニあり、ここを左折、橋の手前で曲がる"></label>
-          <label><span>近くの釣り場</span><select id="catchSpot"></select></label>
-          <label><span>日時</span><input id="catchTime" type="datetime-local"></label>
+          <label class="super-record-hidden-field"><span>記録タイプ</span><select id="catchRecordType"><option value="note">現地メモ</option><option value="catch">釣果</option></select></label>
+          <label class="super-record-hidden-field"><span>周辺メモ種別</span><select id="catchPlaceKind"><option value="">選択してください</option><option>コンビニ</option><option>スーパー</option><option>曲がり角</option><option>入口・進入口</option><option>駐車場</option><option>トイレ</option><option>自販機</option><option>釣具店</option><option>目印</option><option>危険・注意</option><option>その他</option></select></label>
+          <label class="full-width location-note-field super-record-hidden-field"><span>名称・内容</span><input id="catchPlaceName" type="text" placeholder="例: コンビニあり、ここを左折、橋の手前で曲がる"></label>
+          <label class="super-record-hidden-field"><span>近くの釣り場</span><select id="catchSpot"></select></label>
+          <label class="super-record-hidden-field"><span>日時</span><input id="catchTime" type="datetime-local"></label>
           <label class="fishing-field full-width species-multi-field"><span>魚種（複数選択可）</span><input id="catchSpecies" type="hidden" value="ブラックバス"><div class="species-category-row" role="group" aria-label="魚種カテゴリ">
               <button class="species-category-chip is-active" type="button" data-species-category-filter="popular">よく使う</button>
               <button class="species-category-chip" type="button" data-species-category-filter="freshwater">淡水</button>
@@ -582,7 +631,7 @@
     </section>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="pwa-install.js?v=v90-easy-record-filters"></script>
-    <script src="app.js?v=v90-easy-record-filters"></script>
+    <script src="pwa-install.js?v=v91-super-quick-backup"></script>
+    <script src="app.js?v=v91-super-quick-backup"></script>
   </body>
 </html>
