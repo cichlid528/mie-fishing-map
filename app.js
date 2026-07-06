@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v111-multi-spot-species";
-  const APP_STATUS_LABEL = "v111・魚種複数選択版";
+  const APP_VERSION = "v112-spot-card-on-point";
+  const APP_STATUS_LABEL = "v112・ポイント詳細カード版";
 
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
@@ -1128,8 +1128,12 @@
         return;
       }
       const marker = L.marker(latlng, { icon: makeSpotIcon(spot) }).addTo(map);
-      marker.bindPopup(`<strong>${escapeHtml(spot.name)}</strong><br>${escapeHtml(spotTypeText(spot))} / ${escapeHtml(spot.area || "")}${isPondCandidate(spot) ? "<br>未確認の池候補" : ""}`);
-      marker.on("click", () => selectSpot(spot.id));
+      // v112: 釣り場ポイントを押した時は小さなLeafletポップアップではなく、下部の詳細カードを開く。
+      marker.on("click", (event) => {
+        event.originalEvent?.preventDefault?.();
+        event.originalEvent?.stopPropagation?.();
+        selectSpot(spot.id, { source: "marker" });
+      });
       markers.set(spot.id, marker);
     });
   }
@@ -1152,21 +1156,23 @@
     return String(value).replace("T", " ");
   }
 
-  function selectSpot(id) {
+  function selectSpot(id, options = {}) {
     const spot = state.spots.find((s) => s.id === id);
     if (!spot) return;
     state.selectedSpotId = id;
+    try { map?.closePopup?.(); } catch (error) {}
+    document.body.classList.remove("map-popup-open", "record-popup-open");
     if (isInsideMieNavBounds(spot.lat, spot.lng)) {
-      map.setView([Number(spot.lat), Number(spot.lng)], Math.max(map.getZoom(), spot.zoom || 15));
+      const targetZoom = Math.max(map.getZoom(), spot.zoom || 15);
+      map.setView([Number(spot.lat), Number(spot.lng)], targetZoom, { animate: options.source !== "marker" });
     } else {
       els.dataStatus.textContent = "三重県範囲外の座標なので、地図は三重県表示のままにしました。";
       resetMieView();
     }
-    const marker = markers.get(id);
-    if (marker) marker.openPopup();
     showSpotCard(spot);
     renderSpotList();
     closeMobileMenu();
+    invalidateMapSize(80);
   }
 
   function showSpotCard(spot) {

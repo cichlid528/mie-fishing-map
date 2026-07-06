@@ -8,11 +8,11 @@
     <meta name="apple-mobile-web-app-title" content="釣りマップ">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>三重県釣りマップ</title>
-    <link rel="manifest" href="manifest.json?v=v111-multi-spot-species">
+    <link rel="manifest" href="manifest.json?v=v112-spot-card-on-point">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon-v103.png">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQDP4nD8xQV9qVtAkM5M5OgFHJt0f9I=" crossorigin="">
-    <link rel="stylesheet" href="style.css?v=v111-multi-spot-species">
-    <style id="v111-multi-spot-species-fix">
+    <link rel="stylesheet" href="style.css?v=v112-spot-card-on-point">
+    <style id="v112-spot-card-on-point-fix">
       @media (max-width: 920px) {
         #menuToggle.mobile-menu-button { display: inline-flex !important; position: fixed !important; top: calc(12px + env(safe-area-inset-top)) !important; left: calc(12px + env(safe-area-inset-left)) !important; z-index: 2147483600 !important; pointer-events: auto !important; touch-action: manipulation !important; background: rgba(255,255,255,.99) !important; color: #073f33 !important; -webkit-text-fill-color: #073f33 !important; }
         .map-tools { position: fixed !important; top: calc(68px + env(safe-area-inset-top)) !important; right: calc(10px + env(safe-area-inset-right)) !important; z-index: 2147483400 !important; pointer-events: none !important; }
@@ -156,7 +156,7 @@
         body.menu-open .map-tools, body.panel-open .map-tools, body.position-adjusting .map-tools, body.map-popup-open .map-tools, body.record-popup-open .map-tools { display: none !important; }
         body.position-adjusting #menuToggle.mobile-menu-button, body.panel-open #menuToggle.mobile-menu-button, body.map-popup-open #menuToggle.mobile-menu-button, body.record-popup-open #menuToggle.mobile-menu-button { display: none !important; }
         .position-adjust-banner { top: calc(12px + env(safe-area-inset-top)) !important; left: calc(10px + env(safe-area-inset-left)) !important; right: calc(10px + env(safe-area-inset-right)) !important; width: auto !important; transform: none !important; flex-direction: column !important; align-items: stretch !important; max-height: min(25vh, 160px) !important; overflow: auto !important; }
-        body.position-adjusting #spotCard.spot-card, body.map-popup-open #spotCard.spot-card, body.record-popup-open #spotCard.spot-card { display: none !important; }
+        body.position-adjusting #spotCard.spot-card, body.record-popup-open #spotCard.spot-card { display: none !important; }
         .record-info-popup .leaflet-popup-content-wrapper { max-width: calc(100vw - 24px) !important; max-height: calc(var(--app-vh, 1vh) * 82) !important; overflow: hidden !important; }
         .record-info-popup .leaflet-popup-content { width: min(340px, calc(100vw - 44px)) !important; max-height: calc(var(--app-vh, 1vh) * 78) !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; margin: 8px !important; }
         .record-popup-photo img { max-height: calc(var(--app-vh, 1vh) * 34) !important; object-fit: contain !important; }
@@ -1943,7 +1943,7 @@ button,
             <button class="filter-chip" type="button" data-filter="港">港・漁港</button>
             <button class="filter-chip" type="button" data-filter="マリーナ">マリーナ</button>
           </div>
-          <p id="dataStatus" class="data-status" aria-live="polite">v111・魚種複数選択版</p>
+          <p id="dataStatus" class="data-status" aria-live="polite">v112・ポイント詳細カード版</p>
           <p class="notice-banner">掲載情報は釣りの許可を意味しません。現地看板・管理者・自治体・漁協の最新情報を必ず確認してください。</p>
           <div class="stats-grid" aria-label="記録集計">
             <span><strong id="spotCount">0</strong><small>釣り場</small></span>
@@ -1976,7 +1976,7 @@ button,
 
         <footer class="sidebar-footer">
           <span id="visibleCount">0件</span>
-          <span>v111・魚種複数選択版</span>
+          <span>v112・ポイント詳細カード版</span>
         </footer>
 
         <section class="settings-row sidebar-actions" aria-label="設定">
@@ -2167,7 +2167,7 @@ button,
     </section>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="pwa-install.js?v=v111-multi-spot-species"></script>
-    <script src="app.js?v=v111-multi-spot-species"></script>
+    <script src="pwa-install.js?v=v112-spot-card-on-point"></script>
+    <script src="app.js?v=v112-spot-card-on-point"></script>
   </body>
 </html>

@@ -1668,7 +1668,6 @@ body.position-adjusting .leaflet-container { cursor: crosshair !important; }
   .position-adjust-banner span { font-size: .88rem !important; line-height: 1.32 !important; }
   .position-adjust-banner button { width: 100% !important; min-height: 42px !important; }
   body.position-adjusting #spotCard.spot-card,
-  body.map-popup-open #spotCard.spot-card,
   body.record-popup-open #spotCard.spot-card {
     display: none !important;
   }
@@ -3572,4 +3571,10 @@ button,
   .spot-card-species-button strong {
     max-width: 58vw !important;
   }
+}
+
+
+/* v112: 釣り場ポイントタップ時は詳細カードを優先表示。通常の地図ポップアップ状態では隠さない。 */
+body.map-popup-open.spot-card-open #spotCard.spot-card:not(.is-hidden) {
+  display: block !important;
 }
