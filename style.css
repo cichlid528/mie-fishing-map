@@ -913,3 +913,71 @@ body.panel-open {
     padding: 16px !important;
   }
 }
+
+
+/* v77: 記録写真を保存後も一覧・地図ポップアップで確認できるようにする */
+.catch-item.has-photo {
+  grid-template-columns: 46px 64px 1fr !important;
+  align-items: center !important;
+}
+.catch-photo-thumb {
+  display: inline-flex !important;
+  width: 58px !important;
+  height: 58px !important;
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  background: #edf4f0 !important;
+  box-shadow: 0 6px 16px rgba(0,0,0,.16) !important;
+  border: 2px solid rgba(255,255,255,.92) !important;
+}
+.catch-photo-thumb img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  display: block !important;
+}
+.photo-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  margin-left: 6px !important;
+  border-radius: 999px !important;
+  padding: 2px 7px !important;
+  background: #e6f4ef !important;
+  color: #095a48 !important;
+  font-size: .72rem !important;
+  font-weight: 900 !important;
+  text-shadow: none !important;
+}
+.record-popup-photo {
+  margin-top: 8px !important;
+  max-width: 220px !important;
+}
+.record-popup-photo img {
+  width: 100% !important;
+  max-height: 180px !important;
+  object-fit: cover !important;
+  border-radius: 12px !important;
+  display: block !important;
+}
+.catch-photo-preview:not(.is-hidden) {
+  display: grid !important;
+  gap: 8px !important;
+}
+.catch-photo-preview img {
+  width: 100% !important;
+  max-height: 240px !important;
+  object-fit: contain !important;
+  border-radius: 14px !important;
+  background: #f2f6f4 !important;
+}
+@media (max-width: 520px) {
+  .catch-item.has-photo {
+    grid-template-columns: 40px 54px 1fr !important;
+    gap: 7px !important;
+  }
+  .catch-photo-thumb {
+    width: 50px !important;
+    height: 50px !important;
+    border-radius: 12px !important;
+  }
+}

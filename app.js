@@ -1,16 +1,16 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v76-popout-panels";
+  const APP_VERSION = "v77-record-photo-attached";
 
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
   const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
   const BACKGROUND_STORAGE_KEY = "mie-fishing-map-sidebar-background-v1";
-  const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v76";
+  const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v77";
   const LEGACY_SINGLE_KEY = "mieFishingMap.v1";
 
-  // v75: メニュー内ボタンから開く画面をポップアウト表示に修正。地図切替は「標準地図」「航空写真」のみ。
+  // v77: 記録写真を保存前に確実に添付し、一覧と地図ポップアップにも表示。
   const MIE_CENTER = [34.55, 136.48];
   const MIE_HOME_ZOOM = 9;
   const MAP_MIN_ZOOM = 5;
@@ -87,6 +87,7 @@
     spotMode: false,
     catchMode: false,
     pendingPhoto: "",
+    pendingPhotoPromise: null,
     deferredInstallPrompt: null
   };
 
@@ -397,7 +398,7 @@
     if (state.spotMode) state.catchMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v76・ポップアウト表示";
+    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v77・写真付き記録";
   }
 
   function setCatchMode(value) {
@@ -405,7 +406,7 @@
     if (state.catchMode) state.spotMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v76・ポップアウト表示";
+    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v77・写真付き記録";
   }
 
   function handleMapClick(latlng) {
@@ -509,6 +510,20 @@
     return `${record.species || "釣果"} ${size} / ${lure}`;
   }
 
+  function hasRecordPhoto(record) {
+    return /^data:image\//.test(record?.photo || "");
+  }
+
+  function recordPhotoThumb(record, altText = "記録写真") {
+    if (!hasRecordPhoto(record)) return "";
+    return `<span class="catch-photo-thumb"><img src="${record.photo}" alt="${escapeHtml(altText)}" loading="lazy"></span>`;
+  }
+
+  function recordPopupPhoto(record, altText = "記録写真") {
+    if (!hasRecordPhoto(record)) return "";
+    return `<div class="record-popup-photo"><img src="${record.photo}" alt="${escapeHtml(altText)}"></div>`;
+  }
+
   function renderCatchList() {
     const list = filteredRecords();
     els.visibleCount.textContent = `${list.length}件`;
@@ -517,9 +532,10 @@
       const title = recordTitle(record, index);
       const tags = [record.waterLevel, record.baitfish, record.cover, record.reaction, record.pressure, record.timeBand, record.lureColor, record.lureWeight]
         .filter(Boolean).slice(0, 8);
-      return `<button class="catch-item" type="button" data-record-id="${escapeHtml(record.id)}">
+      return `<button class="catch-item ${hasRecordPhoto(record) ? "has-photo" : ""}" type="button" data-record-id="${escapeHtml(record.id)}">
         <span class="catch-num ${record.recordType === "note" ? "note" : ""}">${record.recordType === "note" ? "メ" : index + 1}</span>
-        <span class="catch-main"><strong>${escapeHtml(title)}${isBigBass(record) ? '<span class="big-bass-badge">40up</span>' : ""}</strong>
+        ${recordPhotoThumb(record, title)}
+        <span class="catch-main"><strong>${escapeHtml(title)}${hasRecordPhoto(record) ? '<span class="photo-badge">写真あり</span>' : ""}${isBigBass(record) ? '<span class="big-bass-badge">40up</span>' : ""}</strong>
         <small>${escapeHtml(spot?.name || "釣り場未設定")} / ${escapeHtml(formatDateTime(record.time))}</small>
         ${tags.length ? `<span class="record-tags">${tags.map((tag) => `<span>${escapeHtml(tag)}</span>`).join("")}</span>` : ""}</span>
       </button>`;
@@ -551,7 +567,8 @@
     state.catches.forEach((record, index) => {
       if (!validPosition(record)) return;
       const marker = L.marker([Number(record.lat), Number(record.lng)], { icon: makeRecordIcon(record, index), zIndexOffset: 700 }).addTo(map);
-      marker.bindPopup(`<strong>${escapeHtml(recordTitle(record, index))}</strong><br>${escapeHtml(record.memo || "")}`);
+      const title = recordTitle(record, index);
+      marker.bindPopup(`<strong>${escapeHtml(title)}</strong>${hasRecordPhoto(record) ? "<br>写真付き記録" : ""}<br>${escapeHtml(record.memo || "")}${recordPopupPhoto(record, title)}`);
       marker.on("click", () => openCatchPanel(record.id));
       catchMarkers.set(record.id, marker);
     });
@@ -682,7 +699,11 @@
     els.catchTimeBand.value = record?.timeBand || timeBandFromInput(els.catchTime.value);
     els.catchMemo.value = record?.memo || "";
     state.pendingPhoto = record?.photo || "";
+    state.pendingPhotoPromise = null;
     updatePhotoPreview();
+    if (els.catchPhotoStatus) els.catchPhotoStatus.textContent = state.pendingPhoto ? "保存済みの写真があります。変更する場合は写真を選び直してください。" : "写真を選ぶと、保存時に記録へ添付します。";
+    if (els.catchPhoto) els.catchPhoto.value = "";
+    if (els.catchCamera) els.catchCamera.value = "";
     updateRecordTypeUI();
     setCatchLocationStatus(lat, lng);
     els.deleteCatch.classList.toggle("is-hidden", !record);
@@ -693,6 +714,9 @@
     closePanel(els.catchPanel);
     els.catchForm.reset();
     state.pendingPhoto = "";
+    state.pendingPhotoPromise = null;
+    if (els.catchPhoto) els.catchPhoto.value = "";
+    if (els.catchCamera) els.catchCamera.value = "";
     updatePhotoPreview();
   }
 
@@ -754,8 +778,13 @@
     };
   }
 
-  function saveCatch(event) {
+  async function saveCatch(event) {
     event.preventDefault();
+    const photoReady = await ensureCatchPhotoReady();
+    if (!photoReady && hasSelectedCatchPhotoFile()) {
+      const ok = confirm("写真を添付できませんでした。写真なしで記録を保存しますか？");
+      if (!ok) return;
+    }
     const record = collectRecordForm();
     if (!validPosition(record)) {
       alert("記録位置が未指定です。地図をタップするか、現在地を使ってください。");
@@ -777,7 +806,7 @@
     persistCatches();
     render();
     closeCatchPanel();
-    els.dataStatus.textContent = "記録を保存しました。";
+    els.dataStatus.textContent = record.photo ? "写真付きで記録を保存しました。" : "記録を保存しました。";
   }
 
   function saveSpot(event) {
@@ -861,15 +890,43 @@
     });
   }
 
+  function hasSelectedCatchPhotoFile() {
+    return Boolean(els.catchPhoto?.files?.[0] || els.catchCamera?.files?.[0]);
+  }
+
+  async function ensureCatchPhotoReady() {
+    if (state.pendingPhotoPromise) {
+      try {
+        els.catchPhotoStatus.textContent = "写真を記録へ添付しています…";
+        await state.pendingPhotoPromise;
+      } catch (error) {
+        return false;
+      }
+    }
+    if (!state.pendingPhoto && hasSelectedCatchPhotoFile()) {
+      return await handleCatchPhoto(els.catchPhoto?.files?.[0] || els.catchCamera?.files?.[0]);
+    }
+    return true;
+  }
+
   async function handleCatchPhoto(file) {
-    if (!file) return;
+    if (!file) return false;
     els.catchPhotoStatus.textContent = "写真を圧縮しています…";
+    const task = compressImageFile(file, { maxDimension: 1400, maxLength: 520000, initialQuality: 0.78, minQuality: 0.38 });
+    state.pendingPhotoPromise = task;
     try {
-      state.pendingPhoto = await compressImageFile(file);
-      updatePhotoPreview();
-      els.catchPhotoStatus.textContent = "写真を添付しました。";
+      const dataUrl = await task;
+      if (state.pendingPhotoPromise === task) {
+        state.pendingPhoto = dataUrl;
+        updatePhotoPreview();
+        els.catchPhotoStatus.textContent = "写真を添付しました。保存すると記録に残ります。";
+      }
+      return true;
     } catch (error) {
       els.catchPhotoStatus.textContent = error.message || "写真を添付できませんでした。";
+      return false;
+    } finally {
+      if (state.pendingPhotoPromise === task) state.pendingPhotoPromise = null;
     }
   }
 
@@ -1168,7 +1225,7 @@
     window.addEventListener("load", forceFullscreenLayout);
     window.addEventListener("resize", forceFullscreenLayout);
     registerServiceWorker();
-    els.dataStatus.textContent = `v76・ポップアウト表示 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
+    els.dataStatus.textContent = `v77・写真付き記録 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
   }
 
   init();
