@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bass-spot-log-";
-const VERSION = "v89-more-fish-species";
+const VERSION = "v90-easy-record-filters";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());

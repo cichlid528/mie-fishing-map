@@ -1870,3 +1870,92 @@ body.position-adjusting .leaflet-container { cursor: crosshair !important; }
     max-height: min(38dvh, 300px);
   }
 }
+
+/* v90: かんたん記録・魚種カテゴリ・記録フィルター */
+.record-filter-row,
+.species-category-row,
+.record-entry-mode-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.record-filter-row {
+  margin-top: 10px;
+}
+.record-filter-chip,
+.species-category-chip,
+.record-entry-mode-button {
+  border: 1px solid rgba(10, 89, 74, .22);
+  border-radius: 999px;
+  background: rgba(255,255,255,.86);
+  color: #0c5b4d;
+  font-weight: 900;
+  min-height: 34px;
+  padding: 7px 12px;
+  cursor: pointer;
+  box-shadow: 0 5px 14px rgba(0,0,0,.08);
+}
+.record-filter-chip.is-active,
+.species-category-chip.is-active,
+.record-entry-mode-button.is-active {
+  background: #0f6f5f;
+  color: #fff;
+  border-color: #0f6f5f;
+  box-shadow: 0 8px 18px rgba(15,111,95,.24);
+}
+.record-entry-mode-row {
+  margin: 10px 0 12px;
+  padding: 10px;
+  border-radius: 18px;
+  background: rgba(15, 111, 95, .08);
+  border: 1px solid rgba(15,111,95,.14);
+}
+.quick-record-hint {
+  color: rgba(25, 71, 63, .78);
+  font-size: .82rem;
+  font-weight: 800;
+}
+.advanced-fishing-field.is-quick-hidden {
+  display: none !important;
+}
+.species-category-row {
+  width: 100%;
+  margin: 4px 0 2px;
+}
+.multi-choice-grid label.is-hidden {
+  display: none !important;
+}
+.multi-choice-grid label.is-outside-category {
+  border-style: dashed;
+  opacity: .9;
+}
+.catch-list-head + .record-filter-row {
+  margin-bottom: 8px;
+}
+@media (max-width: 920px) {
+  .record-filter-row,
+  .species-category-row,
+  .record-entry-mode-row {
+    gap: 6px;
+  }
+  .record-filter-chip,
+  .species-category-chip,
+  .record-entry-mode-button {
+    min-height: 36px;
+    padding: 7px 10px;
+    font-size: .82rem;
+  }
+  .quick-record-hint {
+    width: 100%;
+    font-size: .78rem;
+  }
+  .species-category-row {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    padding: 4px 0;
+    background: rgba(255,255,255,.96);
+    border-radius: 12px;
+  }
+}

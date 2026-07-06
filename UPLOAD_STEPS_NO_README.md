@@ -1,12 +1,18 @@
-# アップロード手順（READMEなし）
+# v90 アップロード手順
 
-1. ZIPを展開します。
-2. 中身を GitHub リポジトリ `mie-fishing-map` の直下へ上書きします。
-3. `README.md` は含めていません。
-4. アップロード後、以下でキャッシュ削除してください。
+このZIPの中身を GitHub リポジトリ `cichlid528/mie-fishing-map` の直下へ上書きしてください。
 
-https://cichlid528.github.io/mie-fishing-map/reset-cache.html?auto=1
+必須上書きファイル:
+- index.html
+- app.js
+- style.css
+- manifest.json
+- pwa-install.js
+- sw.js
+- reset-cache.html
 
 確認URL:
+https://cichlid528.github.io/mie-fishing-map/?v=v90-easy-record-filters
 
-https://cichlid528.github.io/mie-fishing-map/?v=v89-more-fish-species
+キャッシュ削除:
+https://cichlid528.github.io/mie-fishing-map/reset-cache.html?auto=1

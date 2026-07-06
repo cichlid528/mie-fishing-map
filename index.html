@@ -11,8 +11,8 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQDP4nD8xQV9qVtAkM5M5OgFHJt0f9I=" crossorigin="">
-    <link rel="stylesheet" href="style.css?v=v89-more-fish-species">
-    <style id="v89-more-fish-species-fix">
+    <link rel="stylesheet" href="style.css?v=v90-easy-record-filters">
+    <style id="v90-easy-record-filters-fix">
       @media (max-width: 920px) {
         #menuToggle.mobile-menu-button { display: inline-flex !important; position: fixed !important; top: calc(12px + env(safe-area-inset-top)) !important; left: calc(12px + env(safe-area-inset-left)) !important; z-index: 2147483600 !important; pointer-events: auto !important; touch-action: manipulation !important; background: rgba(255,255,255,.99) !important; color: #073f33 !important; -webkit-text-fill-color: #073f33 !important; }
         .map-tools { position: fixed !important; top: calc(68px + env(safe-area-inset-top)) !important; right: calc(10px + env(safe-area-inset-right)) !important; z-index: 2147483400 !important; pointer-events: none !important; }
@@ -233,6 +233,96 @@
   }
 }
 
+
+/* v90: かんたん記録・魚種カテゴリ・記録フィルター */
+.record-filter-row,
+.species-category-row,
+.record-entry-mode-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.record-filter-row {
+  margin-top: 10px;
+}
+.record-filter-chip,
+.species-category-chip,
+.record-entry-mode-button {
+  border: 1px solid rgba(10, 89, 74, .22);
+  border-radius: 999px;
+  background: rgba(255,255,255,.86);
+  color: #0c5b4d;
+  font-weight: 900;
+  min-height: 34px;
+  padding: 7px 12px;
+  cursor: pointer;
+  box-shadow: 0 5px 14px rgba(0,0,0,.08);
+}
+.record-filter-chip.is-active,
+.species-category-chip.is-active,
+.record-entry-mode-button.is-active {
+  background: #0f6f5f;
+  color: #fff;
+  border-color: #0f6f5f;
+  box-shadow: 0 8px 18px rgba(15,111,95,.24);
+}
+.record-entry-mode-row {
+  margin: 10px 0 12px;
+  padding: 10px;
+  border-radius: 18px;
+  background: rgba(15, 111, 95, .08);
+  border: 1px solid rgba(15,111,95,.14);
+}
+.quick-record-hint {
+  color: rgba(25, 71, 63, .78);
+  font-size: .82rem;
+  font-weight: 800;
+}
+.advanced-fishing-field.is-quick-hidden {
+  display: none !important;
+}
+.species-category-row {
+  width: 100%;
+  margin: 4px 0 2px;
+}
+.multi-choice-grid label.is-hidden {
+  display: none !important;
+}
+.multi-choice-grid label.is-outside-category {
+  border-style: dashed;
+  opacity: .9;
+}
+.catch-list-head + .record-filter-row {
+  margin-bottom: 8px;
+}
+@media (max-width: 920px) {
+  .record-filter-row,
+  .species-category-row,
+  .record-entry-mode-row {
+    gap: 6px;
+  }
+  .record-filter-chip,
+  .species-category-chip,
+  .record-entry-mode-button {
+    min-height: 36px;
+    padding: 7px 10px;
+    font-size: .82rem;
+  }
+  .quick-record-hint {
+    width: 100%;
+    font-size: .78rem;
+  }
+  .species-category-row {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    padding: 4px 0;
+    background: rgba(255,255,255,.96);
+    border-radius: 12px;
+  }
+}
+
 </style>
   </head>
   <body>
@@ -274,7 +364,7 @@
             <button class="filter-chip" type="button" data-filter="港">港・漁港</button>
             <button class="filter-chip" type="button" data-filter="マリーナ">マリーナ</button>
           </div>
-          <p id="dataStatus" class="data-status" aria-live="polite">v89・魚種追加</p>
+          <p id="dataStatus" class="data-status" aria-live="polite">v90・かんたん記録</p>
           <p class="notice-banner">掲載情報は釣りの許可を意味しません。現地看板・管理者・自治体・漁協の最新情報を必ず確認してください。</p>
           <div class="stats-grid" aria-label="記録集計">
             <span><strong id="spotCount">0</strong><small>釣り場</small></span>
@@ -284,6 +374,14 @@
           <div class="list-tabs" role="tablist" aria-label="リスト切り替え">
             <button id="spotTab" class="list-tab is-active" type="button" aria-selected="true">釣り場</button>
             <button id="catchTab" class="list-tab" type="button" aria-selected="false">記録</button>
+          </div>
+          <div id="recordFilterRow" class="record-filter-row is-hidden" role="group" aria-label="記録フィルター">
+            <button class="record-filter-chip is-active" type="button" data-record-filter="all">すべて</button>
+            <button class="record-filter-chip" type="button" data-record-filter="photo">写真あり</button>
+            <button class="record-filter-chip" type="button" data-record-filter="bigBass">40up</button>
+            <button class="record-filter-chip" type="button" data-record-filter="catch">釣果</button>
+            <button class="record-filter-chip" type="button" data-record-filter="note">メモ</button>
+            <button class="record-filter-chip" type="button" data-record-filter="thisMonth">今月</button>
           </div>
         </section>
 
@@ -299,7 +397,7 @@
 
         <footer class="sidebar-footer">
           <span id="visibleCount">0件</span>
-          <span>v89・魚種追加</span>
+          <span>v90・かんたん記録</span>
         </footer>
 
         <section class="settings-row sidebar-actions" aria-label="設定">
@@ -347,6 +445,11 @@
           <p id="catchLocationStatus" class="catch-location-status" aria-live="polite">地図をタップするか、現在地ボタンで記録位置を指定してください。</p>
           <button id="useCurrentLocationButton" class="location-inline-button" type="button">現在地を使う</button>
         </div>
+        <div class="record-entry-mode-row" role="group" aria-label="入力モード">
+          <button class="record-entry-mode-button is-active" type="button" data-record-entry-mode="quick" aria-pressed="true">かんたん記録</button>
+          <button class="record-entry-mode-button" type="button" data-record-entry-mode="detail" aria-pressed="false">詳細入力</button>
+          <span class="quick-record-hint">現場では魚種・サイズ・写真・メモだけで素早く保存できます。</span>
+        </div>
 
         <div class="form-grid">
           <label><span>記録タイプ</span><select id="catchRecordType"><option value="note">現地メモ</option><option value="catch">釣果</option></select></label>
@@ -354,7 +457,13 @@
           <label class="full-width location-note-field"><span>名称・内容</span><input id="catchPlaceName" type="text" placeholder="例: コンビニあり、ここを左折、橋の手前で曲がる"></label>
           <label><span>近くの釣り場</span><select id="catchSpot"></select></label>
           <label><span>日時</span><input id="catchTime" type="datetime-local"></label>
-          <label class="fishing-field full-width species-multi-field"><span>魚種（複数選択可）</span><input id="catchSpecies" type="hidden" value="ブラックバス"><div id="catchSpeciesGroup" class="multi-choice-grid" aria-label="魚種を複数選択">
+          <label class="fishing-field full-width species-multi-field"><span>魚種（複数選択可）</span><input id="catchSpecies" type="hidden" value="ブラックバス"><div class="species-category-row" role="group" aria-label="魚種カテゴリ">
+              <button class="species-category-chip is-active" type="button" data-species-category-filter="popular">よく使う</button>
+              <button class="species-category-chip" type="button" data-species-category-filter="freshwater">淡水</button>
+              <button class="species-category-chip" type="button" data-species-category-filter="saltwater">海</button>
+              <button class="species-category-chip" type="button" data-species-category-filter="squid">イカ・タコ・エビ</button>
+              <button class="species-category-chip" type="button" data-species-category-filter="all">すべて</button>
+            </div><div id="catchSpeciesGroup" class="multi-choice-grid" aria-label="魚種を複数選択">
             <label><input type="checkbox" data-catch-species-option value="ブラックバス" checked><span>ブラックバス</span></label>
             <label><input type="checkbox" data-catch-species-option value="ブルーギル"><span>ブルーギル</span></label>
             <label><input type="checkbox" data-catch-species-option value="ナマズ"><span>ナマズ</span></label>
@@ -407,21 +516,21 @@
             <label><input type="checkbox" data-catch-species-option value="テナガエビ"><span>テナガエビ</span></label>
             <label><input type="checkbox" data-catch-species-option value="その他"><span>その他</span></label>
           </div><small class="field-hint">淡水・海水の魚種を増やしました。複数の魚種をタップして選べます。</small></label>
-          <label class="fishing-field"><span>何で釣れたか</span><select id="catchBait"><option value="">選択してください</option><option>ワーム</option><option>ミノー</option><option>クランクベイト</option><option>スピナーベイト</option><option>バイブレーション</option><option>ラバージグ</option><option>チャター</option><option>ビッグベイト</option><option>トップウォーター</option><option>その他</option></select></label>
-          <label class="fishing-field"><span>ルアー名</span><input id="catchLureName" type="text" placeholder="例: カットテール、フリックシェイク"></label>
-          <label class="fishing-field"><span>色</span><input id="catchLureColor" type="text" placeholder="例: グリパン、スカッパノン"></label>
-          <label class="fishing-field"><span>重さ</span><input id="catchLureWeight" type="text" placeholder="例: 3.5g、1/4oz"></label>
+          <label class="fishing-field advanced-fishing-field"><span>何で釣れたか</span><select id="catchBait"><option value="">選択してください</option><option>ワーム</option><option>ミノー</option><option>クランクベイト</option><option>スピナーベイト</option><option>バイブレーション</option><option>ラバージグ</option><option>チャター</option><option>ビッグベイト</option><option>トップウォーター</option><option>その他</option></select></label>
+          <label class="fishing-field advanced-fishing-field"><span>ルアー名</span><input id="catchLureName" type="text" placeholder="例: カットテール、フリックシェイク"></label>
+          <label class="fishing-field advanced-fishing-field"><span>色</span><input id="catchLureColor" type="text" placeholder="例: グリパン、スカッパノン"></label>
+          <label class="fishing-field advanced-fishing-field"><span>重さ</span><input id="catchLureWeight" type="text" placeholder="例: 3.5g、1/4oz"></label>
           <label class="fishing-field"><span>サイズ実寸cm</span><input id="catchSizeCm" type="number" inputmode="decimal" min="0" step="0.1" placeholder="例: 46.5"></label>
           <label class="fishing-field"><span>サイズ分類</span><select id="catchSize"><option value="">選択してください</option><option>20cm未満</option><option>20cm台</option><option>30cm台</option><option>40cm台</option><option>50cm以上</option><option>未計測</option></select></label>
-          <label class="fishing-field"><span>天気</span><select id="catchWeather"><option value="">選択してください</option><option>晴れ</option><option>曇り</option><option>雨</option><option>小雨</option><option>強風</option><option>雪</option></select></label>
-          <label class="fishing-field"><span>風</span><select id="catchWind"><option value="">選択してください</option><option>無風</option><option>弱い</option><option>普通</option><option>強い</option></select></label>
-          <label class="fishing-field"><span>水の状態</span><select id="catchWater"><option value="">選択してください</option><option>クリア</option><option>普通</option><option>濁り</option><option>増水</option><option>減水</option></select></label>
-          <label class="fishing-field"><span>水位</span><select id="catchWaterLevel"><option value="">選択してください</option><option>満水</option><option>普通</option><option>減水</option><option>大減水</option><option>増水</option></select></label>
-          <label class="fishing-field"><span>ベイト確認</span><select id="catchBaitfish"><option value="">選択してください</option><option>ギル</option><option>小魚</option><option>エビ</option><option>カエル</option><option>虫</option><option>不明</option></select></label>
-          <label class="fishing-field"><span>カバー・地形</span><select id="catchCover"><option value="">選択してください</option><option>アシ</option><option>オーバーハング</option><option>沈み木</option><option>護岸</option><option>ウィード</option><option>ブレイク</option><option>流れ込み</option><option>堰堤</option><option>シェード</option></select></label>
-          <label class="fishing-field"><span>反応場所</span><select id="catchReaction"><option value="">選択してください</option><option>岸際</option><option>ブレイク</option><option>流れ込み</option><option>堰堤</option><option>シェード</option><option>カバー奥</option><option>沖</option></select></label>
-          <label class="fishing-field"><span>プレッシャー</span><select id="catchPressure"><option value="">選択してください</option><option>低い</option><option>普通</option><option>高い</option><option>人多い</option><option>先行者あり</option><option>足跡あり</option></select></label>
-          <label class="fishing-field"><span>時間帯</span><select id="catchTimeBand"><option value="">自動/選択</option><option>朝</option><option>昼</option><option>夕方</option><option>夜</option></select></label>
+          <label class="fishing-field advanced-fishing-field"><span>天気</span><select id="catchWeather"><option value="">選択してください</option><option>晴れ</option><option>曇り</option><option>雨</option><option>小雨</option><option>強風</option><option>雪</option></select></label>
+          <label class="fishing-field advanced-fishing-field"><span>風</span><select id="catchWind"><option value="">選択してください</option><option>無風</option><option>弱い</option><option>普通</option><option>強い</option></select></label>
+          <label class="fishing-field advanced-fishing-field"><span>水の状態</span><select id="catchWater"><option value="">選択してください</option><option>クリア</option><option>普通</option><option>濁り</option><option>増水</option><option>減水</option></select></label>
+          <label class="fishing-field advanced-fishing-field"><span>水位</span><select id="catchWaterLevel"><option value="">選択してください</option><option>満水</option><option>普通</option><option>減水</option><option>大減水</option><option>増水</option></select></label>
+          <label class="fishing-field advanced-fishing-field"><span>ベイト確認</span><select id="catchBaitfish"><option value="">選択してください</option><option>ギル</option><option>小魚</option><option>エビ</option><option>カエル</option><option>虫</option><option>不明</option></select></label>
+          <label class="fishing-field advanced-fishing-field"><span>カバー・地形</span><select id="catchCover"><option value="">選択してください</option><option>アシ</option><option>オーバーハング</option><option>沈み木</option><option>護岸</option><option>ウィード</option><option>ブレイク</option><option>流れ込み</option><option>堰堤</option><option>シェード</option></select></label>
+          <label class="fishing-field advanced-fishing-field"><span>反応場所</span><select id="catchReaction"><option value="">選択してください</option><option>岸際</option><option>ブレイク</option><option>流れ込み</option><option>堰堤</option><option>シェード</option><option>カバー奥</option><option>沖</option></select></label>
+          <label class="fishing-field advanced-fishing-field"><span>プレッシャー</span><select id="catchPressure"><option value="">選択してください</option><option>低い</option><option>普通</option><option>高い</option><option>人多い</option><option>先行者あり</option><option>足跡あり</option></select></label>
+          <label class="fishing-field advanced-fishing-field"><span>時間帯</span><select id="catchTimeBand"><option value="">自動/選択</option><option>朝</option><option>昼</option><option>夕方</option><option>夜</option></select></label>
           <label class="full-width"><span>備考・メモ</span><textarea id="catchMemo" rows="2" placeholder="例: 風が当たる角、岸際に差していた、足場注意など"></textarea></label>
 
           <div class="catch-photo-field">
@@ -473,7 +582,7 @@
     </section>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="pwa-install.js?v=v89-more-fish-species"></script>
-    <script src="app.js?v=v89-more-fish-species"></script>
+    <script src="pwa-install.js?v=v90-easy-record-filters"></script>
+    <script src="app.js?v=v90-easy-record-filters"></script>
   </body>
 </html>
