@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bass-spot-log-";
-const VERSION = "v92-fish-search-favorites";
+const VERSION = "v93-larger-spot-card";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());

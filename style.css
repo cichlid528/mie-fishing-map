@@ -1059,10 +1059,10 @@ body.panel-open {
     position: fixed !important;
     left: calc(10px + env(safe-area-inset-left)) !important;
     right: calc(10px + env(safe-area-inset-right)) !important;
-    bottom: calc(184px + env(safe-area-inset-bottom)) !important;
+    bottom: calc(12px + env(safe-area-inset-bottom)) !important;
     z-index: 2147483300 !important;
     max-width: none !important;
-    max-height: min(43dvh, calc(100dvh - 258px - env(safe-area-inset-top) - env(safe-area-inset-bottom))) !important;
+    max-height: min(74dvh, calc(100dvh - 88px - env(safe-area-inset-top) - env(safe-area-inset-bottom))) !important;
     overflow: auto !important;
     padding: 12px !important;
     border-radius: 18px !important;
@@ -1105,8 +1105,8 @@ body.panel-open {
 @media (max-width: 920px) and (max-height: 620px) {
   #spotCard.spot-card,
   .spot-card {
-    bottom: calc(160px + env(safe-area-inset-bottom)) !important;
-    max-height: 36dvh !important;
+    bottom: calc(10px + env(safe-area-inset-bottom)) !important;
+    max-height: min(78dvh, calc(100dvh - 72px - env(safe-area-inset-top) - env(safe-area-inset-bottom))) !important;
   }
 }
 
@@ -2054,5 +2054,56 @@ body.position-adjusting .leaflet-container { cursor: crosshair !important; }
   }
   .species-search-status {
     font-size: .76rem;
+  }
+}
+
+
+/* v93: 釣り場詳細カードを大きく表示して、スマホでもスクロールしやすくする */
+#spotCard.spot-card {
+  max-height: min(70vh, 720px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+@media (max-width: 920px) {
+  body.spot-card-open .map-tools {
+    display: none !important;
+  }
+  #spotCard.spot-card,
+  .spot-card {
+    top: auto !important;
+    left: calc(10px + env(safe-area-inset-left)) !important;
+    right: calc(10px + env(safe-area-inset-right)) !important;
+    bottom: calc(12px + env(safe-area-inset-bottom)) !important;
+    max-height: min(74dvh, calc(100dvh - 88px - env(safe-area-inset-top) - env(safe-area-inset-bottom))) !important;
+    padding: 14px !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  #spotCard.spot-card h2,
+  .spot-card h2 {
+    position: sticky !important;
+    top: -14px !important;
+    z-index: 2 !important;
+    margin: -14px -14px 8px !important;
+    padding: 14px 14px 9px !important;
+    background: rgba(255,255,255,.98) !important;
+    border-bottom: 1px solid rgba(7,63,51,.10) !important;
+  }
+  #spotCard.spot-card .card-actions,
+  .spot-card .card-actions {
+    position: sticky !important;
+    bottom: -14px !important;
+    z-index: 2 !important;
+    margin: 10px -14px -14px !important;
+    padding: 10px 14px 14px !important;
+    background: linear-gradient(180deg, rgba(255,255,255,.80), rgba(255,255,255,.98) 38%) !important;
+  }
+}
+@media (max-width: 920px) and (max-height: 620px) {
+  #spotCard.spot-card,
+  .spot-card {
+    bottom: calc(10px + env(safe-area-inset-bottom)) !important;
+    max-height: min(78dvh, calc(100dvh - 72px - env(safe-area-inset-top) - env(safe-area-inset-bottom))) !important;
   }
 }

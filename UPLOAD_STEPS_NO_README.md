@@ -1,18 +1,12 @@
-# v92 アップロード手順
+# v93 アップロード手順
 
-このZIPの中身を GitHub リポジトリ `cichlid528/mie-fishing-map` の直下へ上書きしてください。
+1. ZIPを解凍します。
+2. 中身をGitHubリポジトリ `mie-fishing-map` の直下へ上書きアップロードします。
+3. GitHub Pagesの反映を待ちます。
+4. 先にキャッシュ削除ページを開きます。
 
-必須上書きファイル:
-- index.html
-- app.js
-- style.css
-- manifest.json
-- pwa-install.js
-- sw.js
-- reset-cache.html
-
-確認URL:
-https://cichlid528.github.io/mie-fishing-map/?v=v92-fish-search-favorites
-
-キャッシュ削除:
 https://cichlid528.github.io/mie-fishing-map/reset-cache.html?auto=1
+
+5. その後、下のURLで確認します。
+
+https://cichlid528.github.io/mie-fishing-map/?v=v93-larger-spot-card
