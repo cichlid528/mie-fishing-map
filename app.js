@@ -1,13 +1,14 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v120-map-label-pond-candidates";
-  const APP_STATUS_LABEL = "v120・地図名池候補追加版";
+  const APP_VERSION = "v121-map-label-position-fix";
+  const APP_STATUS_LABEL = "v121・池名ラベル位置修正版";
   const GSI_POND_VECTOR_URLS = [
-    "https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/{z}/{x}/{y}.pbf",
-    "https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap-v1/{z}/{x}/{y}.pbf",
+    // v121: スマホで外部PBF解析ライブラリが失敗しても動くよう、GeoJSONを先に試す。
     "https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/{z}/{x}/{y}.geojson",
-    "https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap-v1/{z}/{x}/{y}.geojson"
+    "https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap-v1/{z}/{x}/{y}.geojson",
+    "https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/{z}/{x}/{y}.pbf",
+    "https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap-v1/{z}/{x}/{y}.pbf"
   ];
   const GSI_MIE_BOUNDS = { south: 33.62, west: 135.72, north: 35.35, east: 137.15 };
   const GSI_POND_SCAN_LIBS = [
@@ -20,7 +21,7 @@
   // v118: ベクトルタイルの仕様変更・外部ライブラリ失敗時でも、ボタンを押した結果が見えるようにする補助候補。
   // すべて「池候補」として扱い、釣行前の現地確認を前提にする。
   const GSI_POND_FALLBACK_CANDIDATES = [
-    // v120: Googleマップ等の地図ラベルで目視しやすい「○○池」系の名前付き候補。位置は候補用の目安です。
+    // v121: 地図ラベルを直接取得できない時だけ使う補助候補。実際の追加は地図ラベル位置を優先する。
     { name: "岩田池", area: "津市岩田周辺", lat: 34.7119, lng: 136.5112 },
     { name: "尺目池", area: "津市周辺", lat: 34.7068, lng: 136.4984 },
     { name: "片田池", area: "津市片田周辺", lat: 34.7352, lng: 136.4212 },
@@ -2498,7 +2499,7 @@
     };
   }
 
-  async function scanGsiPondTile(tile, decoder) {
+  async function scanGsiPondTile(tile) {
     for (const template of GSI_POND_VECTOR_URLS) {
       const url = gsiPondUrlForTile(template, tile);
       try {
@@ -2507,8 +2508,9 @@
         if (/\.geojson(?:$|[?#])/i.test(url)) {
           const json = await response.json();
           const features = Array.isArray(json?.features) ? json.features : [];
-          return features.map((feature) => geoJsonFeatureToSpot(feature)).filter(Boolean);
+          return features.map((feature) => geoJsonFeatureToSpot(feature, "geojson")).filter(Boolean);
         }
+        const decoder = await ensureGsiPondDecoder();
         const buffer = await response.arrayBuffer();
         if (!buffer || buffer.byteLength === 0) continue;
         const vt = new decoder.VectorTile(new decoder.Pbf(buffer));
@@ -2570,11 +2572,11 @@
       lat: Number(item.lat),
       lng: Number(item.lng),
       zoom: 16,
-      source: "地図名池候補リスト",
+      source: "地図名池候補リスト（位置未確認）",
       subtype: "池候補",
       candidate: true,
       custom: true,
-      memo: "Googleマップ等の地図ラベルで見つけた「○○池」系を池候補として追加するための補助候補です。位置は目安です。釣行前に立入禁止・私有地・管理者情報を必ず確認してください。",
+      memo: "地図ラベルを直接取得できなかった場合の補助候補です。位置は未確認の目安です。釣行前に立入禁止・私有地・管理者情報を必ず確認してください。",
       gsiFallbackCandidate: true
     };
   }
@@ -2600,10 +2602,81 @@
       .map((item) => item.spot);
   }
 
-  function showGsiPondAdditions(additions, message) {
-    if (!additions.length) return;
-    state.customSpots = [...state.customSpots, ...additions];
-    saveJson(CUSTOM_SPOT_STORAGE_KEY, state.customSpots);
+  function exactGsiPondNameMatch(a, b) {
+    const nameA = normalizeGsiPondName(a?.name);
+    const nameB = normalizeGsiPondName(b?.name);
+    return Boolean(nameA && nameB && nameA === nameB);
+  }
+
+  function preciseGsiPondSpot(spot, existing = {}) {
+    return {
+      ...existing,
+      ...spot,
+      id: existing.id || spot.id,
+      type: "池",
+      subtype: "池候補",
+      candidate: true,
+      custom: true,
+      source: "国土地理院地図ラベル位置",
+      memo: "表示中の地図ラベルから取得した池候補です。ラベル位置に合わせて登録しています。釣行前に立入禁止・私有地・管理者情報を必ず確認してください。",
+      gsiFallbackCandidate: false,
+      gsiLabelPrecise: true,
+      updatedAt: new Date().toISOString()
+    };
+  }
+
+  function applyGsiPondLabelResults(candidates = []) {
+    const seen = new Set();
+    const changed = [];
+    const additions = [];
+    let customChanged = false;
+
+    candidates.forEach((candidate) => {
+      if (!candidate || !Number.isFinite(Number(candidate.lat)) || !Number.isFinite(Number(candidate.lng))) return;
+      const key = `${normalizeGsiPondName(candidate.name)}:${Number(candidate.lat).toFixed(5)}:${Number(candidate.lng).toFixed(5)}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+
+      // v121: 以前の「地図名池候補リスト」でズレた位置に入った同名候補は、新しい地図ラベル位置へ上書きする。
+      const customIndex = state.customSpots.findIndex((spot) => exactGsiPondNameMatch(candidate, spot) && (spot.candidate || spot.gsiFallbackCandidate || String(spot.source || "").includes("地図名")));
+      if (customIndex >= 0) {
+        const updated = preciseGsiPondSpot(candidate, state.customSpots[customIndex]);
+        state.customSpots[customIndex] = updated;
+        changed.push(updated);
+        customChanged = true;
+        return;
+      }
+
+      const precise = preciseGsiPondSpot(candidate);
+      if (isGsiPondDuplicate(precise, [...state.spots, ...state.customSpots, ...additions])) return;
+      additions.push(precise);
+      changed.push(precise);
+    });
+
+    if (additions.length) {
+      state.customSpots = [...state.customSpots, ...additions];
+      customChanged = true;
+    }
+    if (customChanged) saveJson(CUSTOM_SPOT_STORAGE_KEY, state.customSpots);
+    return changed;
+  }
+
+  function focusGsiPondSpot(spot) {
+    if (!spot || !map || !Number.isFinite(Number(spot.lat)) || !Number.isFinite(Number(spot.lng))) return;
+    try { closeMobileMenu(); } catch (error) {}
+    state.selectedSpotId = spot.id;
+    map.setView([Number(spot.lat), Number(spot.lng)], Math.max(17, spot.zoom || 17), { animate: false });
+    window.setTimeout(() => {
+      const target = state.spots.find((s) => s.id === spot.id) || spot;
+      showSpotCard(target);
+      renderSpotList();
+      try { markers.get(target.id)?.openTooltip?.(); } catch (error) {}
+      invalidateMapSize(80);
+    }, 80);
+  }
+
+  function refreshAfterGsiPondChange(changed, message) {
+    if (!changed.length) return;
     state.spots = [...seedSpots.map(applyPositionOverride), ...state.customSpots.map((s) => ({ ...s, custom: true }))];
     state.activeList = "spots";
     state.activeFilter = "池候補";
@@ -2611,9 +2684,12 @@
     render();
     updateBackupReminder();
     setGsiPondStatus(message);
-    try {
-      if (window.innerWidth <= 920) openMobileMenu();
-    } catch (error) {}
+    focusGsiPondSpot(changed[0]);
+  }
+
+  function showGsiPondAdditions(additions, message) {
+    const changed = applyGsiPondLabelResults(additions);
+    refreshAfterGsiPondChange(changed, message);
   }
 
   async function scanGsiPondCandidates() {
@@ -2626,7 +2702,7 @@
     }
     gsiPondScanning = true;
     const buttons = [...document.querySelectorAll("[data-gsi-pond-scan-button]")];
-    const oldTexts = new Map(buttons.map((button) => [button, button.textContent || "地図名池候補追加"]));
+    const oldTexts = new Map(buttons.map((button) => [button, button.textContent || "地図ラベル池候補追加"]));
     buttons.forEach((button) => {
       button.disabled = true;
       button.textContent = "取得中…";
@@ -2634,30 +2710,16 @@
     const existingAtStart = [...state.spots, ...state.customSpots];
     const fallbackCenter = map?.getCenter?.() || { lat: MIE_CENTER[0], lng: MIE_CENTER[1] };
 
-    // v120: スマホで外部タイル解析が動かない場合でも、まず地図名候補リストから即時追加する。
-    // これで「ボタンを押しても何も反映されない」を避け、岩田池・尺目池のような名前付き池を池候補に出す。
-    const labelListAdditions = fallbackGsiPondCandidates(existingAtStart, bounds, fallbackCenter).slice(0, 18);
-    if (labelListAdditions.length) {
-      showGsiPondAdditions(labelListAdditions, `地図名リストから池候補を${labelListAdditions.length}件追加しました。池候補リストに表示しました。`);
-      gsiPondScanning = false;
-      buttons.forEach((button) => {
-        button.disabled = false;
-        button.textContent = oldTexts.get(button) || "地図名池候補追加";
-      });
-      return;
-    }
-
     try {
       setGsiPondStatus(plan.limitedToCenter
-        ? `表示範囲が広いため、地図中央周辺の池候補を取得中… ${plan.tiles.length}タイル`
-        : `表示範囲の池候補を取得中… ${plan.tiles.length}タイル`);
+        ? `表示範囲が広いため、地図中央周辺の池名ラベルを取得中… ${plan.tiles.length}タイル`
+        : `表示範囲の池名ラベルを取得中… ${plan.tiles.length}タイル`);
 
-      const decoder = await ensureGsiPondDecoder();
       const found = [];
       const batchSize = 4;
       for (let i = 0; i < plan.tiles.length; i += batchSize) {
         const batch = plan.tiles.slice(i, i + batchSize);
-        const results = await Promise.all(batch.map((tile) => scanGsiPondTile(tile, decoder).catch((error) => {
+        const results = await Promise.all(batch.map((tile) => scanGsiPondTile(tile).catch((error) => {
           console.warn("GSI pond tile failed", tile, error);
           return [];
         })));
@@ -2665,42 +2727,25 @@
         buttons.forEach((button) => { button.textContent = `取得中 ${Math.min(i + batch.length, plan.tiles.length)}/${plan.tiles.length}`; });
       }
 
-      const existing = [...state.spots, ...state.customSpots];
-      const seen = new Set();
-      const additions = [];
-      found.forEach((spot) => {
-        const key = `${normalizeGsiPondName(spot.name)}:${spot.lat.toFixed(5)}:${spot.lng.toFixed(5)}`;
-        if (seen.has(key)) return;
-        seen.add(key);
-        if (isGsiPondDuplicate(spot, [...existing, ...additions])) return;
-        additions.push(spot);
-      });
-
-      if (additions.length) {
-        showGsiPondAdditions(additions, `地図上の池名から池候補を${additions.length}件追加しました。池候補リストに表示しました。`);
+      const changed = applyGsiPondLabelResults(found);
+      if (changed.length) {
+        refreshAfterGsiPondChange(changed, `地図上の池名ラベル位置で池候補を${changed.length}件追加・更新しました。`);
         return;
       }
 
-      const fallbackAdditions = fallbackGsiPondCandidates(existingAtStart, bounds, fallbackCenter);
-      if (fallbackAdditions.length) {
-        showGsiPondAdditions(fallbackAdditions, `スマホで地理院注記を直接取得できなかったため、表示範囲に近い池候補を${fallbackAdditions.length}件追加しました。`);
-        return;
-      }
-
-      setGsiPondStatus("新しい池候補は見つかりませんでした。すでに登録済みです。地図を別の場所へ移動して再度押してください。");
+      // v121: ラベル位置が取れない時は、ズレた位置に勝手に追加せず、操作方法を出す。
+      const fallbackHints = fallbackGsiPondCandidates(existingAtStart, bounds, fallbackCenter).slice(0, 5).map((spot) => spot.name).join("、");
+      setGsiPondStatus(fallbackHints
+        ? `地図ラベル位置を取得できませんでした。目的の池名（例: ${fallbackHints}）が見えるまで拡大して、もう一度押してください。`
+        : "地図ラベル位置を取得できませんでした。目的の『○○池』の文字が見えるまで拡大して、もう一度押してください。");
     } catch (error) {
       console.error("GSI pond candidate scan failed", error);
-      const fallbackAdditions = fallbackGsiPondCandidates(existingAtStart, bounds, fallbackCenter);
-      if (fallbackAdditions.length) {
-        showGsiPondAdditions(fallbackAdditions, `通信取得に失敗したため、表示範囲に近い補助池候補を${fallbackAdditions.length}件追加しました。`);
-      } else {
-        setGsiPondStatus(`池候補を取得できませんでした: ${error.message || error}`);
-      }
+      setGsiPondStatus(`池名ラベル位置を取得できませんでした。通信状態を確認し、地図を拡大して再度押してください。`);
     } finally {
       gsiPondScanning = false;
       buttons.forEach((button) => {
         button.disabled = false;
-        button.textContent = oldTexts.get(button) || "地図名池候補追加";
+        button.textContent = oldTexts.get(button) || "地図ラベル池候補追加";
       });
     }
   }
@@ -2732,8 +2777,8 @@
       button.id = "scanGsiPondCandidates";
       button.type = "button";
       button.className = "spot-mode-button";
-      button.textContent = "地図名池候補追加";
-      button.title = "表示中の地図周辺から、岩田池・尺目池など名前に『池』を含む候補を池候補へ追加します。";
+      button.textContent = "地図ラベル池候補追加";
+      button.title = "表示中の地図ラベルから、岩田池・尺目池など名前に『池』を含む水辺を池候補へ追加し、その位置へ移動します。";
       bindGsiPondButton(button);
       tools.appendChild(button);
     }
@@ -2744,7 +2789,7 @@
       button.id = "scanGsiPondCandidatesMenu";
       button.type = "button";
       button.className = "data-button gsi-pond-menu-button";
-      button.textContent = "地図名池候補追加";
+      button.textContent = "地図ラベル池候補追加";
       button.title = "表示中の地図周辺から岩田池・尺目池などの池名候補を追加します。";
       button.style.width = "100%";
       button.style.marginTop = "8px";
