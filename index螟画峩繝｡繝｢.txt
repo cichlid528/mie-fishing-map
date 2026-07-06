@@ -1,0 +1,12 @@
+index.html の変更箇所
+====================
+
+下のように v115 を v116 に変えてください。
+
+変更前:
+<script src="pwa-install.js?v=v115-pond-confirm-persist"></script>
+<script src="app.js?v=v115-pond-confirm-persist"></script>
+
+変更後:
+<script src="pwa-install.js?v=v116-gsi-pond-candidates"></script>
+<script src="app.js?v=v116-gsi-pond-candidates"></script>
