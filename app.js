@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v83-position-bar-popup-view";
+  const APP_VERSION = "v84-mobile-stability";
 
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
@@ -342,6 +342,13 @@
     invalidateMapSize(120);
   }
 
+  function setMobileViewportHeight() {
+    const height = window.visualViewport?.height || window.innerHeight || document.documentElement.clientHeight || 0;
+    if (!height) return;
+    document.documentElement.style.setProperty("--app-vh", `${height * 0.01}px`);
+    invalidateMapSize(80);
+  }
+
   function initMap() {
     const mapElement = document.getElementById("map");
     if (!mapElement || typeof L === "undefined") {
@@ -390,6 +397,13 @@
 
     addMieBoundaryLayer();
     map.on("click", (event) => handleMapClick(event.latlng));
+    map.on("popupopen", () => {
+      document.body.classList.add("map-popup-open");
+      invalidateMapSize(60);
+    });
+    map.on("popupclose", () => {
+      document.body.classList.remove("map-popup-open", "record-popup-open");
+    });
 
     map.whenReady(() => { invalidateMapSize(100); });
     invalidateMapSize(0);
@@ -468,7 +482,7 @@
     if (state.spotMode) state.catchMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v83・位置調整バー・記録表示改善";
+    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v84・スマホ安定化";
   }
 
   function setCatchMode(value) {
@@ -478,7 +492,7 @@
     if (state.catchMode) state.spotMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v83・位置調整バー・記録表示改善";
+    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v84・スマホ安定化";
   }
 
   function handleMapClick(latlng) {
@@ -697,7 +711,10 @@
     const lng = Number(record.lng);
     if (validPosition({ lat, lng })) map.setView([lat, lng], Math.max(map.getZoom(), 17), { animate: false });
     const marker = catchMarkers.get(record.id);
-    if (marker) marker.openPopup();
+    if (marker) {
+      document.body.classList.add("record-popup-open", "map-popup-open");
+      marker.openPopup();
+    }
   }
 
   function renderCatchList() {
@@ -1436,7 +1453,12 @@
     });
     els.closeMenuButton.addEventListener("click", closeMobileMenu);
     els.menuBackdrop.addEventListener("click", closeMobileMenu);
-    window.addEventListener("resize", () => { if (window.matchMedia("(min-width: 921px)").matches) closeMobileMenu(); });
+    window.addEventListener("resize", () => {
+      setMobileViewportHeight();
+      if (window.matchMedia("(min-width: 921px)").matches) closeMobileMenu();
+    });
+    window.visualViewport?.addEventListener?.("resize", setMobileViewportHeight);
+    window.visualViewport?.addEventListener?.("scroll", setMobileViewportHeight);
     els.locateCatchButton.addEventListener("click", () => useCurrentLocationForCatch(true));
     els.useCurrentLocationButton.addEventListener("click", () => useCurrentLocationForCatch(false));
     els.addSpotMode.addEventListener("click", () => setSpotMode(!state.spotMode));
@@ -1485,6 +1507,7 @@
 
   function init() {
     initEls();
+    setMobileViewportHeight();
     forceFullscreenLayout();
     loadState();
     initMap();
@@ -1492,10 +1515,10 @@
     applySidebarBackground(localStorage.getItem(BACKGROUND_STORAGE_KEY) || "");
     render();
     forceFullscreenLayout();
-    window.addEventListener("load", forceFullscreenLayout);
-    window.addEventListener("resize", forceFullscreenLayout);
+    window.addEventListener("load", () => { setMobileViewportHeight(); forceFullscreenLayout(); });
+    window.addEventListener("resize", () => { setMobileViewportHeight(); forceFullscreenLayout(); });
     registerServiceWorker();
-    els.dataStatus.textContent = `v83・位置調整バー・記録表示改善 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
+    els.dataStatus.textContent = `v84・スマホ安定化 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
   }
 
   init();

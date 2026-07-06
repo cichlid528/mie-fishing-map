@@ -1602,3 +1602,113 @@ body.position-adjusting .leaflet-container { cursor: crosshair !important; }
   }
   .record-popup-actions-v83 { grid-template-columns: 1fr !important; }
 }
+
+
+/* v84: スマホ版の重なり・高さ・ポップアップを安定化 */
+:root { --app-vh: 1vh; }
+@media (max-width: 920px) {
+  html, body {
+    width: 100% !important;
+    height: calc(var(--app-vh) * 100) !important;
+    min-height: calc(var(--app-vh) * 100) !important;
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+  }
+  .app-shell, .map-pane, #map, #map.leaflet-container, .leaflet-container {
+    height: calc(var(--app-vh) * 100) !important;
+    min-height: calc(var(--app-vh) * 100) !important;
+  }
+  #mobileMenu.sidebar, .sidebar {
+    height: calc(var(--app-vh) * 100) !important;
+    max-height: calc(var(--app-vh) * 100) !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior: contain !important;
+  }
+  #menuToggle.mobile-menu-button {
+    z-index: 2147483600 !important;
+    min-height: 46px !important;
+  }
+  .map-tools {
+    bottom: calc(18px + env(safe-area-inset-bottom)) !important;
+    left: calc(10px + env(safe-area-inset-left)) !important;
+    right: auto !important;
+    top: auto !important;
+    z-index: 2147483200 !important;
+    max-width: min(230px, calc(100vw - 20px)) !important;
+  }
+  body.menu-open .map-tools,
+  body.panel-open .map-tools,
+  body.position-adjusting .map-tools,
+  body.map-popup-open .map-tools,
+  body.record-popup-open .map-tools {
+    display: none !important;
+  }
+  body.position-adjusting #menuToggle.mobile-menu-button,
+  body.panel-open #menuToggle.mobile-menu-button,
+  body.map-popup-open #menuToggle.mobile-menu-button,
+  body.record-popup-open #menuToggle.mobile-menu-button {
+    display: none !important;
+  }
+  .position-adjust-banner {
+    top: calc(12px + env(safe-area-inset-top)) !important;
+    left: calc(10px + env(safe-area-inset-left)) !important;
+    right: calc(10px + env(safe-area-inset-right)) !important;
+    width: auto !important;
+    max-height: min(25vh, 160px) !important;
+    overflow: auto !important;
+    transform: none !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+    padding: 10px 11px !important;
+    border-radius: 16px !important;
+    z-index: 2147483550 !important;
+  }
+  .position-adjust-banner span { font-size: .88rem !important; line-height: 1.32 !important; }
+  .position-adjust-banner button { width: 100% !important; min-height: 42px !important; }
+  body.position-adjusting #spotCard.spot-card,
+  body.map-popup-open #spotCard.spot-card,
+  body.record-popup-open #spotCard.spot-card {
+    display: none !important;
+  }
+  .leaflet-popup {
+    max-width: calc(100vw - 20px) !important;
+  }
+  .record-info-popup .leaflet-popup-content-wrapper {
+    max-width: calc(100vw - 24px) !important;
+    max-height: calc(var(--app-vh) * 82) !important;
+    overflow: hidden !important;
+    border-radius: 18px !important;
+  }
+  .record-info-popup .leaflet-popup-content {
+    width: min(340px, calc(100vw - 44px)) !important;
+    max-height: calc(var(--app-vh) * 78) !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    margin: 8px !important;
+  }
+  .record-popup-card, .record-popup-card-v83 {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+  .record-popup-photo img {
+    width: 100% !important;
+    max-height: calc(var(--app-vh) * 34) !important;
+    object-fit: contain !important;
+  }
+  .record-popup-actions, .record-popup-actions-v83 {
+    position: sticky !important;
+    bottom: 0 !important;
+    grid-template-columns: 1fr !important;
+    margin: 8px -8px -8px !important;
+    padding: 10px 8px 8px !important;
+    background: linear-gradient(180deg, rgba(255,255,255,.72), rgba(255,255,255,.98) 40%) !important;
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+  }
+  .record-popup-edit, .record-popup-close { width: 100% !important; min-height: 44px !important; }
+  .leaflet-control-layers {
+    max-width: min(190px, calc(100vw - 20px)) !important;
+  }
+}
