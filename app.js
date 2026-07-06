@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v121-map-label-position-fix";
-  const APP_STATUS_LABEL = "v121・池名ラベル位置修正版";
+  const APP_VERSION = "v122-center-pond-add";
+  const APP_STATUS_LABEL = "v122・地図中央池候補追加版";
   const GSI_POND_VECTOR_URLS = [
     // v121: スマホで外部PBF解析ライブラリが失敗しても動くよう、GeoJSONを先に試す。
     "https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/{z}/{x}/{y}.geojson",
@@ -15,7 +15,7 @@
     "https://unpkg.com/pbf@3.3.0/dist/pbf.js",
     "https://unpkg.com/@mapbox/vector-tile@1.3.1/dist/vector-tile.js"
   ];
-  const GSI_POND_TILE_TIMEOUT_MS = 5500;
+  const GSI_POND_TILE_TIMEOUT_MS = 2500;
   const GSI_POND_MAX_SCAN_TILES = 80;
 
   // v118: ベクトルタイルの仕様変更・外部ライブラリ失敗時でも、ボタンを押した結果が見えるようにする補助候補。
@@ -2552,14 +2552,13 @@
   }
 
   function chooseGsiPondScanPlan(bounds) {
-    const currentZoom = Math.round(map?.getZoom?.() || 13);
-    const scanZoom = Math.max(13, Math.min(16, currentZoom < 12 ? 14 : currentZoom));
-    let tiles = gsiPondTilesForBounds(bounds, scanZoom);
-    if (tiles.length <= GSI_POND_MAX_SCAN_TILES) return { bounds, zoom: scanZoom, tiles, limitedToCenter: false };
-
-    // スマホでは広範囲タイル取得が止まって見えるため、表示中央周辺だけを素早く取得する。
+    const currentZoom = Math.round(map?.getZoom?.() || 15);
+    const scanZoom = Math.max(15, Math.min(16, currentZoom));
     const center = map?.getCenter?.() || { lat: MIE_CENTER[0], lng: MIE_CENTER[1] };
-    const centerTiles = gsiPondTileSquare(center, scanZoom, 2);
+
+    // v122: 目的の「○○池」ラベルを画面中央に合わせて押す使い方に変更。
+    // 広範囲を探すとスマホでは反応が遅く見えるため、中央タイルと周辺だけを素早く確認する。
+    const centerTiles = gsiPondTileSquare(center, scanZoom, 1);
     return { bounds, zoom: scanZoom, tiles: centerTiles, limitedToCenter: true };
   }
 
@@ -2602,6 +2601,54 @@
       .map((item) => item.spot);
   }
 
+  function createCenterGsiPondCandidate() {
+    const center = map?.getCenter?.();
+    if (!center || !Number.isFinite(Number(center.lat)) || !Number.isFinite(Number(center.lng))) return null;
+    const lat = Number(Number(center.lat).toFixed(6));
+    const lng = Number(Number(center.lng).toFixed(6));
+    const suffix = new Date().toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" });
+    return {
+      id: `manual-center-pond-${hashGsiPondText(`${lat.toFixed(5)}-${lng.toFixed(5)}-${Date.now()}`)}`,
+      name: `地図中央の池候補 ${suffix}`,
+      type: "池",
+      area: "地図中央から追加",
+      lat,
+      lng,
+      zoom: Math.max(16, Math.round(map?.getZoom?.() || 16)),
+      source: "地図中央ボタン追加",
+      subtype: "池候補",
+      candidate: true,
+      custom: true,
+      memo: "地図上の『○○池』ラベルを画面中央に合わせて追加した池候補です。池名ラベルを自動取得できた場合は名称を更新します。違う場合は詳細カードの編集から名前や位置を修正してください。釣行前に立入禁止・私有地・管理者情報を必ず確認してください。",
+      gsiCenterAdded: true,
+      gsiLabelPrecise: false,
+      createdAt: new Date().toISOString()
+    };
+  }
+
+  function addOrFocusCenterGsiPondCandidate() {
+    const candidate = createCenterGsiPondCandidate();
+    if (!candidate) return { changed: [], added: false };
+    const nearby = [...state.spots, ...state.customSpots].find((spot) =>
+      spot?.candidate && Number.isFinite(Number(spot.lat)) && Number.isFinite(Number(spot.lng)) &&
+      gsiPondDistanceMeters(candidate.lat, candidate.lng, Number(spot.lat), Number(spot.lng)) <= 70
+    );
+    if (nearby) return { changed: [nearby], added: false };
+    state.customSpots = [...state.customSpots, candidate];
+    saveJson(CUSTOM_SPOT_STORAGE_KEY, state.customSpots);
+    return { changed: [candidate], added: true };
+  }
+
+  function nearestGsiPondLabelCandidate(candidates = [], center = null) {
+    const c = center || map?.getCenter?.();
+    if (!c) return null;
+    return candidates
+      .filter((spot) => spot && Number.isFinite(Number(spot.lat)) && Number.isFinite(Number(spot.lng)))
+      .map((spot) => ({ spot, distance: gsiPondDistanceMeters(c.lat, c.lng, Number(spot.lat), Number(spot.lng)) }))
+      .filter((item) => item.distance <= 1200)
+      .sort((a, b) => a.distance - b.distance)[0]?.spot || null;
+  }
+
   function exactGsiPondNameMatch(a, b) {
     const nameA = normalizeGsiPondName(a?.name);
     const nameB = normalizeGsiPondName(b?.name);
@@ -2642,6 +2689,19 @@
       if (customIndex >= 0) {
         const updated = preciseGsiPondSpot(candidate, state.customSpots[customIndex]);
         state.customSpots[customIndex] = updated;
+        changed.push(updated);
+        customChanged = true;
+        return;
+      }
+
+      // v122: ボタンで先に画面中央へ置いた仮の池候補がある場合、近い地図ラベル名で上書きする。
+      const centerAddedIndex = state.customSpots.findIndex((spot) =>
+        spot?.gsiCenterAdded && Number.isFinite(Number(spot.lat)) && Number.isFinite(Number(spot.lng)) &&
+        gsiPondDistanceMeters(candidate.lat, candidate.lng, Number(spot.lat), Number(spot.lng)) <= 350
+      );
+      if (centerAddedIndex >= 0) {
+        const updated = preciseGsiPondSpot(candidate, state.customSpots[centerAddedIndex]);
+        state.customSpots[centerAddedIndex] = updated;
         changed.push(updated);
         customChanged = true;
         return;
@@ -2695,28 +2755,35 @@
   async function scanGsiPondCandidates() {
     if (gsiPondScanning) return;
     const bounds = currentGsiPondBoundsForScan() || GSI_MIE_BOUNDS;
+    const center = map?.getCenter?.() || { lat: MIE_CENTER[0], lng: MIE_CENTER[1] };
     const plan = chooseGsiPondScanPlan(bounds);
     if (!plan.tiles.length) {
       setGsiPondStatus("三重県内の地図を表示してから押してください。");
       return;
     }
+
+    // v122: まず画面中央へ確実に池候補ポイントを置く。
+    // その後、近くの地図ラベル名を取得できた場合だけ、名前と位置をより正確に上書きする。
+    const centerResult = addOrFocusCenterGsiPondCandidate();
+    if (centerResult.changed.length) {
+      refreshAfterGsiPondChange(centerResult.changed, centerResult.added
+        ? "地図中央に池候補を追加しました。近くの池名ラベルも確認中です…"
+        : "この位置の近くには、すでに池候補があります。近くの池名ラベルも確認中です…");
+    }
+
     gsiPondScanning = true;
     const buttons = [...document.querySelectorAll("[data-gsi-pond-scan-button]")];
-    const oldTexts = new Map(buttons.map((button) => [button, button.textContent || "地図ラベル池候補追加"]));
+    const oldTexts = new Map(buttons.map((button) => [button, button.textContent || "地図中央に池候補追加"]));
     buttons.forEach((button) => {
       button.disabled = true;
-      button.textContent = "取得中…";
+      button.textContent = "Now Loading...";
     });
-    const existingAtStart = [...state.spots, ...state.customSpots];
-    const fallbackCenter = map?.getCenter?.() || { lat: MIE_CENTER[0], lng: MIE_CENTER[1] };
 
     try {
-      setGsiPondStatus(plan.limitedToCenter
-        ? `表示範囲が広いため、地図中央周辺の池名ラベルを取得中… ${plan.tiles.length}タイル`
-        : `表示範囲の池名ラベルを取得中… ${plan.tiles.length}タイル`);
+      setGsiPondStatus(`地図中央付近の池名ラベルを確認中… ${plan.tiles.length}タイル`);
 
       const found = [];
-      const batchSize = 4;
+      const batchSize = 3;
       for (let i = 0; i < plan.tiles.length; i += batchSize) {
         const batch = plan.tiles.slice(i, i + batchSize);
         const results = await Promise.all(batch.map((tile) => scanGsiPondTile(tile).catch((error) => {
@@ -2724,28 +2791,39 @@
           return [];
         })));
         found.push(...results.flat());
-        buttons.forEach((button) => { button.textContent = `取得中 ${Math.min(i + batch.length, plan.tiles.length)}/${plan.tiles.length}`; });
+        buttons.forEach((button) => { button.textContent = `確認中 ${Math.min(i + batch.length, plan.tiles.length)}/${plan.tiles.length}`; });
       }
 
-      const changed = applyGsiPondLabelResults(found);
-      if (changed.length) {
-        refreshAfterGsiPondChange(changed, `地図上の池名ラベル位置で池候補を${changed.length}件追加・更新しました。`);
-        return;
+      const nearest = nearestGsiPondLabelCandidate(found, center);
+      if (nearest) {
+        const changed = applyGsiPondLabelResults([nearest]);
+        if (changed.length) {
+          refreshAfterGsiPondChange(changed, `${changed[0].name} を地図ラベル位置の池候補として追加・更新しました。`);
+          return;
+        }
       }
 
-      // v121: ラベル位置が取れない時は、ズレた位置に勝手に追加せず、操作方法を出す。
-      const fallbackHints = fallbackGsiPondCandidates(existingAtStart, bounds, fallbackCenter).slice(0, 5).map((spot) => spot.name).join("、");
-      setGsiPondStatus(fallbackHints
-        ? `地図ラベル位置を取得できませんでした。目的の池名（例: ${fallbackHints}）が見えるまで拡大して、もう一度押してください。`
-        : "地図ラベル位置を取得できませんでした。目的の『○○池』の文字が見えるまで拡大して、もう一度押してください。");
+      if (centerResult.changed.length) {
+        focusGsiPondSpot(centerResult.changed[0]);
+        setGsiPondStatus(centerResult.added
+          ? "池名ラベルは自動取得できませんでしたが、地図中央へ池候補を追加しました。名前は詳細カードの編集から直せます。"
+          : "池名ラベルは自動取得できませんでしたが、近くの既存池候補を表示しました。");
+      } else {
+        setGsiPondStatus("地図中央へ池候補を追加できませんでした。もう一度地図を少し動かして押してください。");
+      }
     } catch (error) {
       console.error("GSI pond candidate scan failed", error);
-      setGsiPondStatus(`池名ラベル位置を取得できませんでした。通信状態を確認し、地図を拡大して再度押してください。`);
+      if (centerResult.changed.length) {
+        focusGsiPondSpot(centerResult.changed[0]);
+        setGsiPondStatus("通信で池名ラベルは確認できませんでしたが、地図中央へ池候補を追加しました。名前は編集できます。");
+      } else {
+        setGsiPondStatus("池候補を追加できませんでした。地図を少し動かして再度押してください。");
+      }
     } finally {
       gsiPondScanning = false;
       buttons.forEach((button) => {
         button.disabled = false;
-        button.textContent = oldTexts.get(button) || "地図ラベル池候補追加";
+        button.textContent = oldTexts.get(button) || "地図中央に池候補追加";
       });
     }
   }
@@ -2777,8 +2855,8 @@
       button.id = "scanGsiPondCandidates";
       button.type = "button";
       button.className = "spot-mode-button";
-      button.textContent = "地図ラベル池候補追加";
-      button.title = "表示中の地図ラベルから、岩田池・尺目池など名前に『池』を含む水辺を池候補へ追加し、その位置へ移動します。";
+      button.textContent = "地図中央に池候補追加";
+      button.title = "目的の『○○池』ラベルを画面中央に合わせて押すと、その場所を池候補として追加します。池名ラベルを取得できた場合は名前も自動で反映します。";
       bindGsiPondButton(button);
       tools.appendChild(button);
     }
@@ -2789,8 +2867,8 @@
       button.id = "scanGsiPondCandidatesMenu";
       button.type = "button";
       button.className = "data-button gsi-pond-menu-button";
-      button.textContent = "地図ラベル池候補追加";
-      button.title = "表示中の地図周辺から岩田池・尺目池などの池名候補を追加します。";
+      button.textContent = "地図中央に池候補追加";
+      button.title = "目的の『○○池』ラベルを画面中央に合わせて押すと、その場所を池候補として追加します。";
       button.style.width = "100%";
       button.style.marginTop = "8px";
       bindGsiPondButton(button);
