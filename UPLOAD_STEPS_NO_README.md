@@ -1,4 +1,4 @@
-# v101 アップロード手順
+# v102 アップロード手順
 
 1. ZIPを解凍します。
 2. 中身をGitHubリポジトリ `mie-fishing-map` の直下へ上書きアップロードします。
@@ -9,4 +9,4 @@ https://cichlid528.github.io/mie-fishing-map/reset-cache.html?auto=1
 
 5. その後、下のURLで確認します。
 
-https://cichlid528.github.io/mie-fishing-map/?v=v101-large-spot-picker
+https://cichlid528.github.io/mie-fishing-map/?v=v102-compact-five-row-picker

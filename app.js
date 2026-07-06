@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v101-large-spot-picker";
-  const APP_STATUS_LABEL = "v101・釣り場欄拡大版";
+  const APP_VERSION = "v102-compact-five-row-picker";
+  const APP_STATUS_LABEL = "v102・一覧5段改善版";
 
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
@@ -12,7 +12,7 @@
   const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v86";
   const LEGACY_SINGLE_KEY = "mieFishingMap.v1";
 
-  // v101: 近くの釣り場名称スクロール欄をかなり広く表示。
+  // v102: 近くの釣り場名称スクロール欄をかなり広く表示。
   const MIE_CENTER = [34.55, 136.48];
   const MIE_HOME_ZOOM = 9;
   const MAP_MIN_ZOOM = 5;

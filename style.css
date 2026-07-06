@@ -2230,7 +2230,7 @@ body.position-adjusting .leaflet-container { cursor: crosshair !important; }
   }
 }
 
-/* v101: 記録フォームの「近くの釣り場」名称リストを本当に5段表示にする */
+/* v102: 記録フォームの「近くの釣り場」名称リストを本当に5段表示にする */
 .catch-spot-select-field {
   grid-column: 1 / -1;
 }
@@ -2292,7 +2292,7 @@ body.position-adjusting .leaflet-container { cursor: crosshair !important; }
   }
 }
 
-/* v101: 釣り場リストボタンの地名表示 */
+/* v102: 釣り場リストボタンの地名表示 */
 .catch-spot-picker button small {
   display: block;
   font-weight: 700;
@@ -2470,7 +2470,7 @@ body.position-adjusting .leaflet-container { cursor: crosshair !important; }
 
 
 
-/* v101: 「近くの釣り場」名称スクロール欄をかなり広く表示 */
+/* v102: 「近くの釣り場」名称スクロール欄をかなり広く表示 */
 .catch-spot-select-field {
   grid-column: 1 / -1 !important;
   display: block !important;
@@ -2575,5 +2575,284 @@ body.position-adjusting .leaflet-container { cursor: crosshair !important; }
     height: clamp(400px, 60dvh, 640px) !important;
     min-height: clamp(400px, 60dvh, 640px) !important;
     max-height: clamp(400px, 60dvh, 640px) !important;
+  }
+}
+
+
+/* v102: 左メニューの釣り場一覧を5段見やすくする。カードを小型化し、スクロール領域を広く確保。 */
+.sidebar-header {
+  padding: 12px 14px 8px !important;
+  gap: 10px !important;
+}
+.sidebar-header h1 {
+  font-size: 1.18rem !important;
+  line-height: 1.18 !important;
+}
+.sidebar-header .kicker {
+  font-size: .62rem !important;
+  margin-bottom: 1px !important;
+}
+.sidebar-header-actions .icon-button,
+.icon-button {
+  width: 34px !important;
+  height: 34px !important;
+}
+.controls {
+  padding: 0 12px 7px !important;
+}
+.search-box span,
+label span {
+  margin-bottom: 4px !important;
+  font-size: .76rem !important;
+}
+.search-box input,
+.controls input,
+.controls select,
+.controls textarea {
+  min-height: 36px !important;
+  padding: 7px 9px !important;
+  border-radius: 10px !important;
+  font-size: .86rem !important;
+}
+.filter-row {
+  gap: 5px !important;
+  margin-top: 7px !important;
+}
+.filter-chip,
+.list-tab,
+.data-button {
+  min-height: 32px !important;
+  padding: 6px 9px !important;
+  font-size: .78rem !important;
+  line-height: 1.08 !important;
+}
+.data-status {
+  margin: 7px 0 0 !important;
+  font-size: .72rem !important;
+  line-height: 1.25 !important;
+}
+.notice-banner {
+  margin: 6px 0 0 !important;
+  padding: 6px 8px !important;
+  font-size: .68rem !important;
+  line-height: 1.28 !important;
+  max-height: 42px !important;
+  overflow: auto !important;
+}
+.stats-grid {
+  gap: 6px !important;
+  margin-top: 7px !important;
+}
+.stats-grid span {
+  padding: 5px 3px !important;
+  border-radius: 11px !important;
+}
+.stats-grid strong {
+  font-size: .98rem !important;
+  line-height: 1 !important;
+}
+.stats-grid small {
+  font-size: .64rem !important;
+}
+.list-tabs {
+  gap: 6px !important;
+  margin-top: 7px !important;
+}
+.list-head,
+.catch-list-head {
+  padding: 5px 9px !important;
+  font-size: .66rem !important;
+}
+.spot-list,
+.catch-list {
+  flex: 1 1 auto !important;
+  min-height: 310px !important;
+  padding: 0 8px 6px !important;
+  scrollbar-gutter: stable !important;
+}
+.spot-item {
+  grid-template-columns: minmax(0, 1fr) 38px minmax(76px, 92px) 38px 38px !important;
+  gap: 4px !important;
+  align-items: center !important;
+  min-height: 56px !important;
+  margin: 0 0 6px !important;
+  padding: 7px 8px !important;
+  border-radius: 13px !important;
+}
+.spot-main strong,
+.catch-main strong {
+  font-size: .86rem !important;
+  line-height: 1.15 !important;
+}
+.spot-main small,
+.catch-main small {
+  margin-top: 2px !important;
+  font-size: .69rem !important;
+  line-height: 1.18 !important;
+}
+.flag {
+  min-width: 31px !important;
+  height: 28px !important;
+  border-radius: 9px !important;
+  font-size: .70rem !important;
+}
+.spot-species-control {
+  height: 29px !important;
+  border-radius: 999px !important;
+}
+.spot-species-select {
+  padding-left: 6px !important;
+  padding-right: 14px !important;
+  font-size: .66rem !important;
+}
+.catch-item {
+  grid-template-columns: 40px 1fr !important;
+  gap: 7px !important;
+  min-height: 56px !important;
+  margin: 0 0 6px !important;
+  padding: 8px !important;
+  border-radius: 13px !important;
+}
+.catch-item.has-photo {
+  grid-template-columns: 40px 50px 1fr !important;
+}
+.catch-num {
+  width: 32px !important;
+  height: 32px !important;
+  font-size: .78rem !important;
+}
+.catch-photo-thumb {
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 11px !important;
+}
+.record-tags {
+  gap: 4px !important;
+  margin-top: 4px !important;
+}
+.record-tags span,
+.big-bass-badge,
+.photo-badge {
+  font-size: .66rem !important;
+  padding: 2px 6px !important;
+}
+.sidebar-footer {
+  padding: 5px 10px 4px !important;
+  font-size: .70rem !important;
+}
+.sidebar-actions {
+  gap: 6px !important;
+  padding: 0 10px 8px !important;
+}
+.backup-reminder {
+  margin: 0 !important;
+  padding: 6px 8px !important;
+  border-radius: 11px !important;
+  font-size: .69rem !important;
+  line-height: 1.25 !important;
+}
+@media (max-height: 760px) {
+  .notice-banner { display: none !important; }
+  .sidebar-footer { display: none !important; }
+  .sidebar-actions { padding-bottom: 6px !important; }
+  .spot-list,
+  .catch-list { min-height: 330px !important; }
+}
+@media (max-width: 520px) {
+  .spot-item {
+    grid-template-columns: minmax(0, 1fr) 34px minmax(70px, 86px) 34px 34px !important;
+    min-height: 54px !important;
+    padding: 7px !important;
+  }
+  .flag { min-width: 28px !important; height: 27px !important; font-size: .66rem !important; }
+  .spot-species-select { font-size: .62rem !important; }
+}
+
+/* v102: 記録フォームの「近くの釣り場」スクロールカードも小型化し、5段が確実に見えるよう調整。 */
+#catchPanel .catch-form {
+  width: min(980px, calc(100vw - 20px)) !important;
+  max-height: calc(100dvh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+  padding: 12px !important;
+}
+#catchPanel .catch-form-header {
+  margin-bottom: 7px !important;
+}
+#catchPanel .catch-form-header h2 {
+  font-size: 1.06rem !important;
+  line-height: 1.2 !important;
+}
+#catchPanel .catch-location-box {
+  margin-bottom: 8px !important;
+  padding: 8px !important;
+}
+#catchPanel .record-entry-mode-row {
+  margin: 6px 0 8px !important;
+  padding: 7px !important;
+  gap: 6px !important;
+}
+#catchPanel .form-grid {
+  gap: 8px !important;
+}
+.catch-spot-select-field > span {
+  margin-bottom: 4px !important;
+  font-size: .86rem !important;
+}
+.catch-spot-select-field .field-hint {
+  display: block !important;
+  margin-top: 4px !important;
+  font-size: .70rem !important;
+  line-height: 1.25 !important;
+}
+.catch-spot-select-field .catch-spot-picker,
+.catch-spot-select-field .five-row-spot-picker,
+#catchSpotPicker,
+#catchSpotPicker.five-row-spot-picker {
+  --spot-picker-row-height: 46px !important;
+  --spot-picker-gap: 5px !important;
+  --spot-picker-padding: 6px !important;
+  width: 100% !important;
+  height: calc((var(--spot-picker-row-height) * 5) + (var(--spot-picker-gap) * 4) + (var(--spot-picker-padding) * 2)) !important;
+  min-height: calc((var(--spot-picker-row-height) * 5) + (var(--spot-picker-gap) * 4) + (var(--spot-picker-padding) * 2)) !important;
+  max-height: calc((var(--spot-picker-row-height) * 5) + (var(--spot-picker-gap) * 4) + (var(--spot-picker-padding) * 2)) !important;
+  padding: var(--spot-picker-padding) !important;
+  margin-top: 4px !important;
+  border-width: 2px !important;
+  border-radius: 14px !important;
+}
+#catchSpotPicker button,
+#catchSpotPicker.five-row-spot-picker button {
+  height: var(--spot-picker-row-height) !important;
+  min-height: var(--spot-picker-row-height) !important;
+  margin: 0 0 var(--spot-picker-gap) !important;
+  padding: 7px 10px !important;
+  border-radius: 10px !important;
+  font-size: .88rem !important;
+  line-height: 1.12 !important;
+}
+#catchSpotPicker button small,
+#catchSpotPicker.five-row-spot-picker button small {
+  max-width: 38% !important;
+  font-size: .65rem !important;
+}
+@media (max-width: 920px) {
+  #catchPanel .catch-form {
+    width: calc(100vw - 16px) !important;
+    max-height: calc(100dvh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+    padding: 10px !important;
+  }
+  #catchPanel .catch-form-header { margin-bottom: 5px !important; }
+  #catchPanel .record-entry-mode-row { margin: 5px 0 7px !important; padding: 6px !important; }
+  .catch-spot-select-field .catch-spot-picker,
+  .catch-spot-select-field .five-row-spot-picker,
+  #catchSpotPicker,
+  #catchSpotPicker.five-row-spot-picker {
+    --spot-picker-row-height: 50px !important;
+    --spot-picker-gap: 5px !important;
+    --spot-picker-padding: 6px !important;
+  }
+  #catchSpotPicker button,
+  #catchSpotPicker.five-row-spot-picker button {
+    padding: 8px 10px !important;
+    font-size: .94rem !important;
   }
 }
