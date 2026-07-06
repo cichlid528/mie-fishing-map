@@ -1,4 +1,4 @@
-# v114 アップロード手順
+# v115 アップロード手順
 
 1. ZIPを解凍します。
 2. 中身をGitHubリポジトリ `mie-fishing-map` の直下へ上書きアップロードします。
@@ -9,12 +9,11 @@ https://cichlid528.github.io/mie-fishing-map/reset-cache.html?auto=1
 
 5. その後、下のURLで確認します。
 
-https://cichlid528.github.io/mie-fishing-map/?v=v114-pond-filter-fix
+https://cichlid528.github.io/mie-fishing-map/?v=v115-pond-confirm-persist
 
 ## 変更内容
 
-- スマホで地図上の釣り場ポイントを押した時も、詳細カードを確実に表示するよう修正
-- Leafletの小さいポップアップを出さず、click / tap / touchend / pointerup を詳細カード表示に統一
-- 既存マーカー再描画時にも、古いクリック処理が残らないように修正
-- 詳細カードをスマホ画面の前面へ出すCSSを追加
-- バージョン表示を `v114・池フィルター分離修正版` に更新
+- 池候補を「確認済み」にした状態が、アプリ再起動後も池として残るように修正
+- 保存データ正規化時に `pondVerified` を消さないように修正
+- 「池」と「池候補」の絞り込み分離は維持
+- バージョン表示を `v115・池確認保存修正版` に更新

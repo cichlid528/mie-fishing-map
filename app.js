@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v114-pond-filter-fix";
-  const APP_STATUS_LABEL = "v114・池フィルター分離修正版";
+  const APP_VERSION = "v115-pond-confirm-persist";
+  const APP_STATUS_LABEL = "v115・池確認保存修正版";
 
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
@@ -232,6 +232,8 @@
       species: raw.species || raw.fish || raw.fishSpecies || "",
       noFishing: Boolean(raw.noFishing ?? raw.prohibited ?? raw.banned),
       parking: Boolean(raw.parking ?? raw.hasParking),
+      // v115: 池候補を「確認済み」にした状態を再起動後も残す。
+      pondVerified: Boolean(raw.pondVerified ?? raw.verifiedPond ?? raw.confirmedPond ?? raw.confirmed),
       memo: raw.memo || ""
     };
   }
@@ -663,10 +665,10 @@
       const candidate = isPondCandidate(spot);
       let typeOk = true;
       if (state.activeFilter === "池") {
-        // v114: 「池」は確認済みの池だけを表示し、未確認の池候補とは分ける。
+        // v115: 「池」は確認済みの池だけを表示し、未確認の池候補とは分ける。
         typeOk = spot.type === "池" && !candidate;
       } else if (state.activeFilter === "池候補") {
-        // v114: 「池候補」は未確認候補だけを表示する。
+        // v115: 「池候補」は未確認候補だけを表示する。
         typeOk = candidate;
       } else {
         typeOk = state.activeFilter === "all" || spot.type === state.activeFilter;
