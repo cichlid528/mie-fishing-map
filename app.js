@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v86-pond-candidates";
+  const APP_VERSION = "v87-dam-icons-fixed";
 
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
@@ -36,12 +36,12 @@
     { id: "hinachi-dam", name: "比奈知ダム", type: "ダム", area: "名張市", lat: 34.613780, lng: 136.155521, zoom: 15 },
     { id: "shorenji-dam", name: "青蓮寺ダム", type: "ダム", area: "名張市", lat: 34.604084, lng: 136.119925, zoom: 15 },
     { id: "isakadamu", name: "伊坂ダム", type: "ダム", area: "四日市市", lat: 35.0386, lng: 136.6186, zoom: 15 },
-    { id: "shakujo-lake", name: "錫杖湖", type: "池", area: "津市芸濃町", lat: 34.806622, lng: 136.378553, zoom: 15, source: "国土地理院", candidate: true },
-    { id: "okukahada-lake", name: "奥香肌湖", type: "池", area: "松阪市飯高町", lat: 34.376861, lng: 136.196586, zoom: 14, source: "国土地理院", candidate: true },
-    { id: "shorenji-lake", name: "青蓮寺湖", type: "池", area: "名張市", lat: 34.600869, lng: 136.118850, zoom: 15, source: "国土地理院", candidate: true },
-    { id: "hinachi-lake", name: "ひなち湖", type: "池", area: "名張市", lat: 34.614467, lng: 136.164028, zoom: 15, source: "国土地理院", candidate: true },
-    { id: "nanairo-reservoir", name: "七色貯水池", type: "池", area: "熊野市・紀和町周辺", lat: 33.991304, lng: 136.004799, zoom: 14, source: "国土地理院", candidate: true },
-    { id: "isaka-reservoir", name: "伊坂貯水池", type: "池", area: "四日市市", lat: 35.041625, lng: 136.616311, zoom: 15, source: "国土地理院", candidate: true },
+    { id: "shakujo-lake", name: "錫杖湖", type: "ダム", area: "津市芸濃町", lat: 34.806622, lng: 136.378553, zoom: 15, source: "国土地理院", subtype: "ダム湖" },
+    { id: "okukahada-lake", name: "奥香肌湖", type: "ダム", area: "松阪市飯高町", lat: 34.376861, lng: 136.196586, zoom: 14, source: "国土地理院", subtype: "ダム湖" },
+    { id: "shorenji-lake", name: "青蓮寺湖", type: "ダム", area: "名張市", lat: 34.600869, lng: 136.118850, zoom: 15, source: "国土地理院", subtype: "ダム湖" },
+    { id: "hinachi-lake", name: "ひなち湖", type: "ダム", area: "名張市", lat: 34.614467, lng: 136.164028, zoom: 15, source: "国土地理院", subtype: "ダム湖" },
+    { id: "nanairo-reservoir", name: "七色貯水池", type: "ダム", area: "熊野市・紀和町周辺", lat: 33.991304, lng: 136.004799, zoom: 14, source: "国土地理院", subtype: "ダム湖" },
+    { id: "isaka-reservoir", name: "伊坂貯水池", type: "ダム", area: "四日市市", lat: 35.041625, lng: 136.616311, zoom: 15, source: "国土地理院", subtype: "ダム湖" },
     { id: "gokatsura-pond", name: "五桂池", type: "池", area: "多気町五桂", lat: 34.466625, lng: 136.545533, zoom: 15, source: "三重県ため池DB", candidate: true },
     { id: "ishigaki-pond", name: "石垣池", type: "池", area: "鈴鹿市西玉垣町", lat: 34.856058, lng: 136.564767, zoom: 15, source: "三重県ため池DB", candidate: true },
     { id: "official-pond-001", name: "なめり湖", type: "池", area: "松阪市嬉野森本町", lat: 34.585853, lng: 136.429147, zoom: 16, source: "三重県ため池DB", candidate: true },
@@ -395,7 +395,7 @@
       { position: "topright" }
     ).addTo(map);
 
-    els.dataStatus.textContent = "v86・池候補を未確認ポイントとして表示";
+    els.dataStatus.textContent = "v87・ダム表示を修正";
 
     addMieBoundaryLayer();
     map.on("click", (event) => handleMapClick(event.latlng));
@@ -426,7 +426,7 @@
 
   function markerLabel(type) {
     if (type === "川") return "川";
-    if (type === "ダム") return "堰";
+    if (type === "ダム") return "ダム";
     if (type === "港") return "港";
     if (type === "マリーナ") return "船";
     return "池";
@@ -434,11 +434,14 @@
 
   function isPondCandidate(spot) {
     if (!spot || !spot.candidate) return false;
+    if (spot.type !== "池") return false;
+    if (/ダム|河口堰/u.test(String(spot.name || ""))) return false;
     return !spotState(spot.id).pondVerified;
   }
 
   function spotTypeText(spot) {
     if (isPondCandidate(spot)) return "池候補";
+    if (spot?.subtype) return spot.subtype;
     return spot?.type || "池";
   }
 
@@ -495,7 +498,7 @@
     if (state.spotMode) state.catchMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v86・池候補表示";
+    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v87・ダム表示修正";
   }
 
   function setCatchMode(value) {
@@ -505,7 +508,7 @@
     if (state.catchMode) state.spotMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v86・池候補表示";
+    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v87・ダム表示修正";
   }
 
   function handleMapClick(latlng) {
@@ -1540,7 +1543,7 @@
     window.addEventListener("load", () => { setMobileViewportHeight(); forceFullscreenLayout(); });
     window.addEventListener("resize", () => { setMobileViewportHeight(); forceFullscreenLayout(); });
     registerServiceWorker();
-    els.dataStatus.textContent = `v86・池候補表示 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
+    els.dataStatus.textContent = `v87・ダム表示修正 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
   }
 
   init();

@@ -1733,7 +1733,7 @@ body.position-adjusting .leaflet-container { cursor: crosshair !important; }
 }
 
 
-/* v86: 池候補（未確認ポイント）を釣り場ポイントとして分かりやすく表示 */
+/* v87: 池候補（未確認ポイント）を釣り場ポイントとして分かりやすく表示 */
 .custom-marker.candidate {
   background: #f2c94c !important;
   color: #3a2a00 !important;
@@ -1779,4 +1779,25 @@ body.position-adjusting .leaflet-container { cursor: crosshair !important; }
 @media (max-width: 920px) {
   .candidate-badge { font-size: .68rem; padding: 2px 6px; }
   .candidate-warning, .spot-source-note { font-size: .84rem; }
+}
+
+
+/* v87: ダム・ダム湖は池候補ではなく、はっきりダム表示にする */
+.custom-marker.dam {
+  width: 38px !important;
+  height: 32px !important;
+  border-radius: 12px !important;
+  background: #4b4f56 !important;
+  color: #fff !important;
+  font-size: .70rem !important;
+  letter-spacing: -0.05em !important;
+}
+.custom-marker.dam.candidate {
+  background: #4b4f56 !important;
+  color: #fff !important;
+  border-color: #fff !important;
+}
+.spot-item .spot-main small .dam-type,
+.dam-type {
+  font-weight: 900 !important;
 }
