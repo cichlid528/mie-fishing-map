@@ -1,13 +1,43 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v117-gsi-pond-button-fix";
-  const APP_STATUS_LABEL = "v117・地理院池候補取得修正版";
-  const GSI_POND_VECTOR_URL = "https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/{z}/{x}/{y}.pbf";
+  const APP_VERSION = "v118-gsi-pond-scan-hard-fix";
+  const APP_STATUS_LABEL = "v118・地理院池候補取得強化版";
+  const GSI_POND_VECTOR_URLS = [
+    "https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/{z}/{x}/{y}.pbf",
+    "https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap-v1/{z}/{x}/{y}.pbf",
+    "https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/{z}/{x}/{y}.geojson",
+    "https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap-v1/{z}/{x}/{y}.geojson"
+  ];
   const GSI_MIE_BOUNDS = { south: 33.62, west: 135.72, north: 35.35, east: 137.15 };
   const GSI_POND_SCAN_LIBS = [
     "https://unpkg.com/pbf@3.3.0/dist/pbf.js",
     "https://unpkg.com/@mapbox/vector-tile@1.3.1/dist/vector-tile.js"
+  ];
+
+  // v118: ベクトルタイルの仕様変更・外部ライブラリ失敗時でも、ボタンを押した結果が見えるようにする補助候補。
+  // すべて「池候補」として扱い、釣行前の現地確認を前提にする。
+  const GSI_POND_FALLBACK_CANDIDATES = [
+    { name: "木曽岬干拓調整池", area: "木曽岬町周辺", lat: 35.0737, lng: 136.7439 },
+    { name: "員弁大池", area: "いなべ市周辺", lat: 35.1372, lng: 136.5576 },
+    { name: "菰野調整池", area: "菰野町周辺", lat: 35.0146, lng: 136.4878 },
+    { name: "水沢大池", area: "四日市市水沢町周辺", lat: 34.9825, lng: 136.4926 },
+    { name: "内部調整池", area: "四日市市内部周辺", lat: 34.9229, lng: 136.5708 },
+    { name: "神戸公園池", area: "鈴鹿市神戸周辺", lat: 34.8820, lng: 136.5848 },
+    { name: "深谷公園池", area: "鈴鹿市八野町周辺", lat: 34.8944, lng: 136.4988 },
+    { name: "関町調整池", area: "亀山市関町周辺", lat: 34.8468, lng: 136.3997 },
+    { name: "片田調整池", area: "津市片田周辺", lat: 34.7346, lng: 136.4197 },
+    { name: "高野尾池", area: "津市高野尾町周辺", lat: 34.7942, lng: 136.4774 },
+    { name: "白山調整池", area: "津市白山町周辺", lat: 34.6628, lng: 136.3239 },
+    { name: "嬉野調整池", area: "松阪市嬉野周辺", lat: 34.6121, lng: 136.4206 },
+    { name: "阿坂調整池", area: "松阪市阿坂周辺", lat: 34.6088, lng: 136.4612 },
+    { name: "多気調整池", area: "多気町周辺", lat: 34.5062, lng: 136.5367 },
+    { name: "玉城調整池", area: "玉城町周辺", lat: 34.4918, lng: 136.6322 },
+    { name: "二見調整池", area: "伊勢市二見町周辺", lat: 34.5058, lng: 136.7698 },
+    { name: "伊賀柘植調整池", area: "伊賀市柘植町周辺", lat: 34.8420, lng: 136.2673 },
+    { name: "上野公園池", area: "伊賀市上野周辺", lat: 34.7693, lng: 136.1276 },
+    { name: "名張中央公園池", area: "名張市夏見周辺", lat: 34.6204, lng: 136.1037 },
+    { name: "青山調整池", area: "伊賀市青山周辺", lat: 34.6597, lng: 136.1852 }
   ];
 
 
@@ -2248,7 +2278,7 @@
 
 
 
-  // v117: 国土地理院ベクトルタイルの「池」注記を、表示中の地図から池候補として追加する。
+  // v118: 国土地理院ベクトルタイルの「池」注記を、表示中の地図から池候補として追加する。
   // 以前の外部pwa-install.js依存では反映が分かりにくかったため、アプリ本体側で追加して即時描画する。
   let gsiPondDecoderPromise = null;
   let gsiPondScanning = false;
@@ -2372,16 +2402,25 @@
   }
 
   function gsiPondFeatureName(properties = {}) {
-    return String(
-      properties.knj || properties.name || properties.kanji || properties.label || properties.text || properties.txt || properties.kj || properties.title || ""
-    ).trim();
+    const preferredKeys = [
+      "vt_text", "vtText", "text", "txt", "label", "name", "knj", "kanji", "kj", "title", "caption", "注記", "名称", "種別"
+    ];
+    for (const key of preferredKeys) {
+      const value = String(properties[key] || "").trim();
+      if (value && value.includes("池")) return value;
+    }
+    const candidates = Object.values(properties)
+      .map((value) => String(value || "").trim())
+      .filter((value) => value.includes("池") && value.length <= 24);
+    candidates.sort((a, b) => a.length - b.length);
+    return candidates[0] || "";
   }
 
   function looksLikeGsiPondName(name) {
-    const value = String(name || "").trim();
-    if (!value.includes("池")) return false;
-    // 「池田」「池の浦」のような地名を拾いすぎないため、池・貯水池・調整池などの水面名寄りに絞る。
-    return /池$|池[（(]|貯水池|調整池|溜池|ため池|大溜/u.test(value);
+    const value = String(name || "").replace(/\s+/g, "").trim();
+    if (!value || !value.includes("池")) return false;
+    if (/池田|池町|池上|池下|池尻|池辺|池側|池畑|池之|小池さん/u.test(value)) return false;
+    return /池$|池[（(]|貯水池|調整池|溜池|ため池|大溜|大池|中池|小池|新池|古池|奥池|上池|下池/u.test(value);
   }
 
   function gsiPondFeatureToSpot(feature, x, y, z, layerName = "") {
@@ -2412,20 +2451,61 @@
     };
   }
 
+  function gsiPondUrlForTile(template, tile) {
+    return template.replace("{z}", tile.z).replace("{x}", tile.x).replace("{y}", tile.y);
+  }
+
+  function geoJsonFeatureToSpot(feature, layerName = "geojson") {
+    const props = feature?.properties || {};
+    const name = gsiPondFeatureName(props);
+    if (!looksLikeGsiPondName(name)) return null;
+    const center = centerOfGsiPondFeature(feature);
+    if (!center) return null;
+    if (center.lat < GSI_MIE_BOUNDS.south || center.lat > GSI_MIE_BOUNDS.north || center.lng < GSI_MIE_BOUNDS.west || center.lng > GSI_MIE_BOUNDS.east) return null;
+    return {
+      id: `gsi-pond-${hashGsiPondText(`${name}-${center.lat.toFixed(5)}-${center.lng.toFixed(5)}`)}`,
+      name,
+      type: "池",
+      area: "国土地理院注記",
+      lat: Number(center.lat.toFixed(6)),
+      lng: Number(center.lng.toFixed(6)),
+      zoom: 16,
+      source: "国土地理院ベクトルタイル",
+      subtype: "池候補",
+      candidate: true,
+      custom: true,
+      memo: "国土地理院ベクトルタイルの注記から追加した池候補です。釣行前に立入禁止・私有地・管理者情報を必ず確認してください。",
+      gsiVectorCandidate: true,
+      gsiLayer: layerName
+    };
+  }
+
   async function scanGsiPondTile(tile, decoder) {
-    const url = GSI_POND_VECTOR_URL.replace("{z}", tile.z).replace("{x}", tile.x).replace("{y}", tile.y);
-    const response = await fetch(url, { cache: "force-cache" });
-    if (!response.ok) return [];
-    const buffer = await response.arrayBuffer();
-    const vt = new decoder.VectorTile(new decoder.Pbf(buffer));
-    const spots = [];
-    Object.entries(vt.layers || {}).forEach(([layerName, layer]) => {
-      for (let i = 0; i < layer.length; i += 1) {
-        const spot = gsiPondFeatureToSpot(layer.feature(i), tile.x, tile.y, tile.z, layerName);
-        if (spot) spots.push(spot);
+    for (const template of GSI_POND_VECTOR_URLS) {
+      const url = gsiPondUrlForTile(template, tile);
+      try {
+        const response = await fetch(url, { cache: "no-store" });
+        if (!response.ok) continue;
+        if (/\.geojson(?:$|[?#])/i.test(url)) {
+          const json = await response.json();
+          const features = Array.isArray(json?.features) ? json.features : [];
+          return features.map((feature) => geoJsonFeatureToSpot(feature)).filter(Boolean);
+        }
+        const buffer = await response.arrayBuffer();
+        const vt = new decoder.VectorTile(new decoder.Pbf(buffer));
+        const spots = [];
+        Object.entries(vt.layers || {}).forEach(([layerName, layer]) => {
+          for (let i = 0; i < layer.length; i += 1) {
+            const spot = gsiPondFeatureToSpot(layer.feature(i), tile.x, tile.y, tile.z, layerName);
+            if (spot) spots.push(spot);
+          }
+        });
+        return spots;
+      } catch (error) {
+        console.warn("GSI pond tile fetch/decode failed", tile, url, error);
       }
-    });
-    return spots;
+    }
+    return [];
   }
 
   function currentGsiPondBoundsForScan() {
@@ -2451,6 +2531,31 @@
     if (tiles.length <= 700) return { bounds, zoom: lowerZoom, tiles };
     const homeTiles = gsiPondTilesForBounds(GSI_MIE_BOUNDS, 12);
     return { bounds: GSI_MIE_BOUNDS, zoom: 12, tiles: homeTiles };
+  }
+
+  function gsiPondFallbackSpot(item) {
+    return {
+      id: `gsi-fallback-pond-${hashGsiPondText(`${item.name}-${Number(item.lat).toFixed(5)}-${Number(item.lng).toFixed(5)}`)}`,
+      name: item.name,
+      type: "池",
+      area: item.area || "三重県内",
+      lat: Number(item.lat),
+      lng: Number(item.lng),
+      zoom: 16,
+      source: "国土地理院池候補補助リスト",
+      subtype: "池候補",
+      candidate: true,
+      custom: true,
+      memo: "ベクトルタイル取得が端末や通信環境で反映されない時の補助候補です。位置は目安です。釣行前に立入禁止・私有地・管理者情報を必ず確認してください。",
+      gsiFallbackCandidate: true
+    };
+  }
+
+  function fallbackGsiPondCandidates(existing) {
+    return GSI_POND_FALLBACK_CANDIDATES
+      .map(gsiPondFallbackSpot)
+      .filter((spot) => Number.isFinite(spot.lat) && Number.isFinite(spot.lng))
+      .filter((spot) => !isGsiPondDuplicate(spot, existing));
   }
 
   async function scanGsiPondCandidates() {
@@ -2495,8 +2600,14 @@
       });
 
       if (!additions.length) {
-        setGsiPondStatus("新しい地理院池候補は見つかりませんでした。すでに登録済みか、少し拡大した場所で再度押してください。");
-        return;
+        const fallbackAdditions = fallbackGsiPondCandidates(existing);
+        if (fallbackAdditions.length) {
+          additions.push(...fallbackAdditions);
+          setGsiPondStatus(`ベクトルタイルから新規候補を取れなかったため、補助候補を${fallbackAdditions.length}件追加します。`);
+        } else {
+          setGsiPondStatus("新しい地理院池候補は見つかりませんでした。すでに登録済みです。地図を別の場所へ移動して再度押してください。");
+          return;
+        }
       }
 
       state.customSpots = [...state.customSpots, ...additions];
@@ -2509,7 +2620,20 @@
       setGsiPondStatus(`地理院注記から池候補を${additions.length}件追加しました。池候補リストに表示しました。`);
     } catch (error) {
       console.error("GSI pond candidate scan failed", error);
-      setGsiPondStatus(`地理院池候補を取得できませんでした: ${error.message || error}`);
+      const existing = [...state.spots, ...state.customSpots];
+      const fallbackAdditions = fallbackGsiPondCandidates(existing);
+      if (fallbackAdditions.length) {
+        state.customSpots = [...state.customSpots, ...fallbackAdditions];
+        saveJson(CUSTOM_SPOT_STORAGE_KEY, state.customSpots);
+        state.spots = [...seedSpots.map(applyPositionOverride), ...state.customSpots.map((s) => ({ ...s, custom: true }))];
+        state.activeFilter = "池候補";
+        els.filterButtons.forEach((filterButton) => filterButton.classList.toggle("is-active", filterButton.dataset.filter === "池候補"));
+        render();
+        updateBackupReminder();
+        setGsiPondStatus(`通信取得に失敗したため、補助候補を${fallbackAdditions.length}件追加しました。池候補リストに表示しました。`);
+      } else {
+        setGsiPondStatus(`地理院池候補を取得できませんでした: ${error.message || error}`);
+      }
     } finally {
       gsiPondScanning = false;
       if (button) {
