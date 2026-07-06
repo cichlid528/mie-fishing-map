@@ -1,4 +1,4 @@
-# v113 アップロード手順
+# v114 アップロード手順
 
 1. ZIPを解凍します。
 2. 中身をGitHubリポジトリ `mie-fishing-map` の直下へ上書きアップロードします。
@@ -9,7 +9,7 @@ https://cichlid528.github.io/mie-fishing-map/reset-cache.html?auto=1
 
 5. その後、下のURLで確認します。
 
-https://cichlid528.github.io/mie-fishing-map/?v=v113-mobile-spot-card-fix
+https://cichlid528.github.io/mie-fishing-map/?v=v114-pond-filter-fix
 
 ## 変更内容
 
@@ -17,4 +17,4 @@ https://cichlid528.github.io/mie-fishing-map/?v=v113-mobile-spot-card-fix
 - Leafletの小さいポップアップを出さず、click / tap / touchend / pointerup を詳細カード表示に統一
 - 既存マーカー再描画時にも、古いクリック処理が残らないように修正
 - 詳細カードをスマホ画面の前面へ出すCSSを追加
-- バージョン表示を `v113・スマホポイント詳細カード修正版` に更新
+- バージョン表示を `v114・池フィルター分離修正版` に更新

@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v113-mobile-spot-card-fix";
-  const APP_STATUS_LABEL = "v113・スマホポイント詳細カード修正版";
+  const APP_VERSION = "v114-pond-filter-fix";
+  const APP_STATUS_LABEL = "v114・池フィルター分離修正版";
 
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
@@ -661,10 +661,18 @@
     const q = state.search.trim().toLowerCase();
     return state.spots.filter((spot) => {
       const candidate = isPondCandidate(spot);
-      let typeOk = state.activeFilter === "all" || spot.type === state.activeFilter;
-      if (state.activeFilter === "池候補") typeOk = candidate;
+      let typeOk = true;
+      if (state.activeFilter === "池") {
+        // v114: 「池」は確認済みの池だけを表示し、未確認の池候補とは分ける。
+        typeOk = spot.type === "池" && !candidate;
+      } else if (state.activeFilter === "池候補") {
+        // v114: 「池候補」は未確認候補だけを表示する。
+        typeOk = candidate;
+      } else {
+        typeOk = state.activeFilter === "all" || spot.type === state.activeFilter;
+      }
       const s = spotState(spot.id);
-      const text = [spot.name, spot.area, spot.memo, spot.type, spot.source, candidate ? "池候補 未確認" : "", s.species, s.memo].join(" ").toLowerCase();
+      const text = [spot.name, spot.area, spot.memo, spotTypeText(spot), spot.type, spot.source, candidate ? "池候補 未確認" : "池 確認済み", s.species, s.memo].join(" ").toLowerCase();
       return typeOk && (!q || text.includes(q));
     });
   }

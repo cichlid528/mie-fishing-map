@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bass-spot-log-";
-const VERSION = "v113-mobile-spot-card-fix";
+const VERSION = "v114-pond-filter-fix";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());
