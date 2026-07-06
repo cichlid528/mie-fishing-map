@@ -11,8 +11,8 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQDP4nD8xQV9qVtAkM5M5OgFHJt0f9I=" crossorigin="">
-    <link rel="stylesheet" href="style.css?v=v99-native-five-row-spot-select">
-    <style id="v99-native-five-row-spot-select-fix">
+    <link rel="stylesheet" href="style.css?v=v100-custom-five-row-spot-picker">
+    <style id="v100-custom-five-row-spot-picker-fix">
       @media (max-width: 920px) {
         #menuToggle.mobile-menu-button { display: inline-flex !important; position: fixed !important; top: calc(12px + env(safe-area-inset-top)) !important; left: calc(12px + env(safe-area-inset-left)) !important; z-index: 2147483600 !important; pointer-events: auto !important; touch-action: manipulation !important; background: rgba(255,255,255,.99) !important; color: #073f33 !important; -webkit-text-fill-color: #073f33 !important; }
         .map-tools { position: fixed !important; top: calc(68px + env(safe-area-inset-top)) !important; right: calc(10px + env(safe-area-inset-right)) !important; z-index: 2147483400 !important; pointer-events: none !important; }
@@ -694,6 +694,87 @@
   }
 }
 
+/* v100: 「近くの釣り場」名称欄を独自5段スクロールリストで固定表示 */
+.catch-spot-hidden-select {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  overflow: hidden !important;
+}
+.catch-spot-select-field {
+  grid-column: 1 / -1 !important;
+}
+.catch-spot-select-field .five-row-spot-picker,
+#catchSpotPicker.five-row-spot-picker {
+  --spot-picker-row-height: 54px;
+  display: block !important;
+  width: 100% !important;
+  height: calc((var(--spot-picker-row-height) * 5) + 10px) !important;
+  min-height: calc((var(--spot-picker-row-height) * 5) + 10px) !important;
+  max-height: calc((var(--spot-picker-row-height) * 5) + 10px) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 5px !important;
+  margin-top: 8px !important;
+  border: 2px solid rgba(15, 111, 95, .38) !important;
+  border-radius: 16px !important;
+  background: rgba(255,255,255,.97) !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.7), 0 8px 22px rgba(0,0,0,.10) !important;
+  -webkit-overflow-scrolling: touch !important;
+  overscroll-behavior: contain !important;
+}
+#catchSpotPicker.five-row-spot-picker button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  width: 100% !important;
+  height: var(--spot-picker-row-height) !important;
+  min-height: var(--spot-picker-row-height) !important;
+  margin: 0 0 5px !important;
+  padding: 10px 12px !important;
+  border: 1px solid rgba(15,111,95,.18) !important;
+  border-radius: 12px !important;
+  background: rgba(248,253,250,.98) !important;
+  color: #073f33 !important;
+  font-size: .95rem !important;
+  font-weight: 850 !important;
+  line-height: 1.15 !important;
+  text-align: left !important;
+}
+#catchSpotPicker.five-row-spot-picker button:last-child { margin-bottom: 0 !important; }
+#catchSpotPicker.five-row-spot-picker button small {
+  flex: 0 0 auto !important;
+  max-width: 42% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font-size: .72rem !important;
+  font-weight: 750 !important;
+  color: rgba(7,63,51,.66) !important;
+}
+#catchSpotPicker.five-row-spot-picker button.is-selected {
+  background: rgba(15,111,95,.14) !important;
+  border-color: rgba(15,111,95,.55) !important;
+  box-shadow: inset 4px 0 0 rgba(15,111,95,.85) !important;
+}
+@media (max-width: 920px) {
+  .catch-spot-select-field .five-row-spot-picker,
+  #catchSpotPicker.five-row-spot-picker {
+    --spot-picker-row-height: 58px;
+    height: calc((var(--spot-picker-row-height) * 5) + 12px) !important;
+    min-height: calc((var(--spot-picker-row-height) * 5) + 12px) !important;
+    max-height: calc((var(--spot-picker-row-height) * 5) + 12px) !important;
+    padding: 6px !important;
+  }
+  #catchSpotPicker.five-row-spot-picker button {
+    font-size: 1rem !important;
+    padding: 10px 12px !important;
+  }
+}
+
 </style>
   </head>
   <body>
@@ -828,7 +909,7 @@
           <label class="super-record-hidden-field"><span>記録タイプ</span><select id="catchRecordType"><option value="note">現地メモ</option><option value="catch">釣果</option></select></label>
           <label class="super-record-hidden-field"><span>周辺メモ種別</span><select id="catchPlaceKind"><option value="">選択してください</option><option>コンビニ</option><option>スーパー</option><option>曲がり角</option><option>入口・進入口</option><option>駐車場</option><option>トイレ</option><option>自販機</option><option>釣具店</option><option>目印</option><option>危険・注意</option><option>その他</option></select></label>
           <label class="full-width location-note-field super-record-hidden-field"><span>名称・内容</span><input id="catchPlaceName" type="text" placeholder="例: コンビニあり、ここを左折、橋の手前で曲がる"></label>
-          <label class="full-width catch-spot-select-field"><span>近くの釣り場</span><select id="catchSpot" class="catch-spot-native-list" size="5" aria-label="近くの釣り場を5段表示で選択"></select><div id="catchSpotPicker" class="catch-spot-picker is-hidden-picker" aria-hidden="true"></div><small class="field-hint">釣り場名を5段で表示します。上下にスクロールして選択できます。</small></label>
+          <label class="full-width catch-spot-select-field"><span>近くの釣り場</span><select id="catchSpot" class="catch-spot-hidden-select" aria-label="選択中の近くの釣り場"></select><div id="catchSpotPicker" class="catch-spot-picker five-row-spot-picker" role="listbox" aria-label="近くの釣り場を5段表示で選択"></div><small class="field-hint">この枠内に5件分を常時表示します。上下にスクロールして釣り場名を選択できます。</small></label>
           <label class="super-record-hidden-field"><span>日時</span><input id="catchTime" type="datetime-local"></label>
           <label class="fishing-field full-width species-multi-field"><span>魚種（複数選択可）</span><input id="catchSpecies" type="hidden" value="ブラックバス"><div class="species-category-row" role="group" aria-label="魚種カテゴリ">
               <button class="species-category-chip is-active" type="button" data-species-category-filter="popular">よく使う</button>
@@ -959,7 +1040,7 @@
     </section>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="pwa-install.js?v=v99-native-five-row-spot-select"></script>
-    <script src="app.js?v=v99-native-five-row-spot-select"></script>
+    <script src="pwa-install.js?v=v100-custom-five-row-spot-picker"></script>
+    <script src="app.js?v=v100-custom-five-row-spot-picker"></script>
   </body>
 </html>

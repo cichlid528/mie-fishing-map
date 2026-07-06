@@ -2385,3 +2385,86 @@ body.position-adjusting .leaflet-container { cursor: crosshair !important; }
     padding: 17px 12px !important;
   }
 }
+
+
+/* v100: 「近くの釣り場」名称欄を独自5段スクロールリストで固定表示 */
+.catch-spot-hidden-select {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  overflow: hidden !important;
+}
+.catch-spot-select-field {
+  grid-column: 1 / -1 !important;
+}
+.catch-spot-select-field .five-row-spot-picker,
+#catchSpotPicker.five-row-spot-picker {
+  --spot-picker-row-height: 54px;
+  display: block !important;
+  width: 100% !important;
+  height: calc((var(--spot-picker-row-height) * 5) + 10px) !important;
+  min-height: calc((var(--spot-picker-row-height) * 5) + 10px) !important;
+  max-height: calc((var(--spot-picker-row-height) * 5) + 10px) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 5px !important;
+  margin-top: 8px !important;
+  border: 2px solid rgba(15, 111, 95, .38) !important;
+  border-radius: 16px !important;
+  background: rgba(255,255,255,.97) !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.7), 0 8px 22px rgba(0,0,0,.10) !important;
+  -webkit-overflow-scrolling: touch !important;
+  overscroll-behavior: contain !important;
+}
+#catchSpotPicker.five-row-spot-picker button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  width: 100% !important;
+  height: var(--spot-picker-row-height) !important;
+  min-height: var(--spot-picker-row-height) !important;
+  margin: 0 0 5px !important;
+  padding: 10px 12px !important;
+  border: 1px solid rgba(15,111,95,.18) !important;
+  border-radius: 12px !important;
+  background: rgba(248,253,250,.98) !important;
+  color: #073f33 !important;
+  font-size: .95rem !important;
+  font-weight: 850 !important;
+  line-height: 1.15 !important;
+  text-align: left !important;
+}
+#catchSpotPicker.five-row-spot-picker button:last-child { margin-bottom: 0 !important; }
+#catchSpotPicker.five-row-spot-picker button small {
+  flex: 0 0 auto !important;
+  max-width: 42% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font-size: .72rem !important;
+  font-weight: 750 !important;
+  color: rgba(7,63,51,.66) !important;
+}
+#catchSpotPicker.five-row-spot-picker button.is-selected {
+  background: rgba(15,111,95,.14) !important;
+  border-color: rgba(15,111,95,.55) !important;
+  box-shadow: inset 4px 0 0 rgba(15,111,95,.85) !important;
+}
+@media (max-width: 920px) {
+  .catch-spot-select-field .five-row-spot-picker,
+  #catchSpotPicker.five-row-spot-picker {
+    --spot-picker-row-height: 58px;
+    height: calc((var(--spot-picker-row-height) * 5) + 12px) !important;
+    min-height: calc((var(--spot-picker-row-height) * 5) + 12px) !important;
+    max-height: calc((var(--spot-picker-row-height) * 5) + 12px) !important;
+    padding: 6px !important;
+  }
+  #catchSpotPicker.five-row-spot-picker button {
+    font-size: 1rem !important;
+    padding: 10px 12px !important;
+  }
+}
+
