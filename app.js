@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v109-start-button-sequence";
-  const APP_STATUS_LABEL = "v109・起動ボタン遷移版";
+  const APP_VERSION = "v110-now-loading";
+  const APP_STATUS_LABEL = "v110・Now Loading表示版";
 
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";

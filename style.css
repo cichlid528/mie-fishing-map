@@ -3418,7 +3418,7 @@ button,
   filter: brightness(.74) saturate(1.04) !important;
 }
 .app-start-screen.is-launching::after {
-  content: "地図へ移動しています…" !important;
+  content: "Now Loading..." !important;
   display: inline-flex !important;
   position: absolute !important;
   left: 50% !important;

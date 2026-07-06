@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bass-spot-log-";
-const VERSION = "v109-start-button-sequence";
+const VERSION = "v110-now-loading";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());
