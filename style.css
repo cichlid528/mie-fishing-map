@@ -1323,3 +1323,80 @@ body.panel-open {
     max-height: min(66vh, 500px) !important;
   }
 }
+
+/* v82: 記録ポップアップ内で編集しやすくし、釣り場ポイントの位置調整を追加 */
+.record-popup-actions {
+  display: grid !important;
+  grid-template-columns: 1fr auto !important;
+  gap: 8px !important;
+  align-items: center !important;
+}
+.record-popup-edit,
+.record-popup-close {
+  min-height: 42px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  padding: 10px 13px !important;
+  font-weight: 950 !important;
+  cursor: pointer !important;
+  touch-action: manipulation !important;
+}
+.record-popup-edit {
+  background: #0f7b63 !important;
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+  box-shadow: 0 8px 18px rgba(15,123,99,.24) !important;
+}
+.record-popup-close {
+  background: #edf4f0 !important;
+  color: #173f35 !important;
+  -webkit-text-fill-color: #173f35 !important;
+  box-shadow: inset 0 0 0 1px rgba(7,63,51,.14) !important;
+}
+.spot-card-adjust-note {
+  margin-top: 7px !important;
+  padding: 8px 10px !important;
+  border-radius: 12px !important;
+  background: #fff8ee !important;
+  border: 1px solid rgba(255,155,63,.30) !important;
+  color: #5b3b16 !important;
+  text-shadow: none !important;
+  font-size: .82rem !important;
+}
+.position-adjusted-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  width: fit-content !important;
+  padding: 5px 9px !important;
+  border-radius: 999px !important;
+  background: #e7f5ef !important;
+  color: #075c49 !important;
+  font-weight: 900 !important;
+  text-shadow: none !important;
+  border: 1px solid rgba(15,123,99,.18) !important;
+}
+body.position-adjusting #map {
+  cursor: crosshair !important;
+}
+body.position-adjusting .map-tools > button:not(#addSpotMode):not(#addCatchMode) {
+  opacity: .72 !important;
+}
+.spot-card .card-actions button[data-action="move"] {
+  background: #0f7b63 !important;
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+}
+.spot-card .card-actions button[data-action="resetPosition"] {
+  background: #edf4f0 !important;
+  color: #173f35 !important;
+  -webkit-text-fill-color: #173f35 !important;
+}
+@media (max-width: 920px) {
+  .record-popup-actions {
+    grid-template-columns: 1fr !important;
+  }
+  .record-popup-edit,
+  .record-popup-close {
+    width: 100% !important;
+  }
+}

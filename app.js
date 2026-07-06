@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v81-record-popup-on-number";
+  const APP_VERSION = "v82-edit-popup-move-spots";
 
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
@@ -10,7 +10,7 @@
   const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v80";
   const LEGACY_SINGLE_KEY = "mieFishingMap.v1";
 
-  // v81: 記録ピン番号を押した時は編集フォームではなく、写真・記載情報のポップアップを表示。
+  // v82: 記録ポップアップ内編集と、釣り場ポイントの位置調整に対応。
   const MIE_CENTER = [34.55, 136.48];
   const MIE_HOME_ZOOM = 9;
   const MAP_MIN_ZOOM = 5;
@@ -124,6 +124,7 @@
     catches: [],
     customSpots: [],
     positionOverrides: {},
+    positionAdjustSpotId: null,
     selectedSpotId: null,
     activeFilter: "all",
     activeList: "spots",
@@ -233,10 +234,8 @@
   }
 
   function isSafePositionOverride(spot, override) {
-    if (!isWithinMieBounds(override)) return false;
-    const latDiff = Math.abs(Number(override.lat) - Number(spot.lat));
-    const lngDiff = Math.abs(Number(override.lng) - Number(spot.lng));
-    return Math.hypot(latDiff, lngDiff) <= 0.08;
+    // v82: 釣り場ポイントはユーザーが地理院地図上で合わせ直せるよう、三重県周辺内なら距離制限しない。
+    return isWithinMieBounds(override);
   }
 
   function applyPositionOverride(spot) {
@@ -281,6 +280,7 @@
     saveJson(CUSTOM_SPOT_STORAGE_KEY, state.customSpots);
   }
   function persistCatches() { saveJson(CATCH_STORAGE_KEY, state.catches); }
+  function persistPositionOverrides() { saveJson(POSITION_STORAGE_KEY, state.positionOverrides); }
 
   function initEls() {
     [
@@ -438,22 +438,30 @@
   }
 
   function setSpotMode(value) {
+    state.positionAdjustSpotId = null;
+    document.body.classList.remove("position-adjusting");
     state.spotMode = Boolean(value);
     if (state.spotMode) state.catchMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v81・記録ポップアップ表示";
+    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v82・編集と位置調整対応";
   }
 
   function setCatchMode(value) {
+    state.positionAdjustSpotId = null;
+    document.body.classList.remove("position-adjusting");
     state.catchMode = Boolean(value);
     if (state.catchMode) state.spotMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v81・記録ポップアップ表示";
+    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v82・編集と位置調整対応";
   }
 
   function handleMapClick(latlng) {
+    if (state.positionAdjustSpotId) {
+      finishSpotPositionAdjust(latlng);
+      return;
+    }
     if (state.spotMode) {
       openSpotPanel(null, latlng);
       setSpotMode(false);
@@ -643,7 +651,10 @@
       </div>
       ${memo ? `<p class="record-popup-memo">${escapeHtml(memo)}</p>` : ""}
       ${!hasInfo ? '<p class="record-popup-memo">記載情報はまだありません。</p>' : ""}
-      <button class="record-popup-edit" type="button" data-record-edit="${escapeHtml(record.id)}">この記録を編集</button>
+      <div class="record-popup-actions">
+        <button class="record-popup-edit" type="button" data-record-edit="${escapeHtml(record.id)}">この記録を編集</button>
+        <button class="record-popup-close" type="button" data-record-popup-close="1">閉じる</button>
+      </div>
     </div>`;
   }
 
@@ -738,6 +749,7 @@
     els.spotCard.innerHTML = `<h2>${escapeHtml(spot.name)}</h2>
       <p><strong>${escapeHtml(spot.type)}</strong> / ${escapeHtml(spot.area || "地名未設定")}</p>
       ${spot.memo ? `<p>${escapeHtml(spot.memo)}</p>` : ""}
+      ${spot.positionAdjusted ? '<p class="position-adjusted-badge">位置調整済み</p>' : ""}
       <p class="catch-photo-status">記録 ${recordCount}件 / ${Number(spot.lat).toFixed(6)}, ${Number(spot.lng).toFixed(6)}</p>
       <div class="card-flags">
         <label><input type="checkbox" data-flag="caught" ${s.caught ? "checked" : ""}>釣れた</label>
@@ -747,9 +759,12 @@
       </div>
       <div class="card-actions">
         <button type="button" data-action="record">ここで記録</button>
+        <button type="button" data-action="move">位置調整</button>
+        ${spot.positionAdjusted && !spot.custom ? '<button type="button" data-action="resetPosition">位置初期化</button>' : ""}
         ${spot.custom ? '<button type="button" data-action="edit">編集</button><button class="danger" type="button" data-action="delete">削除</button>' : ""}
         <button type="button" data-action="close">閉じる</button>
-      </div>`;
+      </div>
+      <p class="spot-card-adjust-note">位置調整は、ボタンを押した後に地図上の新しい場所をタップして保存します。</p>`;
     els.spotCard.classList.remove("is-hidden");
   }
 
@@ -757,6 +772,69 @@
     document.body.classList.remove("spot-card-open");
     els.spotCard.classList.add("is-hidden");
     els.spotCard.innerHTML = "";
+  }
+
+  function baseSeedSpot(spotId) {
+    return seedSpots.find((spot) => spot.id === spotId) || null;
+  }
+
+  function startSpotPositionAdjust(spotId) {
+    const spot = state.spots.find((s) => s.id === spotId);
+    if (!spot || !map) return;
+    state.positionAdjustSpotId = spotId;
+    state.spotMode = false;
+    state.catchMode = false;
+    document.body.classList.add("position-adjusting");
+    els.addSpotMode.classList.remove("is-active");
+    els.addCatchMode.classList.remove("is-active");
+    hideSpotCard();
+    try { map.closePopup(); } catch (error) {}
+    try { closeMobileMenu(); } catch (error) {}
+    map.setView([Number(spot.lat), Number(spot.lng)], Math.max(map.getZoom(), spot.zoom || 16), { animate: false });
+    els.dataStatus.textContent = `「${spot.name}」の新しい位置を地図上でタップしてください。`;
+    alert(`「${spot.name}」の新しい位置を地図上でタップすると、釣り場ポイントの位置を保存します。`);
+  }
+
+  function finishSpotPositionAdjust(latlng) {
+    const spotId = state.positionAdjustSpotId;
+    const spot = state.spots.find((s) => s.id === spotId);
+    if (!spot || !latlng) return;
+    const next = { lat: Number(latlng.lat), lng: Number(latlng.lng) };
+    if (!isWithinMieBounds(next)) {
+      alert("三重県周辺外の位置には移動できません。もう一度、地図上の位置をタップしてください。");
+      return;
+    }
+    if (spot.custom) {
+      const custom = state.customSpots.find((s) => s.id === spotId);
+      if (custom) { custom.lat = next.lat; custom.lng = next.lng; }
+      spot.lat = next.lat;
+      spot.lng = next.lng;
+      persistCustomSpots();
+    } else {
+      state.positionOverrides[spotId] = next;
+      persistPositionOverrides();
+      spot.lat = next.lat;
+      spot.lng = next.lng;
+      spot.positionAdjusted = true;
+    }
+    state.positionAdjustSpotId = null;
+    document.body.classList.remove("position-adjusting");
+    renderSpotMarkers();
+    renderSpotList();
+    selectSpot(spotId);
+    els.dataStatus.textContent = `「${spot.name}」の位置を更新しました。`;
+  }
+
+  function resetSpotPosition(spotId) {
+    const base = baseSeedSpot(spotId);
+    if (!base) return;
+    delete state.positionOverrides[spotId];
+    persistPositionOverrides();
+    const idx = state.spots.findIndex((spot) => spot.id === spotId);
+    if (idx >= 0) state.spots[idx] = { ...base };
+    renderSpotMarkers();
+    selectSpot(spotId);
+    els.dataStatus.textContent = `「${base.name}」の位置を初期位置に戻しました。`;
   }
 
   function nearestSpotId(lat, lng) {
@@ -1296,8 +1374,17 @@
       renderSpotList();
     });
     document.addEventListener("click", (event) => {
+      const closeButton = event.target.closest("button[data-record-popup-close]");
+      if (closeButton) {
+        event.preventDefault();
+        event.stopPropagation();
+        try { map?.closePopup?.(); } catch (error) {}
+        return;
+      }
       const editButton = event.target.closest("button[data-record-edit]");
       if (!editButton) return;
+      event.preventDefault();
+      event.stopPropagation();
       try { map?.closePopup?.(); } catch (error) {}
       openCatchPanel(editButton.dataset.recordEdit);
     });
@@ -1308,6 +1395,8 @@
       const spot = state.spots.find((s) => s.id === state.selectedSpotId);
       if (action === "close") hideSpotCard();
       if (action === "record") openCatchPanel(null, L.latLng(spot.lat, spot.lng), { recordType: "catch" });
+      if (action === "move") startSpotPositionAdjust(spot.id);
+      if (action === "resetPosition") resetSpotPosition(spot.id);
       if (action === "edit") openSpotPanel(spot.id);
       if (action === "delete") { els.spotIdInput.value = spot.id; deleteSelectedSpot(); }
     });
@@ -1376,7 +1465,7 @@
     window.addEventListener("load", forceFullscreenLayout);
     window.addEventListener("resize", forceFullscreenLayout);
     registerServiceWorker();
-    els.dataStatus.textContent = `v81・記録ポップアップ表示 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
+    els.dataStatus.textContent = `v82・編集と位置調整対応 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
   }
 
   init();
