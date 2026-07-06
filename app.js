@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v98-wide-spot-picker";
+  const APP_VERSION = "v99-native-five-row-spot-select";
 
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
@@ -1843,6 +1843,9 @@
     els.closeCatchPanel.addEventListener("click", closeCatchPanel);
     els.deleteCatch.addEventListener("click", deleteSelectedCatch);
     els.catchRecordType.addEventListener("change", updateRecordTypeUI);
+    els.catchSpot?.addEventListener("change", () => {
+      setCatchSpotValue(els.catchSpot.value || "", true);
+    });
     els.catchSpotPicker?.addEventListener("click", (event) => {
       const button = event.target.closest("[data-catch-spot-picker]");
       if (!button) return;

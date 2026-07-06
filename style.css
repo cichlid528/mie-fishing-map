@@ -2331,3 +2331,57 @@ body.position-adjusting .leaflet-container { cursor: crosshair !important; }
     font-size: 1rem !important;
   }
 }
+
+
+/* v99: 近くの釣り場はネイティブselectを5段固定表示 */
+.catch-spot-select-field {
+  grid-column: 1 / -1 !important;
+  display: block !important;
+}
+.catch-spot-native-list,
+#catchSpot.catch-spot-native-list {
+  display: block !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  height: 310px !important;
+  min-height: 310px !important;
+  max-height: 310px !important;
+  overflow-y: auto !important;
+  border: 2px solid rgba(7,63,51,.28) !important;
+  border-radius: 16px !important;
+  padding: 6px !important;
+  background: rgba(255,255,255,.99) !important;
+  color: #123a32 !important;
+  font-size: 1rem !important;
+  font-weight: 800 !important;
+  line-height: 1.25 !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+#catchSpot.catch-spot-native-list option {
+  min-height: 56px !important;
+  height: 56px !important;
+  padding: 16px 12px !important;
+  font-size: 1rem !important;
+  line-height: 1.3 !important;
+}
+#catchSpot.catch-spot-native-list option:checked {
+  background: rgba(15,123,99,.22) !important;
+  color: #073f33 !important;
+}
+.catch-spot-picker.is-hidden-picker {
+  display: none !important;
+}
+@media (max-width: 920px) {
+  .catch-spot-native-list,
+  #catchSpot.catch-spot-native-list {
+    height: 325px !important;
+    min-height: 325px !important;
+    max-height: 325px !important;
+    font-size: 1.02rem !important;
+  }
+  #catchSpot.catch-spot-native-list option {
+    min-height: 58px !important;
+    height: 58px !important;
+    padding: 17px 12px !important;
+  }
+}
