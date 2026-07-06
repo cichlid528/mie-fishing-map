@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v78-spot-checks-fixed";
+  const APP_VERSION = "v79-mobile-spot-card-safe";
 
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
@@ -10,7 +10,7 @@
   const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v78";
   const LEGACY_SINGLE_KEY = "mieFishingMap.v1";
 
-  // v78: 釣り場一覧のチェック項目を直接操作できるように修正。
+  // v79: スマホで詳細カードが操作ボタンに被らないよう位置を調整。
   const MIE_CENTER = [34.55, 136.48];
   const MIE_HOME_ZOOM = 9;
   const MAP_MIN_ZOOM = 5;
@@ -398,7 +398,7 @@
     if (state.spotMode) state.catchMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v78・チェック項目修正";
+    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v79・詳細カード位置修正";
   }
 
   function setCatchMode(value) {
@@ -406,7 +406,7 @@
     if (state.catchMode) state.spotMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v78・チェック項目修正";
+    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v79・詳細カード位置修正";
   }
 
   function handleMapClick(latlng) {
@@ -626,6 +626,7 @@
   }
 
   function showSpotCard(spot) {
+    document.body.classList.add("spot-card-open");
     const s = spotState(spot.id);
     const recordCount = state.catches.filter((r) => r.spotId === spot.id).length;
     els.spotCard.innerHTML = `<h2>${escapeHtml(spot.name)}</h2>
@@ -647,6 +648,7 @@
   }
 
   function hideSpotCard() {
+    document.body.classList.remove("spot-card-open");
     els.spotCard.classList.add("is-hidden");
     els.spotCard.innerHTML = "";
   }
@@ -663,6 +665,7 @@
 
   function openPanel(panel) {
     if (!panel) return;
+    hideSpotCard();
     // v76: スマホのメニュー上から開いた時は、先にメニューを閉じてポップアウト画面を最前面に出す。
     try {
       if (els.mobileMenu?.classList.contains("is-open")) closeMobileMenu();
@@ -1260,7 +1263,7 @@
     window.addEventListener("load", forceFullscreenLayout);
     window.addEventListener("resize", forceFullscreenLayout);
     registerServiceWorker();
-    els.dataStatus.textContent = `v78・チェック項目修正 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
+    els.dataStatus.textContent = `v79・詳細カード位置修正 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
   }
 
   init();
