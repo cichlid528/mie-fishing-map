@@ -1733,7 +1733,7 @@ body.position-adjusting .leaflet-container { cursor: crosshair !important; }
 }
 
 
-/* v87: 池候補（未確認ポイント）を釣り場ポイントとして分かりやすく表示 */
+/* v88: 池候補（未確認ポイント）を釣り場ポイントとして分かりやすく表示 */
 .custom-marker.candidate {
   background: #f2c94c !important;
   color: #3a2a00 !important;
@@ -1782,7 +1782,7 @@ body.position-adjusting .leaflet-container { cursor: crosshair !important; }
 }
 
 
-/* v87: ダム・ダム湖は池候補ではなく、はっきりダム表示にする */
+/* v88: ダム・ダム湖は池候補ではなく、はっきりダム表示にする */
 .custom-marker.dam {
   width: 38px !important;
   height: 32px !important;
@@ -1800,4 +1800,73 @@ body.position-adjusting .leaflet-container { cursor: crosshair !important; }
 .spot-item .spot-main small .dam-type,
 .dam-type {
   font-weight: 900 !important;
+}
+
+/* v89: 魚種を増やし、スマホでも複数選択しやすくする */
+.species-multi-field {
+  gap: 8px !important;
+}
+.multi-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(108px, 1fr));
+  gap: 8px;
+  width: 100%;
+}
+.multi-choice-grid label {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(10, 89, 74, .22);
+  background: rgba(255,255,255,.86);
+  color: #0c5b4d;
+  font-weight: 850;
+  font-size: .86rem;
+  line-height: 1.1;
+  cursor: pointer;
+  user-select: none;
+  text-shadow: none !important;
+}
+.multi-choice-grid label.is-selected {
+  background: #0f6f5f;
+  border-color: #0f6f5f;
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(15, 111, 95, .22);
+}
+.multi-choice-grid input {
+  width: 16px !important;
+  height: 16px !important;
+  accent-color: #0f6f5f;
+}
+.field-hint {
+  color: rgba(25, 71, 63, .78);
+  font-size: .78rem;
+  font-weight: 750;
+}
+@media (max-width: 920px) {
+  .multi-choice-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+  }
+  .multi-choice-grid label {
+    min-height: 40px;
+    padding: 8px 8px;
+    font-size: .82rem;
+  }
+}
+
+/* v89: 魚種候補が増えてもスマホで選びやすくする */
+.species-multi-field .multi-choice-grid {
+  max-height: min(42dvh, 360px);
+  overflow: auto;
+  padding-right: 2px;
+  -webkit-overflow-scrolling: touch;
+}
+@media (max-width: 920px) {
+  .species-multi-field .multi-choice-grid {
+    max-height: min(38dvh, 300px);
+  }
 }

@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bass-spot-log-";
-const VERSION = "v87-dam-icons-fixed";
+const VERSION = "v89-more-fish-species";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());

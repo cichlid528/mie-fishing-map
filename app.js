@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v87-dam-icons-fixed";
+  const APP_VERSION = "v89-more-fish-species";
 
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
@@ -10,13 +10,13 @@
   const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v86";
   const LEGACY_SINGLE_KEY = "mieFishingMap.v1";
 
-  // v83: 位置調整中バーと、記録ポップアップの見やすさ改善に対応。
+  // v89: 釣果記録・釣り場チェックの魚種候補を追加。
   const MIE_CENTER = [34.55, 136.48];
   const MIE_HOME_ZOOM = 9;
   const MAP_MIN_ZOOM = 5;
 
   const SPOT_SPECIES_OPTIONS = [
-    "", "ブラックバス", "ブルーギル", "ナマズ", "ライギョ", "シーバス", "キス", "アジ", "メバル", "カサゴ", "チヌ", "マゴチ", "ヒラメ", "その他"
+    "", "ブラックバス", "ブルーギル", "ナマズ", "ライギョ", "シーバス", "キス", "アジ", "メバル", "カサゴ", "チヌ", "マゴチ", "ヒラメ", "コイ", "フナ", "ヘラブナ", "スモールマウスバス", "ニゴイ", "ウグイ", "オイカワ", "カワムツ", "ハス", "モロコ", "タナゴ", "ワカサギ", "アユ", "アマゴ", "イワナ", "ニジマス", "ウナギ", "ハゼ", "ボラ", "サヨリ", "イワシ", "サバ", "カマス", "タチウオ", "サゴシ", "ハマチ", "ツバス", "ブリ", "マダイ", "グレ", "キビレ", "アイナメ", "ベラ", "ソイ", "タケノコメバル", "アオリイカ", "タコ", "テナガエビ", "その他"
   ];
 
   const seedSpots = [
@@ -178,6 +178,26 @@
     return "夜";
   }
 
+  function speciesList(value) {
+    if (Array.isArray(value)) {
+      return [...new Set(value.map((item) => String(item || "").trim()).filter(Boolean))];
+    }
+    const text = String(value || "").trim();
+    if (!text) return [];
+    return [...new Set(text.split(/[、,，/／]+/u).map((item) => item.trim()).filter(Boolean))];
+  }
+
+  function speciesText(value, fallback = "") {
+    const list = speciesList(value);
+    return list.length ? list.join("、") : fallback;
+  }
+
+  function speciesShortText(value) {
+    const list = speciesList(value);
+    if (list.length <= 2) return list.join("・");
+    return `${list[0]}ほか${list.length - 1}種`;
+  }
+
   function normalizeSavedSpotState(raw = {}) {
     return {
       caught: Boolean(raw.caught ?? raw.hasCatch ?? raw.checked),
@@ -199,7 +219,7 @@
       time: raw.time || raw.datetime || nowLocalInputValue(),
       lat: Number(raw.lat),
       lng: Number(raw.lng),
-      species: raw.species || "ブラックバス",
+      species: recordType === "catch" ? speciesText(raw.species || raw.fish || raw.fishSpecies || raw.speciesList, "ブラックバス") : speciesText(raw.species || raw.fish || raw.fishSpecies || raw.speciesList),
       bait: raw.bait || raw.lureCategory || raw.lure || "",
       lureName: raw.lureName || "",
       lureColor: raw.lureColor || raw.color || "",
@@ -289,7 +309,7 @@
       "resetView", "locateCatchButton", "addSpotMode", "addCatchMode", "positionAdjustBanner", "positionAdjustText", "cancelPositionAdjustButton", "spotPanel", "spotForm", "spotLat", "spotLng", "spotIdInput",
       "spotNameInput", "spotTypeInput", "spotAreaInput", "spotMemoInput", "deleteSpot", "closeSpotPanel",
       "catchPanel", "catchForm", "catchLat", "catchLng", "catchIdInput", "catchLocationStatus", "useCurrentLocationButton",
-      "catchRecordType", "catchPlaceKind", "catchPlaceName", "catchSpot", "catchTime", "catchSpecies", "catchBait", "catchLureName",
+      "catchRecordType", "catchPlaceKind", "catchPlaceName", "catchSpot", "catchTime", "catchSpecies", "catchSpeciesGroup", "catchBait", "catchLureName",
       "catchLureColor", "catchLureWeight", "catchSizeCm", "catchSize", "catchWeather", "catchWind", "catchWater", "catchWaterLevel",
       "catchBaitfish", "catchCover", "catchReaction", "catchPressure", "catchTimeBand", "catchMemo", "catchPhoto", "catchCamera",
       "catchPhotoPreview", "catchPhotoImage", "removeCatchPhoto", "catchPhotoStatus", "deleteCatch", "closeCatchPanel",
@@ -395,7 +415,7 @@
       { position: "topright" }
     ).addTo(map);
 
-    els.dataStatus.textContent = "v87・ダム表示を修正";
+    els.dataStatus.textContent = "v89・魚種追加";
 
     addMieBoundaryLayer();
     map.on("click", (event) => handleMapClick(event.latlng));
@@ -498,7 +518,7 @@
     if (state.spotMode) state.catchMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v87・ダム表示修正";
+    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v89・魚種追加";
   }
 
   function setCatchMode(value) {
@@ -508,7 +528,7 @@
     if (state.catchMode) state.spotMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v87・ダム表示修正";
+    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v89・魚種追加";
   }
 
   function handleMapClick(latlng) {
@@ -617,6 +637,49 @@
     </label>`;
   }
 
+  function catchSpeciesInputs() {
+    return els.catchSpeciesGroup ? [...els.catchSpeciesGroup.querySelectorAll("input[data-catch-species-option]")] : [];
+  }
+
+  function ensureCatchSpeciesOptions(names = []) {
+    if (!els.catchSpeciesGroup) return;
+    const existing = new Set(catchSpeciesInputs().map((input) => input.value));
+    names.forEach((name) => {
+      const value = String(name || "").trim();
+      if (!value || existing.has(value)) return;
+      const label = document.createElement("label");
+      label.innerHTML = `<input type="checkbox" data-catch-species-option value="${escapeHtml(value)}"><span>${escapeHtml(value)}</span>`;
+      els.catchSpeciesGroup.appendChild(label);
+      existing.add(value);
+    });
+  }
+
+  function syncCatchSpeciesClasses() {
+    catchSpeciesInputs().forEach((input) => {
+      input.closest("label")?.classList.toggle("is-selected", input.checked);
+    });
+  }
+
+  function setCatchSpeciesValue(value = "ブラックバス") {
+    const names = speciesList(value || "ブラックバス");
+    ensureCatchSpeciesOptions(names);
+    const selected = new Set(names);
+    catchSpeciesInputs().forEach((input) => { input.checked = selected.has(input.value); });
+    if (els.catchSpecies) els.catchSpecies.value = speciesText(names);
+    syncCatchSpeciesClasses();
+  }
+
+  function updateCatchSpeciesValueFromInputs() {
+    const names = catchSpeciesInputs().filter((input) => input.checked).map((input) => input.value);
+    if (els.catchSpecies) els.catchSpecies.value = speciesText(names);
+    syncCatchSpeciesClasses();
+  }
+
+  function catchSpeciesValue() {
+    updateCatchSpeciesValueFromInputs();
+    return String(els.catchSpecies?.value || "").trim();
+  }
+
   function renderSpotList() {
     const list = filteredSpots();
     els.visibleCount.textContent = `${list.length}件`;
@@ -660,7 +723,7 @@
     if (record.recordType === "note") return record.placeName || record.placeKind || `現地メモ ${index + 1}`;
     const size = record.sizeCm ? `${record.sizeCm}cm` : record.size || "サイズ未記録";
     const lure = record.lureName || record.bait || "ルアー未記録";
-    return `${record.species || "釣果"} ${size} / ${lure}`;
+    return `${speciesShortText(record.species) || "釣果"} ${size} / ${lure}`;
   }
 
   function hasRecordPhoto(record) {
@@ -684,7 +747,7 @@
     const mainRows = [
       ["場所", spot?.name || "釣り場未設定"],
       ["日時", formatDateTime(record.time)],
-      isNote ? ["メモ種別", record.placeKind || "現地メモ"] : ["魚種", record.species],
+      isNote ? ["メモ種別", record.placeKind || "現地メモ"] : ["魚種", speciesText(record.species)],
       isNote ? ["内容", record.placeName] : ["サイズ", record.sizeCm ? `${record.sizeCm}cm` : record.size]
     ].filter((row) => row[1]);
     const detailRows = [
@@ -966,7 +1029,7 @@
     els.catchPlaceName.value = record?.placeName || "";
     els.catchSpot.value = record?.spotId || (validPosition({ lat, lng }) ? nearestSpotId(lat, lng) : "");
     els.catchTime.value = record?.time || nowLocalInputValue();
-    els.catchSpecies.value = record?.species || "ブラックバス";
+    setCatchSpeciesValue(record?.species || "ブラックバス");
     els.catchBait.value = record?.bait || "";
     els.catchLureName.value = record?.lureName || "";
     els.catchLureColor.value = record?.lureColor || "";
@@ -998,6 +1061,7 @@
   function closeCatchPanel() {
     closePanel(els.catchPanel);
     els.catchForm.reset();
+    setCatchSpeciesValue("ブラックバス");
     state.pendingPhoto = "";
     state.pendingPhotoPromise = null;
     if (els.catchPhoto) els.catchPhoto.value = "";
@@ -1040,7 +1104,7 @@
       time,
       lat: Number(els.catchLat.value),
       lng: Number(els.catchLng.value),
-      species: els.catchSpecies.value,
+      species: catchSpeciesValue(),
       bait: els.catchBait.value,
       lureName: els.catchLureName.value.trim(),
       lureColor: els.catchLureColor.value.trim(),
@@ -1497,6 +1561,7 @@
     els.closeCatchPanel.addEventListener("click", closeCatchPanel);
     els.deleteCatch.addEventListener("click", deleteSelectedCatch);
     els.catchRecordType.addEventListener("change", updateRecordTypeUI);
+    els.catchSpeciesGroup?.addEventListener("change", updateCatchSpeciesValueFromInputs);
     els.catchTime.addEventListener("change", () => { if (!els.catchTimeBand.value) els.catchTimeBand.value = timeBandFromInput(els.catchTime.value); });
     els.catchPhoto.addEventListener("change", () => handleCatchPhoto(els.catchPhoto.files?.[0]));
     els.catchCamera.addEventListener("change", () => handleCatchPhoto(els.catchCamera.files?.[0]));
@@ -1543,7 +1608,7 @@
     window.addEventListener("load", () => { setMobileViewportHeight(); forceFullscreenLayout(); });
     window.addEventListener("resize", () => { setMobileViewportHeight(); forceFullscreenLayout(); });
     registerServiceWorker();
-    els.dataStatus.textContent = `v87・ダム表示修正 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
+    els.dataStatus.textContent = `v89・魚種追加 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
   }
 
   init();

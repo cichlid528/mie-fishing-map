@@ -9,4 +9,4 @@ https://cichlid528.github.io/mie-fishing-map/reset-cache.html?auto=1
 
 確認URL:
 
-https://cichlid528.github.io/mie-fishing-map/?v=v87-dam-icons-fixed
+https://cichlid528.github.io/mie-fishing-map/?v=v89-more-fish-species
