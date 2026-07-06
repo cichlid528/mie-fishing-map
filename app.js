@@ -1,8 +1,15 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v115-pond-confirm-persist";
-  const APP_STATUS_LABEL = "v115・池確認保存修正版";
+  const APP_VERSION = "v117-gsi-pond-button-fix";
+  const APP_STATUS_LABEL = "v117・地理院池候補取得修正版";
+  const GSI_POND_VECTOR_URL = "https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/{z}/{x}/{y}.pbf";
+  const GSI_MIE_BOUNDS = { south: 33.62, west: 135.72, north: 35.35, east: 137.15 };
+  const GSI_POND_SCAN_LIBS = [
+    "https://unpkg.com/pbf@3.3.0/dist/pbf.js",
+    "https://unpkg.com/@mapbox/vector-tile@1.3.1/dist/vector-tile.js"
+  ];
+
 
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
@@ -2239,6 +2246,292 @@
     }, { passive: false, capture: true });
   }
 
+
+
+  // v117: 国土地理院ベクトルタイルの「池」注記を、表示中の地図から池候補として追加する。
+  // 以前の外部pwa-install.js依存では反映が分かりにくかったため、アプリ本体側で追加して即時描画する。
+  let gsiPondDecoderPromise = null;
+  let gsiPondScanning = false;
+
+  function setGsiPondStatus(message) {
+    if (els.dataStatus) els.dataStatus.textContent = message;
+  }
+
+  function normalizeGsiPondName(value) {
+    return String(value || "").replace(/[\s\u3000]+/g, "").replace(/[（(].*?[）)]/g, "").trim();
+  }
+
+  function hashGsiPondText(value) {
+    let hash = 2166136261;
+    for (const ch of String(value || "")) {
+      hash ^= ch.codePointAt(0);
+      hash = Math.imul(hash, 16777619);
+    }
+    return (hash >>> 0).toString(36);
+  }
+
+  function gsiPondDistanceMeters(aLat, aLng, bLat, bLng) {
+    const toRad = (value) => Number(value) * Math.PI / 180;
+    const radius = 6371000;
+    const dLat = toRad(Number(bLat) - Number(aLat));
+    const dLng = toRad(Number(bLng) - Number(aLng));
+    const s1 = Math.sin(dLat / 2);
+    const s2 = Math.sin(dLng / 2);
+    const a = s1 * s1 + Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) * s2 * s2;
+    return 2 * radius * Math.asin(Math.min(1, Math.sqrt(a)));
+  }
+
+  function isGsiPondDuplicate(candidate, existingSpots) {
+    const name = normalizeGsiPondName(candidate.name);
+    return existingSpots.some((spot) => {
+      if (!Number.isFinite(Number(spot.lat)) || !Number.isFinite(Number(spot.lng))) return false;
+      const near = gsiPondDistanceMeters(candidate.lat, candidate.lng, Number(spot.lat), Number(spot.lng)) <= 300;
+      if (!near) return false;
+      const other = normalizeGsiPondName(spot.name);
+      return name && other && (name === other || name.includes(other) || other.includes(name));
+    });
+  }
+
+  function loadGsiPondScript(src) {
+    return new Promise((resolve, reject) => {
+      const existing = document.querySelector(`script[data-gsi-pond-lib="${src}"]`);
+      if (existing) {
+        if (existing.dataset.loaded === "true") resolve();
+        else {
+          existing.addEventListener("load", resolve, { once: true });
+          existing.addEventListener("error", reject, { once: true });
+        }
+        return;
+      }
+      const script = document.createElement("script");
+      script.src = src;
+      script.async = true;
+      script.dataset.gsiPondLib = src;
+      script.addEventListener("load", () => { script.dataset.loaded = "true"; resolve(); }, { once: true });
+      script.addEventListener("error", () => reject(new Error(`外部ライブラリを読み込めませんでした: ${src}`)), { once: true });
+      document.head.appendChild(script);
+    });
+  }
+
+  async function ensureGsiPondDecoder() {
+    if (gsiPondDecoderPromise) return gsiPondDecoderPromise;
+    gsiPondDecoderPromise = (async () => {
+      if (typeof window.Pbf === "undefined") await loadGsiPondScript(GSI_POND_SCAN_LIBS[0]);
+      if (typeof window.VectorTile === "undefined" && typeof window.vectorTile === "undefined") await loadGsiPondScript(GSI_POND_SCAN_LIBS[1]);
+      const vectorGlobal = window.VectorTile || window.vectorTile || {};
+      const VectorTileCtor = vectorGlobal.VectorTile || vectorGlobal.default || vectorGlobal;
+      if (typeof window.Pbf !== "function" || typeof VectorTileCtor !== "function") {
+        throw new Error("ベクトルタイル解析ライブラリの準備に失敗しました。通信状態を確認してください。");
+      }
+      return { Pbf: window.Pbf, VectorTile: VectorTileCtor };
+    })();
+    return gsiPondDecoderPromise;
+  }
+
+  function gsiPondTilePoint(lat, lng, zoom) {
+    const latRad = Number(lat) * Math.PI / 180;
+    const n = 2 ** zoom;
+    return {
+      x: Math.floor((Number(lng) + 180) / 360 * n),
+      y: Math.floor((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2 * n)
+    };
+  }
+
+  function gsiPondTilesForBounds(bounds, zoom) {
+    const nw = gsiPondTilePoint(bounds.north, bounds.west, zoom);
+    const se = gsiPondTilePoint(bounds.south, bounds.east, zoom);
+    const minX = Math.min(nw.x, se.x);
+    const maxX = Math.max(nw.x, se.x);
+    const minY = Math.min(nw.y, se.y);
+    const maxY = Math.max(nw.y, se.y);
+    const tiles = [];
+    for (let x = minX; x <= maxX; x += 1) {
+      for (let y = minY; y <= maxY; y += 1) tiles.push({ x, y, z: zoom });
+    }
+    return tiles;
+  }
+
+  function collectGsiPondCoordinates(coords, out) {
+    if (!Array.isArray(coords)) return;
+    if (typeof coords[0] === "number" && typeof coords[1] === "number") {
+      out.push(coords);
+      return;
+    }
+    coords.forEach((item) => collectGsiPondCoordinates(item, out));
+  }
+
+  function centerOfGsiPondFeature(feature) {
+    const coords = [];
+    collectGsiPondCoordinates(feature?.geometry?.coordinates, coords);
+    if (!coords.length) return null;
+    const total = coords.reduce((acc, coord) => ({ lng: acc.lng + Number(coord[0]), lat: acc.lat + Number(coord[1]) }), { lng: 0, lat: 0 });
+    const lat = total.lat / coords.length;
+    const lng = total.lng / coords.length;
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+    return { lat, lng };
+  }
+
+  function gsiPondFeatureName(properties = {}) {
+    return String(
+      properties.knj || properties.name || properties.kanji || properties.label || properties.text || properties.txt || properties.kj || properties.title || ""
+    ).trim();
+  }
+
+  function looksLikeGsiPondName(name) {
+    const value = String(name || "").trim();
+    if (!value.includes("池")) return false;
+    // 「池田」「池の浦」のような地名を拾いすぎないため、池・貯水池・調整池などの水面名寄りに絞る。
+    return /池$|池[（(]|貯水池|調整池|溜池|ため池|大溜/u.test(value);
+  }
+
+  function gsiPondFeatureToSpot(feature, x, y, z, layerName = "") {
+    const props = feature?.properties || {};
+    const name = gsiPondFeatureName(props);
+    if (!looksLikeGsiPondName(name)) return null;
+    const geojson = feature.toGeoJSON(x, y, z);
+    const center = centerOfGsiPondFeature(geojson);
+    if (!center) return null;
+    if (center.lat < GSI_MIE_BOUNDS.south || center.lat > GSI_MIE_BOUNDS.north || center.lng < GSI_MIE_BOUNDS.west || center.lng > GSI_MIE_BOUNDS.east) return null;
+    const annoCtg = Number(props.annoCtg ?? props.anno_ctg ?? props.annocategory ?? props.ftCode ?? NaN);
+    return {
+      id: `gsi-pond-${hashGsiPondText(`${name}-${center.lat.toFixed(5)}-${center.lng.toFixed(5)}`)}`,
+      name,
+      type: "池",
+      area: "国土地理院注記",
+      lat: Number(center.lat.toFixed(6)),
+      lng: Number(center.lng.toFixed(6)),
+      zoom: 16,
+      source: "国土地理院ベクトルタイル",
+      subtype: "池候補",
+      candidate: true,
+      custom: true,
+      memo: "国土地理院ベクトルタイルの注記から追加した池候補です。釣行前に立入禁止・私有地・管理者情報を必ず確認してください。",
+      gsiVectorCandidate: true,
+      gsiLayer: layerName,
+      gsiAnnoCtg: Number.isFinite(annoCtg) ? annoCtg : ""
+    };
+  }
+
+  async function scanGsiPondTile(tile, decoder) {
+    const url = GSI_POND_VECTOR_URL.replace("{z}", tile.z).replace("{x}", tile.x).replace("{y}", tile.y);
+    const response = await fetch(url, { cache: "force-cache" });
+    if (!response.ok) return [];
+    const buffer = await response.arrayBuffer();
+    const vt = new decoder.VectorTile(new decoder.Pbf(buffer));
+    const spots = [];
+    Object.entries(vt.layers || {}).forEach(([layerName, layer]) => {
+      for (let i = 0; i < layer.length; i += 1) {
+        const spot = gsiPondFeatureToSpot(layer.feature(i), tile.x, tile.y, tile.z, layerName);
+        if (spot) spots.push(spot);
+      }
+    });
+    return spots;
+  }
+
+  function currentGsiPondBoundsForScan() {
+    if (!map?.getBounds) return null;
+    const b = map.getBounds().pad(0.15);
+    const bounds = {
+      south: Math.max(b.getSouth(), GSI_MIE_BOUNDS.south),
+      west: Math.max(b.getWest(), GSI_MIE_BOUNDS.west),
+      north: Math.min(b.getNorth(), GSI_MIE_BOUNDS.north),
+      east: Math.min(b.getEast(), GSI_MIE_BOUNDS.east)
+    };
+    if (bounds.south >= bounds.north || bounds.west >= bounds.east) return null;
+    return bounds;
+  }
+
+  function chooseGsiPondScanPlan(bounds) {
+    const currentZoom = Math.round(map?.getZoom?.() || 12);
+    const zoom = Math.max(12, Math.min(16, currentZoom));
+    let tiles = gsiPondTilesForBounds(bounds, zoom);
+    if (tiles.length <= 700) return { bounds, zoom, tiles };
+    const lowerZoom = 12;
+    tiles = gsiPondTilesForBounds(bounds, lowerZoom);
+    if (tiles.length <= 700) return { bounds, zoom: lowerZoom, tiles };
+    const homeTiles = gsiPondTilesForBounds(GSI_MIE_BOUNDS, 12);
+    return { bounds: GSI_MIE_BOUNDS, zoom: 12, tiles: homeTiles };
+  }
+
+  async function scanGsiPondCandidates() {
+    if (gsiPondScanning) return;
+    const bounds = currentGsiPondBoundsForScan() || GSI_MIE_BOUNDS;
+    const plan = chooseGsiPondScanPlan(bounds);
+    if (!plan.tiles.length) {
+      setGsiPondStatus("三重県内の地図を表示してから押してください。");
+      return;
+    }
+    gsiPondScanning = true;
+    const button = document.getElementById("scanGsiPondCandidates");
+    const oldText = button?.textContent || "地理院池候補取得";
+    if (button) {
+      button.disabled = true;
+      button.textContent = "取得中…";
+    }
+    try {
+      setGsiPondStatus(`地理院の池候補を取得中… ${plan.tiles.length}タイル`);
+      const decoder = await ensureGsiPondDecoder();
+      const found = [];
+      const batchSize = 6;
+      for (let i = 0; i < plan.tiles.length; i += batchSize) {
+        const batch = plan.tiles.slice(i, i + batchSize);
+        const results = await Promise.all(batch.map((tile) => scanGsiPondTile(tile, decoder).catch((error) => {
+          console.warn("GSI pond tile failed", tile, error);
+          return [];
+        })));
+        found.push(...results.flat());
+        if (button) button.textContent = `取得中 ${Math.min(i + batch.length, plan.tiles.length)}/${plan.tiles.length}`;
+      }
+
+      const existing = [...state.spots, ...state.customSpots];
+      const seen = new Set();
+      const additions = [];
+      found.forEach((spot) => {
+        const key = `${normalizeGsiPondName(spot.name)}:${spot.lat.toFixed(5)}:${spot.lng.toFixed(5)}`;
+        if (seen.has(key)) return;
+        seen.add(key);
+        if (isGsiPondDuplicate(spot, [...existing, ...additions])) return;
+        additions.push(spot);
+      });
+
+      if (!additions.length) {
+        setGsiPondStatus("新しい地理院池候補は見つかりませんでした。すでに登録済みか、少し拡大した場所で再度押してください。");
+        return;
+      }
+
+      state.customSpots = [...state.customSpots, ...additions];
+      saveJson(CUSTOM_SPOT_STORAGE_KEY, state.customSpots);
+      state.spots = [...seedSpots.map(applyPositionOverride), ...state.customSpots.map((s) => ({ ...s, custom: true }))];
+      state.activeFilter = "池候補";
+      els.filterButtons.forEach((filterButton) => filterButton.classList.toggle("is-active", filterButton.dataset.filter === "池候補"));
+      render();
+      updateBackupReminder();
+      setGsiPondStatus(`地理院注記から池候補を${additions.length}件追加しました。池候補リストに表示しました。`);
+    } catch (error) {
+      console.error("GSI pond candidate scan failed", error);
+      setGsiPondStatus(`地理院池候補を取得できませんでした: ${error.message || error}`);
+    } finally {
+      gsiPondScanning = false;
+      if (button) {
+        button.disabled = false;
+        button.textContent = oldText;
+      }
+    }
+  }
+
+  function installGsiPondButton() {
+    const tools = document.querySelector(".map-tools");
+    if (!tools || document.getElementById("scanGsiPondCandidates")) return;
+    const button = document.createElement("button");
+    button.id = "scanGsiPondCandidates";
+    button.type = "button";
+    button.className = "spot-mode-button";
+    button.textContent = "地理院池候補取得";
+    button.title = "表示中の国土地理院ベクトルタイル注記から、名前に『池』を含む水辺を池候補へ追加します。";
+    button.addEventListener("click", scanGsiPondCandidates);
+    tools.appendChild(button);
+  }
+
   function registerServiceWorker() {
     if (window.__MIE_PWA_INSTALL_MANAGED__) return;
     if ("serviceWorker" in navigator) {
@@ -2256,6 +2549,7 @@
     forceFullscreenLayout();
     loadState();
     initMap();
+    installGsiPondButton();
     bindEvents();
     applySidebarBackground(localStorage.getItem(BACKGROUND_STORAGE_KEY) || "");
     render();

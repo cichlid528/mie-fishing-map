@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bass-spot-log-";
-const VERSION = "v115-pond-confirm-persist";
+const VERSION = "v117-gsi-pond-button-fix";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());
