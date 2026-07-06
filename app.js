@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v80-species-bg-more-points";
+  const APP_VERSION = "v81-record-popup-on-number";
 
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
@@ -10,7 +10,7 @@
   const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v80";
   const LEGACY_SINGLE_KEY = "mieFishingMap.v1";
 
-  // v80: 魚種選択をプルダウン化し、背景写真透過と地図ポイントを追加。
+  // v81: 記録ピン番号を押した時は編集フォームではなく、写真・記載情報のポップアップを表示。
   const MIE_CENTER = [34.55, 136.48];
   const MIE_HOME_ZOOM = 9;
   const MAP_MIN_ZOOM = 5;
@@ -442,7 +442,7 @@
     if (state.spotMode) state.catchMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v80・魚種選択とポイント追加";
+    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v81・記録ポップアップ表示";
   }
 
   function setCatchMode(value) {
@@ -450,7 +450,7 @@
     if (state.catchMode) state.spotMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v80・魚種選択とポイント追加";
+    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v81・記録ポップアップ表示";
   }
 
   function handleMapClick(latlng) {
@@ -612,6 +612,54 @@
     return `<div class="record-popup-photo"><img src="${record.photo}" alt="${escapeHtml(altText)}"></div>`;
   }
 
+  function recordPopupInfo(record, index) {
+    const spot = state.spots.find((s) => s.id === record.spotId);
+    const title = recordTitle(record, index);
+    const rows = [
+      ["場所", spot?.name || "釣り場未設定"],
+      ["日時", formatDateTime(record.time)],
+      record.recordType === "note" ? ["種別", record.placeKind || "現地メモ"] : ["魚種", record.species],
+      record.recordType === "note" ? ["内容", record.placeName] : ["サイズ", record.sizeCm ? `${record.sizeCm}cm` : record.size],
+      ["ルアー", [record.bait, record.lureName].filter(Boolean).join(" / ")],
+      ["色・重さ", [record.lureColor, record.lureWeight].filter(Boolean).join(" / ")],
+      ["天気・風", [record.weather, record.wind].filter(Boolean).join(" / ")],
+      ["水・水位", [record.water, record.waterLevel].filter(Boolean).join(" / ")],
+      ["ベイト", record.baitfish],
+      ["カバー", record.cover],
+      ["反応場所", record.reaction],
+      ["プレッシャー", record.pressure],
+      ["時間帯", record.timeBand]
+    ].filter((row) => row[1]);
+    const memo = record.memo || (record.recordType === "note" ? record.placeName : "");
+    const hasInfo = rows.length || memo || hasRecordPhoto(record);
+    return `<div class="record-popup-card">
+      <div class="record-popup-head">
+        <span class="record-popup-num">${record.recordType === "note" ? "メ" : index + 1}</span>
+        <strong>${escapeHtml(title)}</strong>
+      </div>
+      ${recordPopupPhoto(record, title)}
+      <div class="record-popup-info">
+        ${rows.map(([label, value]) => `<p><b>${escapeHtml(label)}</b><span>${escapeHtml(value)}</span></p>`).join("")}
+      </div>
+      ${memo ? `<p class="record-popup-memo">${escapeHtml(memo)}</p>` : ""}
+      ${!hasInfo ? '<p class="record-popup-memo">記載情報はまだありません。</p>' : ""}
+      <button class="record-popup-edit" type="button" data-record-edit="${escapeHtml(record.id)}">この記録を編集</button>
+    </div>`;
+  }
+
+  function openRecordPopup(recordId) {
+    const record = state.catches.find((r) => r.id === recordId);
+    if (!record || !map || typeof L === "undefined") return;
+    try { closeMobileMenu(); } catch (error) {}
+    try { [els.catchPanel, els.spotPanel, els.backgroundPanel, els.installPanel, els.infoPanel].forEach(closePanel); } catch (error) {}
+    hideSpotCard();
+    const lat = Number(record.lat);
+    const lng = Number(record.lng);
+    if (validPosition({ lat, lng })) map.setView([lat, lng], Math.max(map.getZoom(), 17), { animate: false });
+    const marker = catchMarkers.get(record.id);
+    if (marker) marker.openPopup();
+  }
+
   function renderCatchList() {
     const list = filteredRecords();
     els.visibleCount.textContent = `${list.length}件`;
@@ -655,9 +703,8 @@
     state.catches.forEach((record, index) => {
       if (!validPosition(record)) return;
       const marker = L.marker([Number(record.lat), Number(record.lng)], { icon: makeRecordIcon(record, index), zIndexOffset: 700 }).addTo(map);
-      const title = recordTitle(record, index);
-      marker.bindPopup(`<strong>${escapeHtml(title)}</strong>${hasRecordPhoto(record) ? "<br>写真付き記録" : ""}<br>${escapeHtml(record.memo || "")}${recordPopupPhoto(record, title)}`);
-      marker.on("click", () => openCatchPanel(record.id));
+      marker.bindPopup(recordPopupInfo(record, index), { maxWidth: 320, className: "record-info-popup" });
+      marker.on("click", () => openRecordPopup(record.id));
       catchMarkers.set(record.id, marker);
     });
   }
@@ -1236,7 +1283,7 @@
     });
     els.catchList.addEventListener("click", (event) => {
       const item = event.target.closest("[data-record-id]");
-      if (item) openCatchPanel(item.dataset.recordId);
+      if (item) openRecordPopup(item.dataset.recordId);
     });
     els.spotCard.addEventListener("change", (event) => {
       if (!state.selectedSpotId) return;
@@ -1248,6 +1295,13 @@
       persistSavedState();
       renderSpotList();
     });
+    document.addEventListener("click", (event) => {
+      const editButton = event.target.closest("button[data-record-edit]");
+      if (!editButton) return;
+      try { map?.closePopup?.(); } catch (error) {}
+      openCatchPanel(editButton.dataset.recordEdit);
+    });
+
     els.spotCard.addEventListener("click", (event) => {
       const action = event.target.closest("button[data-action]")?.dataset.action;
       if (!action || !state.selectedSpotId) return;
@@ -1322,7 +1376,7 @@
     window.addEventListener("load", forceFullscreenLayout);
     window.addEventListener("resize", forceFullscreenLayout);
     registerServiceWorker();
-    els.dataStatus.textContent = `v80・魚種選択とポイント追加 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
+    els.dataStatus.textContent = `v81・記録ポップアップ表示 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
   }
 
   init();
