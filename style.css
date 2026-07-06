@@ -1960,7 +1960,7 @@ body.position-adjusting .leaflet-container { cursor: crosshair !important; }
   }
 }
 
-/* v91: 超かんたん記録・バックアップ警告 */
+/* v91: 超かんたん記録・バックアップ警告（継続） */
 .super-record-hidden-field.is-super-hidden,
 .advanced-fishing-field.is-quick-hidden {
   display: none !important;
@@ -2003,5 +2003,56 @@ body.position-adjusting .leaflet-container { cursor: crosshair !important; }
   }
   .catch-form.is-super-quick-record .species-multi-field .multi-choice-grid {
     max-height: min(30dvh, 220px);
+  }
+}
+
+/* v92: 魚種検索と、記録履歴からのよく使う魚種上位表示 */
+.species-search-row {
+  display: grid;
+  gap: 6px;
+  margin: 8px 0 10px;
+}
+.species-search-row input {
+  width: 100%;
+  border: 1px solid rgba(15, 111, 95, .22);
+  border-radius: 13px;
+  padding: 10px 12px;
+  font: inherit;
+  background: rgba(255,255,255,.96);
+  color: #12352e;
+  outline: none;
+}
+.species-search-row input:focus {
+  border-color: rgba(15,111,95,.60);
+  box-shadow: 0 0 0 3px rgba(15,111,95,.12);
+}
+.species-search-status {
+  color: rgba(30, 73, 63, .78);
+  font-weight: 800;
+  line-height: 1.35;
+}
+.multi-choice-grid label.is-frequent span::after {
+  content: " よく使う";
+  display: inline-block;
+  margin-left: 4px;
+  padding: 2px 5px;
+  border-radius: 999px;
+  background: rgba(255, 224, 102, .28);
+  color: #5d4a00;
+  font-size: .68rem;
+  font-weight: 900;
+  vertical-align: middle;
+}
+.multi-choice-grid label.is-selected.is-frequent span::after {
+  background: rgba(255,255,255,.28);
+  color: inherit;
+}
+@media (max-width: 920px) {
+  .species-search-row input {
+    min-height: 42px;
+    font-size: .92rem;
+  }
+  .species-search-status {
+    font-size: .76rem;
   }
 }

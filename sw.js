@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bass-spot-log-";
-const VERSION = "v91-super-quick-backup";
+const VERSION = "v92-fish-search-favorites";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());

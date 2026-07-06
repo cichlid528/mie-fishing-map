@@ -11,8 +11,8 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQDP4nD8xQV9qVtAkM5M5OgFHJt0f9I=" crossorigin="">
-    <link rel="stylesheet" href="style.css?v=v91-super-quick-backup">
-    <style id="v91-super-quick-backup-fix">
+    <link rel="stylesheet" href="style.css?v=v92-fish-search-favorites">
+    <style id="v92-fish-search-favorites-fix">
       @media (max-width: 920px) {
         #menuToggle.mobile-menu-button { display: inline-flex !important; position: fixed !important; top: calc(12px + env(safe-area-inset-top)) !important; left: calc(12px + env(safe-area-inset-left)) !important; z-index: 2147483600 !important; pointer-events: auto !important; touch-action: manipulation !important; background: rgba(255,255,255,.99) !important; color: #073f33 !important; -webkit-text-fill-color: #073f33 !important; }
         .map-tools { position: fixed !important; top: calc(68px + env(safe-area-inset-top)) !important; right: calc(10px + env(safe-area-inset-right)) !important; z-index: 2147483400 !important; pointer-events: none !important; }
@@ -234,7 +234,7 @@
 }
 
 
-/* v91: 超かんたん記録・バックアップ警告 */
+/* v91: 超かんたん記録・バックアップ警告（継続） */
 .record-filter-row,
 .species-category-row,
 .record-entry-mode-row {
@@ -324,7 +324,7 @@
 }
 
 
-/* v91: 超かんたん記録・バックアップ警告 */
+/* v91: 超かんたん記録・バックアップ警告（継続） */
 .super-record-hidden-field.is-super-hidden,
 .advanced-fishing-field.is-quick-hidden {
   display: none !important;
@@ -370,6 +370,58 @@
   }
 }
 
+
+/* v92: 魚種検索と、記録履歴からのよく使う魚種上位表示 */
+.species-search-row {
+  display: grid;
+  gap: 6px;
+  margin: 8px 0 10px;
+}
+.species-search-row input {
+  width: 100%;
+  border: 1px solid rgba(15, 111, 95, .22);
+  border-radius: 13px;
+  padding: 10px 12px;
+  font: inherit;
+  background: rgba(255,255,255,.96);
+  color: #12352e;
+  outline: none;
+}
+.species-search-row input:focus {
+  border-color: rgba(15,111,95,.60);
+  box-shadow: 0 0 0 3px rgba(15,111,95,.12);
+}
+.species-search-status {
+  color: rgba(30, 73, 63, .78);
+  font-weight: 800;
+  line-height: 1.35;
+}
+.multi-choice-grid label.is-frequent span::after {
+  content: " よく使う";
+  display: inline-block;
+  margin-left: 4px;
+  padding: 2px 5px;
+  border-radius: 999px;
+  background: rgba(255, 224, 102, .28);
+  color: #5d4a00;
+  font-size: .68rem;
+  font-weight: 900;
+  vertical-align: middle;
+}
+.multi-choice-grid label.is-selected.is-frequent span::after {
+  background: rgba(255,255,255,.28);
+  color: inherit;
+}
+@media (max-width: 920px) {
+  .species-search-row input {
+    min-height: 42px;
+    font-size: .92rem;
+  }
+  .species-search-status {
+    font-size: .76rem;
+  }
+}
+
 </style>
   </head>
   <body>
@@ -411,7 +463,7 @@
             <button class="filter-chip" type="button" data-filter="港">港・漁港</button>
             <button class="filter-chip" type="button" data-filter="マリーナ">マリーナ</button>
           </div>
-          <p id="dataStatus" class="data-status" aria-live="polite">v91・超かんたん記録</p>
+          <p id="dataStatus" class="data-status" aria-live="polite">v92・魚種検索</p>
           <p class="notice-banner">掲載情報は釣りの許可を意味しません。現地看板・管理者・自治体・漁協の最新情報を必ず確認してください。</p>
           <div class="stats-grid" aria-label="記録集計">
             <span><strong id="spotCount">0</strong><small>釣り場</small></span>
@@ -444,7 +496,7 @@
 
         <footer class="sidebar-footer">
           <span id="visibleCount">0件</span>
-          <span>v91・超かんたん記録</span>
+          <span>v92・魚種検索</span>
         </footer>
 
         <section class="settings-row sidebar-actions" aria-label="設定">
@@ -512,6 +564,10 @@
               <button class="species-category-chip" type="button" data-species-category-filter="saltwater">海</button>
               <button class="species-category-chip" type="button" data-species-category-filter="squid">イカ・タコ・エビ</button>
               <button class="species-category-chip" type="button" data-species-category-filter="all">すべて</button>
+            </div>
+            <div class="species-search-row">
+              <input id="catchSpeciesSearch" type="search" inputmode="search" autocomplete="off" placeholder="魚種検索：例 メバル、バス、アジ">
+              <small id="speciesSearchStatus" class="species-search-status">よく使う魚種は記録履歴から自動で上に出ます。</small>
             </div><div id="catchSpeciesGroup" class="multi-choice-grid" aria-label="魚種を複数選択">
             <label><input type="checkbox" data-catch-species-option value="ブラックバス" checked><span>ブラックバス</span></label>
             <label><input type="checkbox" data-catch-species-option value="ブルーギル"><span>ブルーギル</span></label>
@@ -631,7 +687,7 @@
     </section>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="pwa-install.js?v=v91-super-quick-backup"></script>
-    <script src="app.js?v=v91-super-quick-backup"></script>
+    <script src="pwa-install.js?v=v92-fish-search-favorites"></script>
+    <script src="app.js?v=v92-fish-search-favorites"></script>
   </body>
 </html>

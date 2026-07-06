@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v91-super-quick-backup";
+  const APP_VERSION = "v92-fish-search-favorites";
 
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
@@ -11,7 +11,7 @@
   const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v86";
   const LEGACY_SINGLE_KEY = "mieFishingMap.v1";
 
-  // v91: 超かんたん記録とバックアップ警告を追加。
+  // v92: 魚種検索と、記録履歴からのよく使う魚種上位表示を追加。
   const MIE_CENTER = [34.55, 136.48];
   const MIE_HOME_ZOOM = 9;
   const MAP_MIN_ZOOM = 5;
@@ -157,6 +157,7 @@
     recordFilter: "all",
     recordEntryMode: "super",
     speciesCategoryFilter: "popular",
+    speciesSearch: "",
     backupMeta: {}
   };
 
@@ -335,7 +336,7 @@
       "resetView", "locateCatchButton", "addSpotMode", "addCatchMode", "positionAdjustBanner", "positionAdjustText", "cancelPositionAdjustButton", "spotPanel", "spotForm", "spotLat", "spotLng", "spotIdInput",
       "spotNameInput", "spotTypeInput", "spotAreaInput", "spotMemoInput", "deleteSpot", "closeSpotPanel",
       "catchPanel", "catchForm", "catchLat", "catchLng", "catchIdInput", "catchLocationStatus", "useCurrentLocationButton",
-      "catchRecordType", "catchPlaceKind", "catchPlaceName", "catchSpot", "catchTime", "catchSpecies", "catchSpeciesGroup", "catchBait", "catchLureName",
+      "catchRecordType", "catchPlaceKind", "catchPlaceName", "catchSpot", "catchTime", "catchSpecies", "catchSpeciesGroup", "catchSpeciesSearch", "speciesSearchStatus", "catchBait", "catchLureName",
       "catchLureColor", "catchLureWeight", "catchSizeCm", "catchSize", "catchWeather", "catchWind", "catchWater", "catchWaterLevel",
       "catchBaitfish", "catchCover", "catchReaction", "catchPressure", "catchTimeBand", "catchMemo", "catchPhoto", "catchCamera",
       "catchPhotoPreview", "catchPhotoImage", "removeCatchPhoto", "catchPhotoStatus", "deleteCatch", "closeCatchPanel",
@@ -446,7 +447,7 @@
       { position: "topright" }
     ).addTo(map);
 
-    els.dataStatus.textContent = "v91・超かんたん記録";
+    els.dataStatus.textContent = "v92・魚種検索";
 
     addMieBoundaryLayer();
     map.on("click", (event) => handleMapClick(event.latlng));
@@ -549,7 +550,7 @@
     if (state.spotMode) state.catchMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v91・超かんたん記録";
+    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v92・魚種検索";
   }
 
   function setCatchMode(value) {
@@ -559,7 +560,7 @@
     if (state.catchMode) state.spotMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v91・超かんたん記録";
+    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v92・魚種検索";
   }
 
   function handleMapClick(latlng) {
@@ -689,37 +690,109 @@
     return els.catchSpeciesGroup ? [...els.catchSpeciesGroup.querySelectorAll("input[data-catch-species-option]")] : [];
   }
 
+  function speciesSearchText(value) {
+    return String(value || "").trim().toLowerCase().replace(/\s+/g, "");
+  }
+
+  function speciesUsageStats() {
+    const counts = new Map();
+    const add = (value, weight = 1) => {
+      speciesList(value).forEach((name) => counts.set(name, (counts.get(name) || 0) + weight));
+    };
+    state.catches.forEach((record) => { if (record.recordType === "catch") add(record.species, 3); });
+    Object.values(state.savedState || {}).forEach((saved) => add(saved?.species, 1));
+    return counts;
+  }
+
+  function speciesUsageRank(name) {
+    return speciesUsageStats().get(String(name || "").trim()) || 0;
+  }
+
   function applySpeciesMeta(input) {
     if (!input) return;
     const category = fishSpeciesCategory(input.value);
+    const usage = speciesUsageRank(input.value);
     input.dataset.speciesCategory = category;
     input.dataset.speciesPopular = String(isPopularSpecies(input.value));
+    input.dataset.speciesUsage = String(usage);
     const label = input.closest("label");
     if (label) {
+      if (!label.dataset.speciesOrder) label.dataset.speciesOrder = String([...label.parentElement.children].indexOf(label));
       label.dataset.speciesCategory = category;
       label.dataset.speciesPopular = String(isPopularSpecies(input.value));
+      label.dataset.speciesUsage = String(usage);
+      label.title = usage > 0 ? `よく使う魚種：記録履歴 ${usage}点` : "";
     }
   }
 
   function speciesMatchesCategory(input) {
     const filter = state.speciesCategoryFilter || "popular";
+    const usage = Number(input.dataset.speciesUsage || 0);
     if (filter === "all") return true;
-    if (filter === "popular") return input.dataset.speciesPopular === "true";
+    if (filter === "popular") return input.dataset.speciesPopular === "true" || usage > 0;
     return input.dataset.speciesCategory === filter;
   }
 
+  function speciesMatchesSearch(input) {
+    const q = speciesSearchText(state.speciesSearch);
+    if (!q) return true;
+    return speciesSearchText(input.value).includes(q);
+  }
+
+  function sortCatchSpeciesChoices() {
+    if (!els.catchSpeciesGroup) return;
+    const labels = [...els.catchSpeciesGroup.querySelectorAll("label")];
+    const q = speciesSearchText(state.speciesSearch);
+    labels.sort((a, b) => {
+      const ia = a.querySelector("input[data-catch-species-option]");
+      const ib = b.querySelector("input[data-catch-species-option]");
+      const ua = Number(ia?.dataset.speciesUsage || 0);
+      const ub = Number(ib?.dataset.speciesUsage || 0);
+      const sa = ia?.checked ? 1 : 0;
+      const sb = ib?.checked ? 1 : 0;
+      if (sa !== sb) return sb - sa;
+      if (q) {
+        const va = speciesSearchText(ia?.value);
+        const vb = speciesSearchText(ib?.value);
+        const pa = va.startsWith(q) ? 1 : 0;
+        const pb = vb.startsWith(q) ? 1 : 0;
+        if (pa !== pb) return pb - pa;
+      }
+      if (ua !== ub) return ub - ua;
+      const pa = ia?.dataset.speciesPopular === "true" ? 1 : 0;
+      const pb = ib?.dataset.speciesPopular === "true" ? 1 : 0;
+      if (pa !== pb) return pb - pa;
+      return Number(a.dataset.speciesOrder || 0) - Number(b.dataset.speciesOrder || 0);
+    });
+    labels.forEach((label) => els.catchSpeciesGroup.appendChild(label));
+  }
+
   function applySpeciesCategoryFilter() {
+    let visibleCount = 0;
     catchSpeciesInputs().forEach((input) => {
       applySpeciesMeta(input);
+    });
+    sortCatchSpeciesChoices();
+    catchSpeciesInputs().forEach((input) => {
       const label = input.closest("label");
       if (!label) return;
-      const visible = speciesMatchesCategory(input) || input.checked;
+      const hasSearch = Boolean(speciesSearchText(state.speciesSearch));
+      const categoryMatch = speciesMatchesCategory(input);
+      const visible = hasSearch ? (speciesMatchesSearch(input) || input.checked) : (categoryMatch || input.checked);
       label.classList.toggle("is-hidden", !visible);
-      label.classList.toggle("is-outside-category", input.checked && !speciesMatchesCategory(input));
+      label.classList.toggle("is-outside-category", input.checked && !categoryMatch && !hasSearch);
+      label.classList.toggle("is-frequent", Number(input.dataset.speciesUsage || 0) > 0);
+      if (visible) visibleCount += 1;
     });
     els.speciesCategoryButtons?.forEach((button) => {
       button.classList.toggle("is-active", button.dataset.speciesCategoryFilter === state.speciesCategoryFilter);
     });
+    if (els.speciesSearchStatus) {
+      const q = String(state.speciesSearch || "").trim();
+      els.speciesSearchStatus.textContent = q
+        ? `検索「${q}」: ${visibleCount}件`
+        : (state.speciesCategoryFilter === "popular" ? "よく使う魚種は記録履歴から自動で上に出ます。" : `${visibleCount}件表示`);
+    }
   }
 
   function prepareCatchSpeciesChoices() {
@@ -737,6 +810,7 @@
       const category = fishSpeciesCategory(value);
       label.dataset.speciesCategory = category;
       label.dataset.speciesPopular = String(isPopularSpecies(value));
+      label.dataset.speciesOrder = String(els.catchSpeciesGroup.children.length);
       label.innerHTML = `<input type="checkbox" data-catch-species-option data-species-category="${escapeHtml(category)}" data-species-popular="${isPopularSpecies(value)}" value="${escapeHtml(value)}"><span>${escapeHtml(value)}</span>`;
       els.catchSpeciesGroup.appendChild(label);
       existing.add(value);
@@ -764,6 +838,12 @@
     const names = catchSpeciesInputs().filter((input) => input.checked).map((input) => input.value);
     if (els.catchSpecies) els.catchSpecies.value = speciesText(names);
     syncCatchSpeciesClasses();
+  }
+
+  function setSpeciesSearch(value = "") {
+    state.speciesSearch = String(value || "");
+    if (els.catchSpeciesSearch && els.catchSpeciesSearch.value !== state.speciesSearch) els.catchSpeciesSearch.value = state.speciesSearch;
+    applySpeciesCategoryFilter();
   }
 
   function catchSpeciesValue() {
@@ -1144,6 +1224,7 @@
     els.catchPlaceName.value = record?.placeName || "";
     els.catchSpot.value = record?.spotId || (validPosition({ lat, lng }) ? nearestSpotId(lat, lng) : "");
     els.catchTime.value = record?.time || nowLocalInputValue();
+    setSpeciesSearch("");
     setCatchSpeciesValue(record?.species || "ブラックバス");
     els.catchBait.value = record?.bait || "";
     els.catchLureName.value = record?.lureName || "";
@@ -1744,6 +1825,7 @@
     els.deleteCatch.addEventListener("click", deleteSelectedCatch);
     els.catchRecordType.addEventListener("change", updateRecordTypeUI);
     els.catchSpeciesGroup?.addEventListener("change", updateCatchSpeciesValueFromInputs);
+    els.catchSpeciesSearch?.addEventListener("input", () => setSpeciesSearch(els.catchSpeciesSearch.value));
     els.catchTime.addEventListener("change", () => { if (!els.catchTimeBand.value) els.catchTimeBand.value = timeBandFromInput(els.catchTime.value); });
     els.catchPhoto.addEventListener("change", () => handleCatchPhoto(els.catchPhoto.files?.[0]));
     els.catchCamera.addEventListener("change", () => handleCatchPhoto(els.catchCamera.files?.[0]));
@@ -1790,7 +1872,7 @@
     window.addEventListener("load", () => { setMobileViewportHeight(); forceFullscreenLayout(); });
     window.addEventListener("resize", () => { setMobileViewportHeight(); forceFullscreenLayout(); });
     registerServiceWorker();
-    els.dataStatus.textContent = `v91・超かんたん記録 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
+    els.dataStatus.textContent = `v92・魚種検索 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
     updateBackupReminder();
   }
 
