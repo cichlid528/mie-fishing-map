@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bass-spot-log-";
-const VERSION = "v119-mobile-gsi-pond-visible-fix";
+const VERSION = "v120-map-label-pond-candidates";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());

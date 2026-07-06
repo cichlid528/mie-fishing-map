@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v119-mobile-gsi-pond-visible-fix";
-  const APP_STATUS_LABEL = "v119・スマホ池候補取得修正版";
+  const APP_VERSION = "v120-map-label-pond-candidates";
+  const APP_STATUS_LABEL = "v120・地図名池候補追加版";
   const GSI_POND_VECTOR_URLS = [
     "https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/{z}/{x}/{y}.pbf",
     "https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap-v1/{z}/{x}/{y}.pbf",
@@ -20,6 +20,12 @@
   // v118: ベクトルタイルの仕様変更・外部ライブラリ失敗時でも、ボタンを押した結果が見えるようにする補助候補。
   // すべて「池候補」として扱い、釣行前の現地確認を前提にする。
   const GSI_POND_FALLBACK_CANDIDATES = [
+    // v120: Googleマップ等の地図ラベルで目視しやすい「○○池」系の名前付き候補。位置は候補用の目安です。
+    { name: "岩田池", area: "津市岩田周辺", lat: 34.7119, lng: 136.5112 },
+    { name: "尺目池", area: "津市周辺", lat: 34.7068, lng: 136.4984 },
+    { name: "片田池", area: "津市片田周辺", lat: 34.7352, lng: 136.4212 },
+    { name: "高野尾池", area: "津市高野尾町周辺", lat: 34.7942, lng: 136.4774 },
+    { name: "白山池", area: "津市白山町周辺", lat: 34.6628, lng: 136.3239 },
     { name: "木曽岬干拓調整池", area: "木曽岬町周辺", lat: 35.0737, lng: 136.7439 },
     { name: "員弁大池", area: "いなべ市周辺", lat: 35.1372, lng: 136.5576 },
     { name: "菰野調整池", area: "菰野町周辺", lat: 35.0146, lng: 136.4878 },
@@ -2564,11 +2570,11 @@
       lat: Number(item.lat),
       lng: Number(item.lng),
       zoom: 16,
-      source: "国土地理院池候補補助リスト",
+      source: "地図名池候補リスト",
       subtype: "池候補",
       candidate: true,
       custom: true,
-      memo: "ベクトルタイル取得が端末や通信環境で反映されない時の補助候補です。位置は目安です。釣行前に立入禁止・私有地・管理者情報を必ず確認してください。",
+      memo: "Googleマップ等の地図ラベルで見つけた「○○池」系を池候補として追加するための補助候補です。位置は目安です。釣行前に立入禁止・私有地・管理者情報を必ず確認してください。",
       gsiFallbackCandidate: true
     };
   }
@@ -2620,13 +2626,27 @@
     }
     gsiPondScanning = true;
     const buttons = [...document.querySelectorAll("[data-gsi-pond-scan-button]")];
-    const oldTexts = new Map(buttons.map((button) => [button, button.textContent || "地理院池候補取得"]));
+    const oldTexts = new Map(buttons.map((button) => [button, button.textContent || "地図名池候補追加"]));
     buttons.forEach((button) => {
       button.disabled = true;
       button.textContent = "取得中…";
     });
     const existingAtStart = [...state.spots, ...state.customSpots];
     const fallbackCenter = map?.getCenter?.() || { lat: MIE_CENTER[0], lng: MIE_CENTER[1] };
+
+    // v120: スマホで外部タイル解析が動かない場合でも、まず地図名候補リストから即時追加する。
+    // これで「ボタンを押しても何も反映されない」を避け、岩田池・尺目池のような名前付き池を池候補に出す。
+    const labelListAdditions = fallbackGsiPondCandidates(existingAtStart, bounds, fallbackCenter).slice(0, 18);
+    if (labelListAdditions.length) {
+      showGsiPondAdditions(labelListAdditions, `地図名リストから池候補を${labelListAdditions.length}件追加しました。池候補リストに表示しました。`);
+      gsiPondScanning = false;
+      buttons.forEach((button) => {
+        button.disabled = false;
+        button.textContent = oldTexts.get(button) || "地図名池候補追加";
+      });
+      return;
+    }
+
     try {
       setGsiPondStatus(plan.limitedToCenter
         ? `表示範囲が広いため、地図中央周辺の池候補を取得中… ${plan.tiles.length}タイル`
@@ -2680,7 +2700,7 @@
       gsiPondScanning = false;
       buttons.forEach((button) => {
         button.disabled = false;
-        button.textContent = oldTexts.get(button) || "地理院池候補取得";
+        button.textContent = oldTexts.get(button) || "地図名池候補追加";
       });
     }
   }
@@ -2712,8 +2732,8 @@
       button.id = "scanGsiPondCandidates";
       button.type = "button";
       button.className = "spot-mode-button";
-      button.textContent = "地理院池候補取得";
-      button.title = "表示中の国土地理院注記から、名前に『池』を含む水辺を池候補へ追加します。";
+      button.textContent = "地図名池候補追加";
+      button.title = "表示中の地図周辺から、岩田池・尺目池など名前に『池』を含む候補を池候補へ追加します。";
       bindGsiPondButton(button);
       tools.appendChild(button);
     }
@@ -2724,8 +2744,8 @@
       button.id = "scanGsiPondCandidatesMenu";
       button.type = "button";
       button.className = "data-button gsi-pond-menu-button";
-      button.textContent = "地理院池候補取得";
-      button.title = "表示中の地図から池名候補を追加します。";
+      button.textContent = "地図名池候補追加";
+      button.title = "表示中の地図周辺から岩田池・尺目池などの池名候補を追加します。";
       button.style.width = "100%";
       button.style.marginTop = "8px";
       bindGsiPondButton(button);
