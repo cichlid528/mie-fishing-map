@@ -2,17 +2,17 @@
 <html lang="ja">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
     <meta name="theme-color" content="#0f7b63">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="釣りマップ">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>三重県釣りマップ</title>
-    <link rel="manifest" href="manifest.json?v=v104-ui-zoom-lock">
+    <link rel="manifest" href="manifest.json?v=v105-ui-zoom-hard-lock">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon-v103.png">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQDP4nD8xQV9qVtAkM5M5OgFHJt0f9I=" crossorigin="">
-    <link rel="stylesheet" href="style.css?v=v104-ui-zoom-lock">
-    <style id="v104-ui-zoom-lock-fix">
+    <link rel="stylesheet" href="style.css?v=v105-ui-zoom-hard-lock">
+    <style id="v105-ui-zoom-hard-lock-fix">
       @media (max-width: 920px) {
         #menuToggle.mobile-menu-button { display: inline-flex !important; position: fixed !important; top: calc(12px + env(safe-area-inset-top)) !important; left: calc(12px + env(safe-area-inset-left)) !important; z-index: 2147483600 !important; pointer-events: auto !important; touch-action: manipulation !important; background: rgba(255,255,255,.99) !important; color: #073f33 !important; -webkit-text-fill-color: #073f33 !important; }
         .map-tools { position: fixed !important; top: calc(68px + env(safe-area-inset-top)) !important; right: calc(10px + env(safe-area-inset-right)) !important; z-index: 2147483400 !important; pointer-events: none !important; }
@@ -1228,6 +1228,94 @@ textarea,
   touch-action: none !important;
 }
 
+
+
+/* v105: メニュー/UIのピンチ拡大縮小をさらに強く防止。地図本体のLeafletズームは維持。 */
+html,
+body {
+  min-width: 100% !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  -webkit-text-size-adjust: 100% !important;
+  text-size-adjust: 100% !important;
+}
+#mobileMenu,
+.sidebar,
+.controls,
+.spot-list,
+.catch-list,
+.spot-card,
+.catch-panel,
+.catch-form,
+#spotPanel,
+#catchPanel,
+#backgroundPanel,
+#installPanel,
+#infoPanel,
+.map-tools,
+.mobile-menu-button,
+.menu-backdrop,
+.leaflet-control-container,
+.leaflet-popup,
+.record-info-popup .leaflet-popup-content {
+  -webkit-text-size-adjust: 100% !important;
+  text-size-adjust: 100% !important;
+  overscroll-behavior: contain !important;
+}
+#mobileMenu,
+.sidebar,
+.controls,
+.spot-list,
+.catch-list,
+.catch-form,
+.record-info-popup .leaflet-popup-content {
+  touch-action: pan-y !important;
+}
+button,
+.filter-chip,
+.list-tab,
+.data-button,
+.icon-button,
+.locate-button,
+.spot-mode-button,
+.catch-mode-button,
+.record-filter-chip,
+.species-category-chip,
+.record-entry-mode-button {
+  touch-action: manipulation !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+}
+.map-pane,
+#map,
+#map.leaflet-container,
+.leaflet-container,
+#map .leaflet-map-pane,
+#map .leaflet-tile-pane,
+#map .leaflet-marker-pane {
+  touch-action: none !important;
+}
+@media (hover: none), (pointer: coarse) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+    -webkit-text-size-adjust: 100% !important;
+    text-size-adjust: 100% !important;
+  }
+  .spot-species-select {
+    font-size: 16px !important;
+    transform: scale(.78) !important;
+    transform-origin: center center !important;
+    width: 128% !important;
+    margin-left: -14% !important;
+  }
+  .search-box input,
+  .species-search-row input {
+    font-size: 16px !important;
+  }
+}
+
 </style>
   </head>
   <body>
@@ -1269,7 +1357,7 @@ textarea,
             <button class="filter-chip" type="button" data-filter="港">港・漁港</button>
             <button class="filter-chip" type="button" data-filter="マリーナ">マリーナ</button>
           </div>
-          <p id="dataStatus" class="data-status" aria-live="polite">v104・UI拡大防止版</p>
+          <p id="dataStatus" class="data-status" aria-live="polite">v105・UIズーム固定版</p>
           <p class="notice-banner">掲載情報は釣りの許可を意味しません。現地看板・管理者・自治体・漁協の最新情報を必ず確認してください。</p>
           <div class="stats-grid" aria-label="記録集計">
             <span><strong id="spotCount">0</strong><small>釣り場</small></span>
@@ -1302,7 +1390,7 @@ textarea,
 
         <footer class="sidebar-footer">
           <span id="visibleCount">0件</span>
-          <span>v104・UI拡大防止版</span>
+          <span>v105・UIズーム固定版</span>
         </footer>
 
         <section class="settings-row sidebar-actions" aria-label="設定">
@@ -1493,7 +1581,7 @@ textarea,
     </section>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="pwa-install.js?v=v104-ui-zoom-lock"></script>
-    <script src="app.js?v=v104-ui-zoom-lock"></script>
+    <script src="pwa-install.js?v=v105-ui-zoom-hard-lock"></script>
+    <script src="app.js?v=v105-ui-zoom-hard-lock"></script>
   </body>
 </html>

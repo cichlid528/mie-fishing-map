@@ -2918,3 +2918,90 @@ textarea,
 .leaflet-container {
   touch-action: none !important;
 }
+
+/* v105: メニュー/UIのピンチ拡大縮小をさらに強く防止。地図本体のLeafletズームは維持。 */
+html,
+body {
+  min-width: 100% !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  -webkit-text-size-adjust: 100% !important;
+  text-size-adjust: 100% !important;
+}
+#mobileMenu,
+.sidebar,
+.controls,
+.spot-list,
+.catch-list,
+.spot-card,
+.catch-panel,
+.catch-form,
+#spotPanel,
+#catchPanel,
+#backgroundPanel,
+#installPanel,
+#infoPanel,
+.map-tools,
+.mobile-menu-button,
+.menu-backdrop,
+.leaflet-control-container,
+.leaflet-popup,
+.record-info-popup .leaflet-popup-content {
+  -webkit-text-size-adjust: 100% !important;
+  text-size-adjust: 100% !important;
+  overscroll-behavior: contain !important;
+}
+#mobileMenu,
+.sidebar,
+.controls,
+.spot-list,
+.catch-list,
+.catch-form,
+.record-info-popup .leaflet-popup-content {
+  touch-action: pan-y !important;
+}
+button,
+.filter-chip,
+.list-tab,
+.data-button,
+.icon-button,
+.locate-button,
+.spot-mode-button,
+.catch-mode-button,
+.record-filter-chip,
+.species-category-chip,
+.record-entry-mode-button {
+  touch-action: manipulation !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+}
+.map-pane,
+#map,
+#map.leaflet-container,
+.leaflet-container,
+#map .leaflet-map-pane,
+#map .leaflet-tile-pane,
+#map .leaflet-marker-pane {
+  touch-action: none !important;
+}
+@media (hover: none), (pointer: coarse) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+    -webkit-text-size-adjust: 100% !important;
+    text-size-adjust: 100% !important;
+  }
+  .spot-species-select {
+    font-size: 16px !important;
+    transform: scale(.78) !important;
+    transform-origin: center center !important;
+    width: 128% !important;
+    margin-left: -14% !important;
+  }
+  .search-box input,
+  .species-search-row input {
+    font-size: 16px !important;
+  }
+}
+

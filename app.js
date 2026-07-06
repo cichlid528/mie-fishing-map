@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v104-ui-zoom-lock";
-  const APP_STATUS_LABEL = "v104・UI拡大防止版";
+  const APP_VERSION = "v105-ui-zoom-hard-lock";
+  const APP_STATUS_LABEL = "v105・UIズーム固定版";
 
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
@@ -1885,32 +1885,81 @@
 
 
   function setupUiZoomLock() {
-    const isMapTarget = (target) => Boolean(target?.closest?.("#map"));
-    const stopUiPageZoom = (event) => {
-      if (isMapTarget(event.target)) return;
-      event.preventDefault();
+    const uiSelector = [
+      ".sidebar", "#mobileMenu", ".controls", ".spot-list", ".catch-list", ".spot-card",
+      ".catch-panel", ".catch-form", "#spotPanel", "#catchPanel", "#backgroundPanel", "#installPanel", "#infoPanel",
+      ".map-tools", ".mobile-menu-button", ".menu-backdrop", ".leaflet-control-container", ".leaflet-popup"
+    ].join(",");
+
+    const isMapSurfaceElement = (element) => {
+      if (!element?.closest) return false;
+      if (!element.closest("#map")) return false;
+      // 地図上のUI部品やポップアップを触っている時は、地図ズームではなくUI操作として扱う。
+      if (element.closest(uiSelector)) return false;
+      return true;
     };
 
-    // iPhone/iPad Safariのピンチ操作で、メニューやフォームだけが拡大されるのを防ぐ。
+    const touchPointIsMapSurface = (touch) => {
+      const element = document.elementFromPoint(touch.clientX, touch.clientY);
+      return isMapSurfaceElement(element);
+    };
+
+    const allTouchesAreOnMapSurface = (event) => {
+      const touches = event.touches ? Array.from(event.touches) : [];
+      if (!touches.length) return isMapSurfaceElement(event.target);
+      return touches.every(touchPointIsMapSurface);
+    };
+
+    let activePinchStartedOnMap = false;
+
+    // 2本指がメニューやフォームに乗った時は、ブラウザのページ拡大を止める。
+    // 2本指が地図本体だけに乗った時はLeafletの地図ズームを通す。
+    document.addEventListener("touchstart", (event) => {
+      if (!event.touches || event.touches.length < 2) return;
+      activePinchStartedOnMap = allTouchesAreOnMapSurface(event);
+      if (!activePinchStartedOnMap) event.preventDefault();
+    }, { passive: false, capture: true });
+
+    document.addEventListener("touchmove", (event) => {
+      if (!event.touches || event.touches.length < 2) return;
+      if (!activePinchStartedOnMap || !allTouchesAreOnMapSurface(event)) event.preventDefault();
+    }, { passive: false, capture: true });
+
+    document.addEventListener("touchend", (event) => {
+      if (!event.touches || event.touches.length < 2) activePinchStartedOnMap = false;
+    }, { passive: true, capture: true });
+
+    // iPhone/iPad Safariのgesture系イベントにも対応。captureで先に止める。
     ["gesturestart", "gesturechange", "gestureend"].forEach((eventName) => {
-      document.addEventListener(eventName, stopUiPageZoom, { passive: false });
+      document.addEventListener(eventName, (event) => {
+        if (!activePinchStartedOnMap) event.preventDefault();
+      }, { passive: false, capture: true });
     });
 
     // PCのタッチパッド/マウスでCtrl+ホイールした時も、UI側のブラウザ拡大を止める。
-    document.addEventListener("wheel", (event) => {
+    window.addEventListener("wheel", (event) => {
       if (!event.ctrlKey && !event.metaKey) return;
-      if (isMapTarget(event.target)) return;
+      if (isMapSurfaceElement(event.target)) return;
       event.preventDefault();
-    }, { passive: false });
+    }, { passive: false, capture: true });
+
+    // Ctrl + ＋ / － / 0 によるブラウザ拡大縮小も止める。地図にフォーカスがある時だけLeafletのキー操作を優先する。
+    window.addEventListener("keydown", (event) => {
+      if (!event.ctrlKey && !event.metaKey) return;
+      const key = String(event.key || "").toLowerCase();
+      if (!["+", "=", "-", "_", "0"].includes(key)) return;
+      if (isMapSurfaceElement(document.activeElement)) return;
+      event.preventDefault();
+    }, { passive: false, capture: true });
 
     // UIボタン周辺のダブルタップ拡大を抑える。地図上のダブルタップ拡大はLeafletに任せる。
     let lastUiTouchEnd = 0;
     document.addEventListener("touchend", (event) => {
-      if (isMapTarget(event.target)) return;
+      if (isMapSurfaceElement(event.target)) return;
       const now = Date.now();
       if (now - lastUiTouchEnd <= 350) event.preventDefault();
       lastUiTouchEnd = now;
-    }, { passive: false });
+    }, { passive: false, capture: true });
   }
 
   function registerServiceWorker() {
