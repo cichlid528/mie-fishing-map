@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v110-now-loading";
-  const APP_STATUS_LABEL = "v110・Now Loading表示版";
+  const APP_VERSION = "v111-multi-spot-species";
+  const APP_STATUS_LABEL = "v111・魚種複数選択版";
 
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
@@ -159,6 +159,8 @@
     recordEntryMode: "super",
     speciesCategoryFilter: "popular",
     speciesSearch: "",
+    spotSpeciesEditSpotId: "",
+    spotSpeciesReturnSpotId: "",
     backupMeta: {}
   };
 
@@ -331,6 +333,7 @@
   function persistBackupMeta() { saveJson(BACKUP_META_STORAGE_KEY, state.backupMeta || {}); }
 
   function initEls() {
+    ensureSpotSpeciesPanel();
     [
       "appStartScreen", "startScreenSkip", "searchInput", "visibleCount", "spotList", "catchList", "spotListHead", "catchListHead", "spotTab", "catchTab",
       "spotCount", "recordCount", "bigBassCount", "dataStatus", "spotCard", "mobileMenu", "menuToggle", "menuBackdrop", "closeMenuButton",
@@ -343,7 +346,8 @@
       "catchPhotoPreview", "catchPhotoImage", "removeCatchPhoto", "catchPhotoStatus", "deleteCatch", "closeCatchPanel",
       "changeBackgroundButton", "backgroundPanel", "backgroundCamera", "backgroundPicker", "backgroundStatus", "resetBackgroundButton", "closeBackgroundPanel", "closeBackgroundDone",
       "openInfoPanel", "infoPanel", "closeInfoPanel", "closeInfoDone", "backupStatus", "backupReminder", "exportDataButton", "importDataFile",
-      "installAppButton", "installPanel", "installStatus", "closeInstallPanel", "closeInstallDone"
+      "installAppButton", "installPanel", "installStatus", "closeInstallPanel", "closeInstallDone",
+      "spotSpeciesPanel", "spotSpeciesForm", "spotSpeciesTarget", "spotSpeciesChoices", "closeSpotSpeciesPanel", "cancelSpotSpeciesPanel", "clearSpotSpeciesButton"
     ].forEach((id) => { els[id] = $(id); });
     els.filterButtons = [...document.querySelectorAll(".filter-chip")];
     els.recordFilterRow = $("recordFilterRow");
@@ -684,12 +688,130 @@
     return options.map((name) => `<option value="${escapeHtml(name)}" ${name === current ? "selected" : ""}>${escapeHtml(name || "未設定")}</option>`).join("");
   }
 
+  function spotSpeciesSummary(value, fallback = "未設定") {
+    const list = speciesList(value);
+    if (!list.length) return fallback;
+    if (list.length <= 2) return list.join("・");
+    return `${list[0]}ほか${list.length - 1}種`;
+  }
+
+  function spotSpeciesFullText(value, fallback = "魚種未設定") {
+    const text = speciesText(value);
+    return text || fallback;
+  }
+
   function spotSpeciesControl(spotId, species) {
-    return `<label class="spot-species-control ${species ? "on" : ""}" title="魚種を選択">
-      <select class="spot-species-select" data-species-select="1" data-spot-id="${escapeHtml(spotId)}" aria-label="魚種を選択">
-        ${speciesOptionsHtml(species)}
-      </select>
+    const summary = spotSpeciesSummary(species, "魚種");
+    const full = spotSpeciesFullText(species, "魚種を選択");
+    return `<button class="spot-species-control spot-species-button ${species ? "on" : ""}" type="button" data-species-button="1" data-spot-id="${escapeHtml(spotId)}" title="${escapeHtml(full)}" aria-label="魚種を複数選択"><span>${escapeHtml(summary)}</span></button>`;
+  }
+
+  function spotSpeciesChoiceHtml(name) {
+    const category = fishSpeciesCategory(name);
+    return `<label data-spot-species-choice-wrap data-species-category="${escapeHtml(category)}">
+      <input type="checkbox" data-spot-species-choice value="${escapeHtml(name)}">
+      <span>${escapeHtml(name)}</span>
     </label>`;
+  }
+
+  function ensureSpotSpeciesPanel() {
+    if ($("spotSpeciesPanel")) return;
+    const choices = SPOT_SPECIES_OPTIONS.filter(Boolean).map(spotSpeciesChoiceHtml).join("");
+    document.body.insertAdjacentHTML("beforeend", `<div id="spotSpeciesPanel" class="catch-panel spot-species-panel" aria-hidden="true">
+      <form id="spotSpeciesForm" class="catch-form spot-species-form">
+        <div class="catch-form-header">
+          <div>
+            <p class="kicker">Spot Species</p>
+            <h2>魚種を選択</h2>
+          </div>
+          <button id="closeSpotSpeciesPanel" class="icon-button" type="button" aria-label="魚種選択を閉じる">×</button>
+        </div>
+        <p id="spotSpeciesTarget" class="panel-help">この釣り場で釣れる魚種を複数選べます。</p>
+        <div class="spot-species-panel-actions">
+          <button type="button" data-spot-species-preset="popular">よく使う</button>
+          <button type="button" data-spot-species-preset="freshwater">淡水</button>
+          <button type="button" data-spot-species-preset="saltwater">海水</button>
+          <button id="clearSpotSpeciesButton" type="button">クリア</button>
+        </div>
+        <div id="spotSpeciesChoices" class="multi-choice-grid spot-species-choice-grid">${choices}</div>
+        <p class="field-hint">選んだ魚種は一覧では短く、詳細ではまとめて表示します。</p>
+        <div class="catch-actions">
+          <button id="cancelSpotSpeciesPanel" type="button" class="delete-button">キャンセル</button>
+          <button type="submit" class="save-button">決定</button>
+        </div>
+      </form>
+    </div>`);
+  }
+
+  function spotSpeciesChoiceInputs() {
+    return els.spotSpeciesChoices ? [...els.spotSpeciesChoices.querySelectorAll("input[data-spot-species-choice]")] : [];
+  }
+
+  function ensureSpotSpeciesChoices(names = []) {
+    if (!els.spotSpeciesChoices) return;
+    const existing = new Set(spotSpeciesChoiceInputs().map((input) => input.value));
+    speciesList(names).forEach((name) => {
+      if (!name || existing.has(name)) return;
+      els.spotSpeciesChoices.insertAdjacentHTML("beforeend", spotSpeciesChoiceHtml(name));
+      existing.add(name);
+    });
+  }
+
+  function syncSpotSpeciesChoiceClasses() {
+    spotSpeciesChoiceInputs().forEach((input) => {
+      input.closest("label")?.classList.toggle("is-selected", input.checked);
+    });
+  }
+
+  function setSpotSpeciesPanelSelection(value = "") {
+    const selected = new Set(speciesList(value));
+    ensureSpotSpeciesChoices([...selected]);
+    spotSpeciesChoiceInputs().forEach((input) => { input.checked = selected.has(input.value); });
+    syncSpotSpeciesChoiceClasses();
+  }
+
+  function openSpotSpeciesPanel(spotId) {
+    const spot = state.spots.find((s) => s.id === spotId);
+    if (!spot) return;
+    state.spotSpeciesEditSpotId = spotId;
+    state.spotSpeciesReturnSpotId = (!els.spotCard?.classList.contains("is-hidden") && state.selectedSpotId === spotId) ? spotId : "";
+    const saved = spotState(spotId);
+    if (els.spotSpeciesTarget) els.spotSpeciesTarget.textContent = `${spot.name} の魚種を複数選べます。`;
+    setSpotSpeciesPanelSelection(saved.species);
+    openPanel(els.spotSpeciesPanel);
+  }
+
+  function closeSpotSpeciesPanel() {
+    const returnSpotId = state.spotSpeciesReturnSpotId;
+    state.spotSpeciesEditSpotId = "";
+    state.spotSpeciesReturnSpotId = "";
+    closePanel(els.spotSpeciesPanel);
+    if (returnSpotId) {
+      const spot = state.spots.find((s) => s.id === returnSpotId);
+      window.setTimeout(() => { if (spot) showSpotCard(spot); }, 0);
+    }
+  }
+
+  function selectedSpotSpeciesText() {
+    const names = spotSpeciesChoiceInputs().filter((input) => input.checked).map((input) => input.value);
+    return speciesText(names);
+  }
+
+  function saveSpotSpeciesPanel() {
+    if (!state.spotSpeciesEditSpotId) return closeSpotSpeciesPanel();
+    updateSpotSpecies(state.spotSpeciesEditSpotId, selectedSpotSpeciesText());
+    closeSpotSpeciesPanel();
+  }
+
+  function applySpotSpeciesPreset(preset) {
+    const wanted = new Set();
+    spotSpeciesChoiceInputs().forEach((input) => {
+      if (preset === "popular" && (isPopularSpecies(input.value) || Number(input.dataset.speciesUsage || 0) > 0)) wanted.add(input.value);
+      if (preset === "freshwater" && FRESHWATER_SPECIES.has(input.value)) wanted.add(input.value);
+      if (preset === "saltwater" && SALTWATER_SPECIES.has(input.value)) wanted.add(input.value);
+    });
+    spotSpeciesChoiceInputs().forEach((input) => { input.checked = wanted.has(input.value); });
+    syncSpotSpeciesChoiceClasses();
   }
 
   function catchSpeciesInputs() {
@@ -891,7 +1013,7 @@
 
   function updateSpotSpecies(spotId, species) {
     const s = spotState(spotId);
-    s.species = String(species || "").trim();
+    s.species = speciesText(species);
     if (s.species) s.caught = true;
     saveSpotListState(spotId);
   }
@@ -964,7 +1086,7 @@
     const record = state.catches.find((r) => r.id === recordId);
     if (!record || !map || typeof L === "undefined") return;
     try { closeMobileMenu(); } catch (error) {}
-    try { [els.catchPanel, els.spotPanel, els.backgroundPanel, els.installPanel, els.infoPanel].forEach(closePanel); } catch (error) {}
+    try { [els.catchPanel, els.spotPanel, els.backgroundPanel, els.installPanel, els.infoPanel, els.spotSpeciesPanel].forEach(closePanel); } catch (error) {}
     hideSpotCard();
     const lat = Number(record.lat);
     const lng = Number(record.lng);
@@ -1061,7 +1183,7 @@
       <p class="catch-photo-status">記録 ${recordCount}件 / ${Number(spot.lat).toFixed(6)}, ${Number(spot.lng).toFixed(6)}</p>
       <div class="card-flags">
         <label><input type="checkbox" data-flag="caught" ${s.caught ? "checked" : ""}>釣れた</label>
-        <label class="spot-card-species"><span>魚種</span><select data-card-species="1" aria-label="魚種を選択">${speciesOptionsHtml(s.species)}</select></label>
+        <button class="spot-card-species-button ${s.species ? "on" : ""}" type="button" data-card-species-button="1" title="${escapeHtml(spotSpeciesFullText(s.species))}" aria-label="魚種を複数選択"><span>魚種</span><strong>${escapeHtml(spotSpeciesSummary(s.species, "未設定"))}</strong></button>
         <label><input type="checkbox" data-flag="noFishing" ${s.noFishing ? "checked" : ""}>禁止/注意</label>
         <label><input type="checkbox" data-flag="parking" ${s.parking ? "checked" : ""}>駐車</label>
       </div>
@@ -1769,14 +1891,14 @@
     els.spotTab.addEventListener("click", () => { state.activeList = "spots"; renderLists(); });
     els.catchTab.addEventListener("click", () => { state.activeList = "catches"; renderLists(); });
     els.spotList.addEventListener("change", (event) => {
-      const select = event.target.closest("select[data-species-select]");
-      if (select) { updateSpotSpecies(select.dataset.spotId, select.value); return; }
       const input = event.target.closest("input[data-flag-toggle]");
       if (!input) return;
       updateSpotListFlag(input.dataset.spotId, input.dataset.flagToggle, input.checked);
     });
     els.spotList.addEventListener("click", (event) => {
-      if (event.target.closest("input[data-flag-toggle], select[data-species-select], .flag-check, .spot-species-control")) return;
+      const speciesButton = event.target.closest("button[data-species-button]");
+      if (speciesButton) { openSpotSpeciesPanel(speciesButton.dataset.spotId); return; }
+      if (event.target.closest("input[data-flag-toggle], .flag-check, .spot-species-control")) return;
       const item = event.target.closest("[data-spot-id]");
       if (item) selectSpot(item.dataset.spotId);
     });
@@ -1786,8 +1908,6 @@
     });
     els.spotCard.addEventListener("change", (event) => {
       if (!state.selectedSpotId) return;
-      const speciesSelect = event.target.closest("select[data-card-species]");
-      if (speciesSelect) { updateSpotSpecies(state.selectedSpotId, speciesSelect.value); return; }
       const input = event.target.closest("input[data-flag]");
       if (!input) return;
       spotState(state.selectedSpotId)[input.dataset.flag] = input.checked;
@@ -1811,6 +1931,8 @@
     });
 
     els.spotCard.addEventListener("click", (event) => {
+      const speciesButton = event.target.closest("button[data-card-species-button]");
+      if (speciesButton && state.selectedSpotId) { openSpotSpeciesPanel(state.selectedSpotId); return; }
       const action = event.target.closest("button[data-action]")?.dataset.action;
       if (!action || !state.selectedSpotId) return;
       const spot = state.spots.find((s) => s.id === state.selectedSpotId);
@@ -1822,6 +1944,25 @@
       if (action === "resetPosition") resetSpotPosition(spot.id);
       if (action === "edit") openSpotPanel(spot.id);
       if (action === "delete") { els.spotIdInput.value = spot.id; deleteSelectedSpot(); }
+    });
+
+    els.spotSpeciesForm?.addEventListener("submit", (event) => {
+      event.preventDefault();
+      saveSpotSpeciesPanel();
+    });
+    els.spotSpeciesChoices?.addEventListener("change", syncSpotSpeciesChoiceClasses);
+    els.closeSpotSpeciesPanel?.addEventListener("click", closeSpotSpeciesPanel);
+    els.cancelSpotSpeciesPanel?.addEventListener("click", closeSpotSpeciesPanel);
+    els.clearSpotSpeciesButton?.addEventListener("click", () => {
+      spotSpeciesChoiceInputs().forEach((input) => { input.checked = false; });
+      syncSpotSpeciesChoiceClasses();
+    });
+    els.spotSpeciesPanel?.addEventListener("click", (event) => {
+      if (event.target === els.spotSpeciesPanel) closeSpotSpeciesPanel();
+    });
+    els.spotSpeciesForm?.addEventListener("click", (event) => {
+      const button = event.target.closest("button[data-spot-species-preset]");
+      if (button) applySpotSpeciesPreset(button.dataset.spotSpeciesPreset);
     });
 
     els.resetView.addEventListener("click", resetMieView);
@@ -1926,7 +2067,7 @@
 
       window.setTimeout(() => {
         try { closeMobileMenu(); } catch (error) {}
-        try { [els.catchPanel, els.spotPanel, els.backgroundPanel, els.installPanel, els.infoPanel].forEach(closePanel); } catch (error) {}
+        try { [els.catchPanel, els.spotPanel, els.backgroundPanel, els.installPanel, els.infoPanel, els.spotSpeciesPanel].forEach(closePanel); } catch (error) {}
         try { hideSpotCard(); } catch (error) {}
         try {
           if (map) {

@@ -8,11 +8,11 @@
     <meta name="apple-mobile-web-app-title" content="釣りマップ">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>三重県釣りマップ</title>
-    <link rel="manifest" href="manifest.json?v=v110-now-loading">
+    <link rel="manifest" href="manifest.json?v=v111-multi-spot-species">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon-v103.png">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQDP4nD8xQV9qVtAkM5M5OgFHJt0f9I=" crossorigin="">
-    <link rel="stylesheet" href="style.css?v=v110-now-loading">
-    <style id="v110-now-loading-fix">
+    <link rel="stylesheet" href="style.css?v=v111-multi-spot-species">
+    <style id="v111-multi-spot-species-fix">
       @media (max-width: 920px) {
         #menuToggle.mobile-menu-button { display: inline-flex !important; position: fixed !important; top: calc(12px + env(safe-area-inset-top)) !important; left: calc(12px + env(safe-area-inset-left)) !important; z-index: 2147483600 !important; pointer-events: auto !important; touch-action: manipulation !important; background: rgba(255,255,255,.99) !important; color: #073f33 !important; -webkit-text-fill-color: #073f33 !important; }
         .map-tools { position: fixed !important; top: calc(68px + env(safe-area-inset-top)) !important; right: calc(10px + env(safe-area-inset-right)) !important; z-index: 2147483400 !important; pointer-events: none !important; }
@@ -1770,6 +1770,123 @@ button,
   .app-start-screen.is-launching::after { bottom: calc(3.5% + env(safe-area-inset-bottom)) !important; }
 }
 
+
+/* v111: メニューの魚種選択を複数選択パネル化 */
+.spot-species-button {
+  width: 100% !important;
+  padding: 0 7px !important;
+  color: #073f33 !important;
+  -webkit-text-fill-color: #073f33 !important;
+  font-size: .68rem !important;
+  font-weight: 950 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  cursor: pointer !important;
+}
+.spot-species-button span {
+  display: block !important;
+  width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  pointer-events: none !important;
+}
+.spot-species-button.on {
+  background: #dff5ed !important;
+  border-color: rgba(15, 123, 99, .48) !important;
+  color: #075c49 !important;
+  -webkit-text-fill-color: #075c49 !important;
+}
+.spot-card-species-button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  min-height: 34px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  padding: 7px 10px !important;
+  background: #f1f5f3 !important;
+  color: #173f35 !important;
+  -webkit-text-fill-color: #173f35 !important;
+  font-weight: 900 !important;
+  box-shadow: inset 0 0 0 1px rgba(7,63,51,.12) !important;
+  cursor: pointer !important;
+}
+.spot-card-species-button.on {
+  background: #e1f5ee !important;
+  color: #075c49 !important;
+  -webkit-text-fill-color: #075c49 !important;
+  box-shadow: inset 0 0 0 1px rgba(15,123,99,.25) !important;
+}
+.spot-card-species-button span {
+  opacity: .78 !important;
+}
+.spot-card-species-button strong {
+  max-width: min(220px, 48vw) !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+.spot-species-panel .spot-species-form {
+  width: min(760px, calc(100vw - 28px)) !important;
+}
+.spot-species-panel-actions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  margin: 10px 0 !important;
+}
+.spot-species-panel-actions button {
+  min-height: 36px !important;
+  border: 1px solid rgba(10, 89, 74, .22) !important;
+  border-radius: 999px !important;
+  padding: 7px 12px !important;
+  background: rgba(255,255,255,.92) !important;
+  color: #0c5b4d !important;
+  -webkit-text-fill-color: #0c5b4d !important;
+  font-weight: 900 !important;
+  box-shadow: 0 5px 14px rgba(0,0,0,.08) !important;
+}
+.spot-species-choice-grid {
+  max-height: min(46dvh, 430px) !important;
+  overflow-y: auto !important;
+  padding: 2px 2px 4px !important;
+  -webkit-overflow-scrolling: touch !important;
+  overscroll-behavior: contain !important;
+}
+.spot-species-choice-grid label {
+  min-height: 40px !important;
+}
+.spot-species-choice-grid input {
+  flex: 0 0 auto !important;
+}
+@media (max-width: 920px) {
+  .spot-item {
+    grid-template-columns: minmax(0, 1fr) 36px minmax(74px, 96px) 36px 36px !important;
+  }
+  .spot-species-button {
+    min-width: 0 !important;
+    height: 30px !important;
+    padding: 0 5px !important;
+    font-size: .62rem !important;
+  }
+  .spot-species-panel .spot-species-form {
+    width: min(100%, 720px) !important;
+  }
+  .spot-species-choice-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    max-height: min(52dvh, 430px) !important;
+  }
+  .spot-card-species-button {
+    width: 100% !important;
+    justify-content: space-between !important;
+  }
+  .spot-card-species-button strong {
+    max-width: 58vw !important;
+  }
+}
+
 </style>
   </head>
   <body>
@@ -1826,7 +1943,7 @@ button,
             <button class="filter-chip" type="button" data-filter="港">港・漁港</button>
             <button class="filter-chip" type="button" data-filter="マリーナ">マリーナ</button>
           </div>
-          <p id="dataStatus" class="data-status" aria-live="polite">v110・Now Loading表示版</p>
+          <p id="dataStatus" class="data-status" aria-live="polite">v111・魚種複数選択版</p>
           <p class="notice-banner">掲載情報は釣りの許可を意味しません。現地看板・管理者・自治体・漁協の最新情報を必ず確認してください。</p>
           <div class="stats-grid" aria-label="記録集計">
             <span><strong id="spotCount">0</strong><small>釣り場</small></span>
@@ -1859,7 +1976,7 @@ button,
 
         <footer class="sidebar-footer">
           <span id="visibleCount">0件</span>
-          <span>v110・Now Loading表示版</span>
+          <span>v111・魚種複数選択版</span>
         </footer>
 
         <section class="settings-row sidebar-actions" aria-label="設定">
@@ -2050,7 +2167,7 @@ button,
     </section>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="pwa-install.js?v=v110-now-loading"></script>
-    <script src="app.js?v=v110-now-loading"></script>
+    <script src="pwa-install.js?v=v111-multi-spot-species"></script>
+    <script src="app.js?v=v111-multi-spot-species"></script>
   </body>
 </html>
