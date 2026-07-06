@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bass-spot-log-";
-const VERSION = "v106-start-title-screen";
+const VERSION = "v108-title-art-yoshiyuki";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());

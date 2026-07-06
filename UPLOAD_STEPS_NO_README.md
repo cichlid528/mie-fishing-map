@@ -1,4 +1,4 @@
-# v106 アップロード手順
+# v108 アップロード手順
 
 1. ZIPを解凍します。
 2. 中身をGitHubリポジトリ `mie-fishing-map` の直下へ上書きアップロードします。
@@ -9,8 +9,10 @@ https://cichlid528.github.io/mie-fishing-map/reset-cache.html?auto=1
 
 5. その後、下のURLで確認します。
 
-https://cichlid528.github.io/mie-fishing-map/?v=v106-start-title-screen
+https://cichlid528.github.io/mie-fishing-map/?v=v108-title-art-yoshiyuki
 
 ## 今回の変更
 
-iPhone/PWAでアプリを起動した時、地図へすぐ入る前にタイトル画面を表示するようにしました。
+- 起動画面に、開発者サイン入りの新しいタイトル画像を採用
+- 「地図を開く」は画像上のボタン位置でタップ可能
+- バージョン表示を `v108・タイトル画面採用版` に更新

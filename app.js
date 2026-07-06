@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v106-start-title-screen";
-  const APP_STATUS_LABEL = "v106・起動画面追加版";
+  const APP_VERSION = "v108-title-art-yoshiyuki";
+  const APP_STATUS_LABEL = "v108・タイトル画面採用版";
 
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";

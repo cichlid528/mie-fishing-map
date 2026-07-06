@@ -3007,7 +3007,8 @@ button,
 
 
 
-/* v106: iPhone/PWA起動時にタイトル画面を必ず先に表示 */
+
+/* v107: かっこいい起動画面デザイン案。地図は裏で読み込み、タイトルを必ず先に見せる。 */
 .app-start-screen {
   position: fixed !important;
   inset: 0 !important;
@@ -3016,112 +3017,337 @@ button,
   align-items: center !important;
   justify-content: center !important;
   padding: calc(22px + env(safe-area-inset-top)) calc(18px + env(safe-area-inset-right)) calc(22px + env(safe-area-inset-bottom)) calc(18px + env(safe-area-inset-left)) !important;
-  background:
-    radial-gradient(circle at 76% 18%, rgba(255,255,255,.18), transparent 28%),
-    linear-gradient(180deg, #05335c 0%, #0d4c71 42%, #ff9b3f 100%) !important;
+  overflow: hidden !important;
   color: #fff !important;
+  background:
+    radial-gradient(circle at 18% 16%, rgba(255, 196, 91, .24), transparent 25%),
+    radial-gradient(circle at 82% 18%, rgba(63, 201, 181, .22), transparent 28%),
+    radial-gradient(circle at 50% 100%, rgba(255, 155, 63, .36), transparent 34%),
+    linear-gradient(145deg, #04151f 0%, #06384a 42%, #0d6f5f 72%, #f28b36 125%) !important;
   opacity: 1 !important;
   visibility: visible !important;
-  transition: opacity .42s ease, visibility .42s ease !important;
+  transition: opacity .46s ease, visibility .46s ease !important;
   pointer-events: auto !important;
   touch-action: none !important;
   overscroll-behavior: none !important;
   -webkit-user-select: none !important;
   user-select: none !important;
+  isolation: isolate !important;
+}
+.app-start-screen::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: -18% !important;
+  z-index: -2 !important;
+  background:
+    linear-gradient(115deg, transparent 0 42%, rgba(255,255,255,.08) 43%, transparent 45% 100%),
+    linear-gradient(0deg, rgba(255,255,255,.075) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.055) 1px, transparent 1px) !important;
+  background-size: 100% 100%, 42px 42px, 42px 42px !important;
+  transform: rotate(-8deg) scale(1.08) !important;
+  animation: startMapDrift 11s ease-in-out infinite alternate !important;
+  opacity: .82 !important;
+}
+.app-start-screen::after {
+  content: "" !important;
+  position: absolute !important;
+  left: -12% !important;
+  right: -12% !important;
+  bottom: -12% !important;
+  height: 42% !important;
+  z-index: -1 !important;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(255, 222, 145, .34), transparent 48%),
+    repeating-linear-gradient(165deg, rgba(255,255,255,.10) 0 2px, transparent 2px 18px) !important;
+  transform: skewY(-6deg) !important;
+  opacity: .9 !important;
 }
 .app-start-screen.is-closing {
   opacity: 0 !important;
   visibility: hidden !important;
   pointer-events: none !important;
 }
-.app-start-screen.is-hidden {
-  display: none !important;
-}
+.app-start-screen.is-hidden { display: none !important; }
 .app-start-card {
-  width: min(420px, 92vw) !important;
-  min-height: min(560px, 82dvh) !important;
+  position: relative !important;
+  width: min(430px, 92vw) !important;
+  min-height: min(610px, 84dvh) !important;
   display: grid !important;
   align-content: center !important;
   justify-items: center !important;
-  gap: 12px !important;
-  border-radius: 30px !important;
-  padding: 28px 22px !important;
-  background: rgba(3, 34, 52, .28) !important;
-  box-shadow: 0 26px 80px rgba(0,0,0,.32), inset 0 0 0 1px rgba(255,255,255,.28) !important;
-  backdrop-filter: blur(6px) saturate(1.1) !important;
-  -webkit-backdrop-filter: blur(6px) saturate(1.1) !important;
-  text-align: center !important;
-}
-.app-start-icon {
-  width: min(170px, 42vw) !important;
-  height: min(170px, 42vw) !important;
+  gap: 13px !important;
   border-radius: 34px !important;
-  object-fit: cover !important;
-  box-shadow: 0 18px 44px rgba(0,0,0,.34), 0 0 0 4px rgba(255,255,255,.24) !important;
+  padding: 30px 22px 28px !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.08)),
+    rgba(2, 18, 26, .42) !important;
+  box-shadow:
+    0 28px 90px rgba(0,0,0,.42),
+    inset 0 0 0 1px rgba(255,255,255,.30),
+    inset 0 22px 80px rgba(255,255,255,.08) !important;
+  backdrop-filter: blur(13px) saturate(1.25) !important;
+  -webkit-backdrop-filter: blur(13px) saturate(1.25) !important;
+  text-align: center !important;
+  overflow: hidden !important;
 }
-.app-start-kicker {
-  margin: 6px 0 0 !important;
-  font-size: .92rem !important;
-  font-weight: 900 !important;
+.app-start-card::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 12px !important;
+  border-radius: 26px !important;
+  border: 1px solid rgba(255,255,255,.20) !important;
+  pointer-events: none !important;
+}
+.app-start-card::after {
+  content: "" !important;
+  position: absolute !important;
+  width: 210px !important;
+  height: 210px !important;
+  right: -78px !important;
+  top: -84px !important;
+  border-radius: 999px !important;
+  background: radial-gradient(circle, rgba(255, 197, 99, .28), transparent 68%) !important;
+  pointer-events: none !important;
+}
+.app-start-badge {
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 30px !important;
+  border-radius: 999px !important;
+  padding: 6px 12px !important;
+  background: rgba(3, 48, 54, .72) !important;
+  color: rgba(255,255,255,.96) !important;
+  border: 1px solid rgba(255,255,255,.22) !important;
+  font-size: .74rem !important;
+  font-weight: 950 !important;
   letter-spacing: .16em !important;
   text-transform: uppercase !important;
-  opacity: .9 !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,.16) !important;
+}
+.app-start-icon-wrap {
+  position: relative !important;
+  width: min(166px, 41vw) !important;
+  height: min(166px, 41vw) !important;
+  display: grid !important;
+  place-items: center !important;
+  margin-top: 4px !important;
+}
+.app-start-icon-wrap::before,
+.app-start-icon-wrap::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: -12px !important;
+  border-radius: 34px !important;
+  border: 2px solid rgba(255, 220, 142, .34) !important;
+  animation: startIconPing 1.8s ease-out infinite !important;
+}
+.app-start-icon-wrap::after {
+  inset: -22px !important;
+  animation-delay: .45s !important;
+  border-color: rgba(73, 226, 196, .22) !important;
+}
+.app-start-icon {
+  position: relative !important;
+  z-index: 1 !important;
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 34px !important;
+  object-fit: cover !important;
+  box-shadow:
+    0 18px 48px rgba(0,0,0,.42),
+    0 0 0 4px rgba(255,255,255,.24),
+    0 0 44px rgba(255, 176, 73, .24) !important;
+}
+.app-start-kicker {
+  margin: 8px 0 0 !important;
+  font-size: .92rem !important;
+  line-height: 1.25 !important;
+  font-weight: 950 !important;
+  letter-spacing: .22em !important;
+  color: rgba(255, 236, 198, .92) !important;
+  text-transform: uppercase !important;
+  text-shadow: 0 2px 14px rgba(0,0,0,.34) !important;
 }
 .app-start-title {
+  display: grid !important;
+  gap: 2px !important;
   margin: 0 !important;
-  font-size: clamp(2.7rem, 13vw, 4.8rem) !important;
-  line-height: .98 !important;
+  font-size: clamp(2.55rem, 12vw, 4.55rem) !important;
+  line-height: .94 !important;
   font-weight: 950 !important;
   letter-spacing: .04em !important;
   color: #fff !important;
-  text-shadow: 0 4px 18px rgba(0,0,0,.32) !important;
+  text-shadow: 0 5px 22px rgba(0,0,0,.38) !important;
+}
+.app-start-title span:last-child {
+  color: #ffe1a1 !important;
+  -webkit-text-fill-color: #ffe1a1 !important;
 }
 .app-start-subtitle {
-  margin: 0 !important;
+  max-width: 320px !important;
+  margin: 2px 0 0 !important;
   font-size: 1rem !important;
-  line-height: 1.5 !important;
+  line-height: 1.55 !important;
   font-weight: 850 !important;
-  color: rgba(255,255,255,.92) !important;
+  color: rgba(255,255,255,.90) !important;
+}
+.app-start-pills {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  margin: 3px 0 0 !important;
+}
+.app-start-pills span {
+  display: inline-flex !important;
+  align-items: center !important;
+  min-height: 28px !important;
+  border-radius: 999px !important;
+  padding: 5px 10px !important;
+  background: rgba(3, 63, 59, .72) !important;
+  border: 1px solid rgba(255,255,255,.26) !important;
+  color: rgba(255,255,255,.90) !important;
+  font-size: .78rem !important;
+  font-weight: 900 !important;
 }
 .app-start-loading {
   display: flex !important;
   align-items: center !important;
-  gap: 7px !important;
-  margin-top: 4px !important;
-  font-size: .86rem !important;
-  font-weight: 900 !important;
-  color: rgba(255,255,255,.86) !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  min-height: 26px !important;
+  margin: 4px 0 0 !important;
+  font-size: .84rem !important;
+  font-weight: 950 !important;
+  color: rgba(255,255,255,.82) !important;
 }
-.app-start-loading::before,
-.app-start-loading::after {
+.app-start-loading::before {
   content: "" !important;
-  width: 8px !important;
-  height: 8px !important;
+  width: 9px !important;
+  height: 9px !important;
   border-radius: 999px !important;
-  background: currentColor !important;
-  animation: appStartPulse 1.1s ease-in-out infinite alternate !important;
+  background: #70ffe0 !important;
+  box-shadow: 0 0 0 0 rgba(112,255,224,.52) !important;
+  animation: startGpsPulse 1.3s ease-out infinite !important;
 }
-.app-start-loading::after { animation-delay: .25s !important; }
-@keyframes appStartPulse {
-  from { transform: scale(.72); opacity: .45; }
-  to { transform: scale(1.08); opacity: .95; }
-}
+.app-start-loading::after { display: none !important; }
 .app-start-button {
-  min-height: 44px !important;
-  margin-top: 8px !important;
+  position: relative !important;
+  min-height: 46px !important;
+  margin-top: 6px !important;
   border: 0 !important;
   border-radius: 999px !important;
-  padding: 10px 18px !important;
-  background: rgba(255,255,255,.95) !important;
+  padding: 11px 22px !important;
+  background: linear-gradient(135deg, #fff7db, #ffffff) !important;
   color: #073f33 !important;
   -webkit-text-fill-color: #073f33 !important;
   font-size: 1rem !important;
   font-weight: 950 !important;
-  box-shadow: 0 12px 30px rgba(0,0,0,.22) !important;
+  box-shadow: 0 14px 32px rgba(0,0,0,.25), inset 0 0 0 1px rgba(255,255,255,.85) !important;
   touch-action: manipulation !important;
 }
+.app-start-button:active { transform: translateY(1px) !important; }
+@keyframes startMapDrift {
+  from { transform: rotate(-8deg) scale(1.08) translate3d(-8px, -6px, 0); }
+  to { transform: rotate(-8deg) scale(1.11) translate3d(10px, 8px, 0); }
+}
+@keyframes startIconPing {
+  from { transform: scale(.86); opacity: .62; }
+  to { transform: scale(1.13); opacity: 0; }
+}
+@keyframes startGpsPulse {
+  0% { box-shadow: 0 0 0 0 rgba(112,255,224,.52); }
+  100% { box-shadow: 0 0 0 12px rgba(112,255,224,0); }
+}
 @media (max-height: 640px) {
-  .app-start-card { min-height: auto !important; gap: 9px !important; padding: 22px 18px !important; }
-  .app-start-icon { width: min(124px, 34vw) !important; height: min(124px, 34vw) !important; border-radius: 26px !important; }
-  .app-start-title { font-size: clamp(2.2rem, 11vw, 3.8rem) !important; }
+  .app-start-card { min-height: auto !important; gap: 8px !important; padding: 22px 18px !important; }
+  .app-start-icon-wrap { width: min(118px, 32vw) !important; height: min(118px, 32vw) !important; }
+  .app-start-icon { border-radius: 25px !important; }
+  .app-start-title { font-size: clamp(2.15rem, 10vw, 3.55rem) !important; }
+  .app-start-subtitle { font-size: .9rem !important; line-height: 1.42 !important; }
+  .app-start-pills { display: none !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-start-screen::before,
+  .app-start-icon-wrap::before,
+  .app-start-icon-wrap::after,
+  .app-start-loading::before { animation: none !important; }
+}
+
+
+
+/* v108: 採用版タイトル画像を全面表示。開発者サイン入りアートを起動画面に使用。 */
+.app-start-screen {
+  padding: 0 !important;
+  background: #06131b url("assets/title-screen-yoshiyuki-tanaka-v108.png") center center / contain no-repeat !important;
+}
+.app-start-screen::before,
+.app-start-screen::after { display: none !important; }
+.app-start-card {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  display: block !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  overflow: hidden !important;
+}
+.app-start-card::before,
+.app-start-card::after,
+.app-start-badge,
+.app-start-icon-wrap,
+.app-start-kicker,
+.app-start-title,
+.app-start-subtitle,
+.app-start-pills,
+.app-start-loading {
+  display: none !important;
+}
+.app-start-button {
+  position: absolute !important;
+  left: 50% !important;
+  bottom: calc(18.5% + env(safe-area-inset-bottom)) !important;
+  transform: translateX(-50%) !important;
+  width: min(62vw, 420px) !important;
+  height: min(8vh, 82px) !important;
+  min-height: 54px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+  box-shadow: none !important;
+  opacity: .01 !important;
+  touch-action: manipulation !important;
+}
+.app-start-button:focus-visible {
+  opacity: 1 !important;
+  background: rgba(255, 226, 150, .18) !important;
+  outline: 3px solid rgba(255, 226, 150, .72) !important;
+  outline-offset: 3px !important;
+}
+@media (orientation: landscape) {
+  .app-start-screen {
+    background-size: auto 100% !important;
+  }
+  .app-start-button {
+    width: min(38vw, 420px) !important;
+    bottom: calc(18% + env(safe-area-inset-bottom)) !important;
+  }
+}
+@media (max-width: 430px) {
+  .app-start-button {
+    width: 64vw !important;
+    bottom: calc(18.5% + env(safe-area-inset-bottom)) !important;
+  }
 }
