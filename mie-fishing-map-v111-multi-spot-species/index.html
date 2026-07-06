@@ -1,0 +1,2173 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
+    <meta name="theme-color" content="#0f7b63">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="釣りマップ">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>三重県釣りマップ</title>
+    <link rel="manifest" href="manifest.json?v=v111-multi-spot-species">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon-v103.png">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQDP4nD8xQV9qVtAkM5M5OgFHJt0f9I=" crossorigin="">
+    <link rel="stylesheet" href="style.css?v=v111-multi-spot-species">
+    <style id="v111-multi-spot-species-fix">
+      @media (max-width: 920px) {
+        #menuToggle.mobile-menu-button { display: inline-flex !important; position: fixed !important; top: calc(12px + env(safe-area-inset-top)) !important; left: calc(12px + env(safe-area-inset-left)) !important; z-index: 2147483600 !important; pointer-events: auto !important; touch-action: manipulation !important; background: rgba(255,255,255,.99) !important; color: #073f33 !important; -webkit-text-fill-color: #073f33 !important; }
+        .map-tools { position: fixed !important; top: calc(68px + env(safe-area-inset-top)) !important; right: calc(10px + env(safe-area-inset-right)) !important; z-index: 2147483400 !important; pointer-events: none !important; }
+        .map-tools > button { pointer-events: auto !important; background: rgba(255,255,255,.99) !important; color: #073f33 !important; -webkit-text-fill-color: #073f33 !important; }
+        #mobileMenu.sidebar { z-index: 2147483500 !important; pointer-events: auto !important; }
+        #menuBackdrop.menu-backdrop { z-index: 2147483450 !important; }
+        body.menu-open #menuToggle.mobile-menu-button { display: none !important; }
+      }
+      @media (min-width: 921px) {
+        #menuToggle.mobile-menu-button { display: none !important; }
+        .map-tools {
+          position: fixed !important;
+          top: auto !important;
+          right: auto !important;
+          bottom: 18px !important;
+          left: calc(380px + 18px) !important;
+          z-index: 1600 !important;
+          display: flex !important;
+          flex-direction: column !important;
+          align-items: flex-start !important;
+          gap: 8px !important;
+          max-width: 260px !important;
+          pointer-events: none !important;
+        }
+        .map-tools > button, #locateCatchButton, #addSpotMode, #addCatchMode {
+          pointer-events: auto !important;
+          min-height: 42px !important;
+          max-width: 250px !important;
+          padding: 9px 13px !important;
+          white-space: nowrap !important;
+        }
+      }
+
+      /* v75: スマホの操作ボタンを右上から左下へ移動し、重なりを回避 */
+      @media (max-width: 920px) {
+        .map-tools {
+          display: flex !important;
+          position: fixed !important;
+          top: auto !important;
+          right: auto !important;
+          bottom: calc(18px + env(safe-area-inset-bottom)) !important;
+          left: calc(10px + env(safe-area-inset-left)) !important;
+          z-index: 2147483400 !important;
+          flex-direction: column !important;
+          align-items: flex-start !important;
+          justify-content: flex-end !important;
+          gap: 8px !important;
+          max-width: min(230px, calc(100vw - 20px)) !important;
+          pointer-events: none !important;
+        }
+        .map-tools > button,
+        #locateCatchButton,
+        #addSpotMode,
+        #addCatchMode {
+          pointer-events: auto !important;
+          min-height: 42px !important;
+          max-width: min(220px, calc(100vw - 20px)) !important;
+          padding: 9px 12px !important;
+          font-size: .82rem !important;
+          line-height: 1.1 !important;
+          white-space: nowrap !important;
+        }
+        body.menu-open .map-tools { display: none !important; }
+      }
+
+
+      /* v75: メニュー背景写真を見やすくする */
+      .sidebar, #mobileMenu.sidebar {
+        background:
+          linear-gradient(180deg, rgba(5, 30, 25, .10), rgba(5, 44, 36, .035)),
+          var(--sidebar-bg-image, radial-gradient(circle at 20% 10%, rgba(255,255,255,.22), transparent 32%), linear-gradient(135deg, #0f7b63, #164d45)) !important;
+        background-size: cover !important;
+        background-position: center !important;
+        background-repeat: no-repeat !important;
+        color: #fff !important;
+        text-shadow: 0 2px 5px rgba(0,0,0,.62) !important;
+      }
+      .sidebar::before, #mobileMenu.sidebar::before {
+        content: "" !important;
+        position: absolute !important;
+        inset: 0 !important;
+        z-index: -1 !important;
+        pointer-events: none !important;
+        background: radial-gradient(circle at 18% 12%, rgba(255,255,255,.16), transparent 34%), linear-gradient(180deg, rgba(0,0,0,.03), rgba(0,0,0,.01)) !important;
+      }
+      .controls, .sidebar-footer, .sidebar-actions {
+        background: rgba(4, 32, 27, .18) !important;
+        backdrop-filter: blur(2px) saturate(1.05) !important;
+        -webkit-backdrop-filter: blur(2px) saturate(1.05) !important;
+      }
+      .filter-chip, .list-tab, .data-button, .stats-grid span, .icon-button {
+        background-color: rgba(255,255,255,.24) !important;
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,.25), 0 4px 14px rgba(0,0,0,.10) !important;
+      }
+      .filter-chip.is-active, .list-tab.is-active {
+        background-color: rgba(255,255,255,.94) !important;
+        color: #073f33 !important;
+        -webkit-text-fill-color: #073f33 !important;
+        text-shadow: none !important;
+      }
+
+      /* v76: メニュー内ボタンから開く画面を、メニューより前にポップアウト表示 */
+      body.panel-open { overflow: hidden !important; }
+      .catch-panel, #spotPanel, #catchPanel, #backgroundPanel, #installPanel, #infoPanel { position: fixed !important; inset: 0 !important; z-index: 2147483646 !important; display: none !important; align-items: center !important; justify-content: center !important; padding: 18px !important; background: rgba(2,18,15,.62) !important; backdrop-filter: blur(4px) saturate(1.05) !important; -webkit-backdrop-filter: blur(4px) saturate(1.05) !important; pointer-events: auto !important; }
+      .catch-panel.is-open, #spotPanel.is-open, #catchPanel.is-open, #backgroundPanel.is-open, #installPanel.is-open, #infoPanel.is-open { display: flex !important; }
+      .catch-panel .catch-form, #spotPanel .catch-form, #catchPanel .catch-form, #backgroundPanel .catch-form, #installPanel .catch-form, #infoPanel .catch-form { position: relative !important; z-index: 2147483647 !important; width: min(860px, calc(100vw - 34px)) !important; max-height: min(92dvh, 820px) !important; overflow: auto !important; border-radius: 24px !important; background: rgba(255,255,255,.99) !important; color: var(--ink) !important; text-shadow: none !important; box-shadow: 0 24px 70px rgba(0,0,0,.40), 0 0 0 1px rgba(255,255,255,.70) inset !important; }
+      @media (max-width: 920px) { body.panel-open #mobileMenu.sidebar, body.panel-open .sidebar { transform: translateX(-110%) !important; pointer-events: none !important; } body.panel-open #menuBackdrop.menu-backdrop, body.panel-open .menu-backdrop { display: none !important; } body.panel-open #menuToggle.mobile-menu-button, body.panel-open .map-tools { display: none !important; } .catch-panel, #spotPanel, #catchPanel, #backgroundPanel, #installPanel, #infoPanel { padding: calc(14px + env(safe-area-inset-top)) 12px calc(14px + env(safe-area-inset-bottom)) !important; } .catch-panel .catch-form, #spotPanel .catch-form, #catchPanel .catch-form, #backgroundPanel .catch-form, #installPanel .catch-form, #infoPanel .catch-form { width: min(100%, 720px) !important; max-height: calc(100dvh - 28px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important; border-radius: 20px !important; padding: 16px !important; } }
+
+
+      /* v79: スマホで詳細カードを操作ボタンより上へ移動 */
+      @media (max-width: 920px) {
+        #spotCard.spot-card, .spot-card {
+          position: fixed !important;
+          left: calc(10px + env(safe-area-inset-left)) !important;
+          right: calc(10px + env(safe-area-inset-right)) !important;
+          bottom: calc(12px + env(safe-area-inset-bottom)) !important;
+          z-index: 2147483300 !important;
+          max-width: none !important;
+          max-height: min(74dvh, calc(100dvh - 88px - env(safe-area-inset-top) - env(safe-area-inset-bottom))) !important;
+          overflow: auto !important;
+          padding: 12px !important;
+          border-radius: 18px !important;
+          background: rgba(255,255,255,.98) !important;
+          box-shadow: 0 16px 44px rgba(0,0,0,.32), 0 0 0 1px rgba(7,63,51,.10) inset !important;
+          -webkit-overflow-scrolling: touch !important;
+        }
+        #spotCard.spot-card h2, .spot-card h2 { font-size: 1.05rem !important; line-height: 1.25 !important; }
+        #spotCard.spot-card p, .spot-card p { font-size: .84rem !important; line-height: 1.35 !important; margin: 4px 0 !important; }
+        #spotCard.spot-card .card-flags, .spot-card .card-flags, #spotCard.spot-card .card-actions, .spot-card .card-actions { gap: 6px !important; }
+        #spotCard.spot-card .card-actions button, .spot-card .card-actions button, #spotCard.spot-card .card-flags label, .spot-card .card-flags label { min-height: 34px !important; padding: 7px 9px !important; font-size: .82rem !important; line-height: 1.1 !important; }
+        body.menu-open #spotCard.spot-card, body.panel-open #spotCard.spot-card { display: none !important; }
+      }
+      @media (max-width: 920px) and (max-height: 620px) { #spotCard.spot-card, .spot-card { bottom: calc(10px + env(safe-area-inset-bottom)) !important; max-height: min(78dvh, calc(100dvh - 72px - env(safe-area-inset-top) - env(safe-area-inset-bottom))) !important; } }
+
+
+      /* v84 inline: スマホ表示安定化 */
+      @media (max-width: 920px) {
+        html, body { height: calc(var(--app-vh, 1vh) * 100) !important; min-height: calc(var(--app-vh, 1vh) * 100) !important; overflow: hidden !important; overscroll-behavior: none !important; }
+        .app-shell, .map-pane, #map, #map.leaflet-container, .leaflet-container { height: calc(var(--app-vh, 1vh) * 100) !important; min-height: calc(var(--app-vh, 1vh) * 100) !important; }
+        #mobileMenu.sidebar, .sidebar { height: calc(var(--app-vh, 1vh) * 100) !important; max-height: calc(var(--app-vh, 1vh) * 100) !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; overscroll-behavior: contain !important; }
+        body.menu-open .map-tools, body.panel-open .map-tools, body.position-adjusting .map-tools, body.map-popup-open .map-tools, body.record-popup-open .map-tools { display: none !important; }
+        body.position-adjusting #menuToggle.mobile-menu-button, body.panel-open #menuToggle.mobile-menu-button, body.map-popup-open #menuToggle.mobile-menu-button, body.record-popup-open #menuToggle.mobile-menu-button { display: none !important; }
+        .position-adjust-banner { top: calc(12px + env(safe-area-inset-top)) !important; left: calc(10px + env(safe-area-inset-left)) !important; right: calc(10px + env(safe-area-inset-right)) !important; width: auto !important; transform: none !important; flex-direction: column !important; align-items: stretch !important; max-height: min(25vh, 160px) !important; overflow: auto !important; }
+        body.position-adjusting #spotCard.spot-card, body.map-popup-open #spotCard.spot-card, body.record-popup-open #spotCard.spot-card { display: none !important; }
+        .record-info-popup .leaflet-popup-content-wrapper { max-width: calc(100vw - 24px) !important; max-height: calc(var(--app-vh, 1vh) * 82) !important; overflow: hidden !important; }
+        .record-info-popup .leaflet-popup-content { width: min(340px, calc(100vw - 44px)) !important; max-height: calc(var(--app-vh, 1vh) * 78) !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; margin: 8px !important; }
+        .record-popup-photo img { max-height: calc(var(--app-vh, 1vh) * 34) !important; object-fit: contain !important; }
+        .record-popup-actions, .record-popup-actions-v83 { position: sticky !important; bottom: 0 !important; grid-template-columns: 1fr !important; margin: 8px -8px -8px !important; padding: 10px 8px 8px !important; background: linear-gradient(180deg, rgba(255,255,255,.72), rgba(255,255,255,.98) 40%) !important; }
+      }
+
+/* v89: 魚種を増やし、スマホでも複数選択しやすくする */
+.species-multi-field {
+  gap: 8px !important;
+}
+.multi-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(108px, 1fr));
+  gap: 8px;
+  width: 100%;
+}
+.multi-choice-grid label {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(10, 89, 74, .22);
+  background: rgba(255,255,255,.86);
+  color: #0c5b4d;
+  font-weight: 850;
+  font-size: .86rem;
+  line-height: 1.1;
+  cursor: pointer;
+  user-select: none;
+  text-shadow: none !important;
+}
+.multi-choice-grid label.is-selected {
+  background: #0f6f5f;
+  border-color: #0f6f5f;
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(15, 111, 95, .22);
+}
+.multi-choice-grid input {
+  width: 16px !important;
+  height: 16px !important;
+  accent-color: #0f6f5f;
+}
+.field-hint {
+  color: rgba(25, 71, 63, .78);
+  font-size: .78rem;
+  font-weight: 750;
+}
+@media (max-width: 920px) {
+  .multi-choice-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+  }
+  .multi-choice-grid label {
+    min-height: 40px;
+    padding: 8px 8px;
+    font-size: .82rem;
+  }
+}
+
+    
+/* v89: 魚種候補が増えてもスマホで選びやすくする */
+.species-multi-field .multi-choice-grid {
+  max-height: min(42dvh, 360px);
+  overflow: auto;
+  padding-right: 2px;
+  -webkit-overflow-scrolling: touch;
+}
+@media (max-width: 920px) {
+  .species-multi-field .multi-choice-grid {
+    max-height: min(38dvh, 300px);
+  }
+}
+
+
+/* v91: 超かんたん記録・バックアップ警告（継続） */
+.record-filter-row,
+.species-category-row,
+.record-entry-mode-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.record-filter-row {
+  margin-top: 10px;
+}
+.record-filter-chip,
+.species-category-chip,
+.record-entry-mode-button {
+  border: 1px solid rgba(10, 89, 74, .22);
+  border-radius: 999px;
+  background: rgba(255,255,255,.86);
+  color: #0c5b4d;
+  font-weight: 900;
+  min-height: 34px;
+  padding: 7px 12px;
+  cursor: pointer;
+  box-shadow: 0 5px 14px rgba(0,0,0,.08);
+}
+.record-filter-chip.is-active,
+.species-category-chip.is-active,
+.record-entry-mode-button.is-active {
+  background: #0f6f5f;
+  color: #fff;
+  border-color: #0f6f5f;
+  box-shadow: 0 8px 18px rgba(15,111,95,.24);
+}
+.record-entry-mode-row {
+  margin: 10px 0 12px;
+  padding: 10px;
+  border-radius: 18px;
+  background: rgba(15, 111, 95, .08);
+  border: 1px solid rgba(15,111,95,.14);
+}
+.quick-record-hint {
+  color: rgba(25, 71, 63, .78);
+  font-size: .82rem;
+  font-weight: 800;
+}
+.advanced-fishing-field.is-quick-hidden {
+  display: none !important;
+}
+.species-category-row {
+  width: 100%;
+  margin: 4px 0 2px;
+}
+.multi-choice-grid label.is-hidden {
+  display: none !important;
+}
+.multi-choice-grid label.is-outside-category {
+  border-style: dashed;
+  opacity: .9;
+}
+.catch-list-head + .record-filter-row {
+  margin-bottom: 8px;
+}
+@media (max-width: 920px) {
+  .record-filter-row,
+  .species-category-row,
+  .record-entry-mode-row {
+    gap: 6px;
+  }
+  .record-filter-chip,
+  .species-category-chip,
+  .record-entry-mode-button {
+    min-height: 36px;
+    padding: 7px 10px;
+    font-size: .82rem;
+  }
+  .quick-record-hint {
+    width: 100%;
+    font-size: .78rem;
+  }
+  .species-category-row {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    padding: 4px 0;
+    background: rgba(255,255,255,.96);
+    border-radius: 12px;
+  }
+}
+
+
+/* v91: 超かんたん記録・バックアップ警告（継続） */
+.super-record-hidden-field.is-super-hidden,
+.advanced-fishing-field.is-quick-hidden {
+  display: none !important;
+}
+.backup-reminder {
+  grid-column: 1 / -1;
+  margin: 2px 0 0;
+  padding: 9px 10px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.16);
+  color: rgba(255,255,255,.92);
+  font-size: .82rem;
+  font-weight: 850;
+  line-height: 1.35;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.18);
+}
+.backup-reminder.is-warning {
+  background: rgba(255, 224, 102, .22);
+  color: #fff7c9;
+  box-shadow: inset 0 0 0 1px rgba(255, 224, 102, .36), 0 8px 18px rgba(0,0,0,.16);
+}
+.backup-reminder.is-ok {
+  background: rgba(130, 210, 175, .20);
+}
+.data-button.needs-backup {
+  background: rgba(255, 224, 102, .28) !important;
+  color: #fff8d5 !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 224, 102, .42), 0 8px 22px rgba(0,0,0,.22) !important;
+}
+.catch-form.is-super-quick-record .catch-photo-field {
+  border-color: rgba(15,111,95,.26);
+}
+.catch-form.is-super-quick-record .species-multi-field .multi-choice-grid {
+  max-height: min(34dvh, 260px);
+}
+@media (max-width: 920px) {
+  .backup-reminder {
+    font-size: .78rem;
+    padding: 8px 9px;
+  }
+  .catch-form.is-super-quick-record .species-multi-field .multi-choice-grid {
+    max-height: min(30dvh, 220px);
+  }
+}
+
+
+/* v92: 魚種検索と、記録履歴からのよく使う魚種上位表示 */
+.species-search-row {
+  display: grid;
+  gap: 6px;
+  margin: 8px 0 10px;
+}
+.species-search-row input {
+  width: 100%;
+  border: 1px solid rgba(15, 111, 95, .22);
+  border-radius: 13px;
+  padding: 10px 12px;
+  font: inherit;
+  background: rgba(255,255,255,.96);
+  color: #12352e;
+  outline: none;
+}
+.species-search-row input:focus {
+  border-color: rgba(15,111,95,.60);
+  box-shadow: 0 0 0 3px rgba(15,111,95,.12);
+}
+.species-search-status {
+  color: rgba(30, 73, 63, .78);
+  font-weight: 800;
+  line-height: 1.35;
+}
+.multi-choice-grid label.is-frequent span::after {
+  content: " よく使う";
+  display: inline-block;
+  margin-left: 4px;
+  padding: 2px 5px;
+  border-radius: 999px;
+  background: rgba(255, 224, 102, .28);
+  color: #5d4a00;
+  font-size: .68rem;
+  font-weight: 900;
+  vertical-align: middle;
+}
+.multi-choice-grid label.is-selected.is-frequent span::after {
+  background: rgba(255,255,255,.28);
+  color: inherit;
+}
+@media (max-width: 920px) {
+  .species-search-row input {
+    min-height: 42px;
+    font-size: .92rem;
+  }
+  .species-search-status {
+    font-size: .76rem;
+  }
+}
+
+
+/* v102: 近くの釣り場を独自リストで本当に5段表示に変更 */
+#spotCard.spot-card {
+  max-height: min(70vh, 720px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+@media (max-width: 920px) {
+  body.spot-card-open .map-tools {
+    display: none !important;
+  }
+  #spotCard.spot-card,
+  .spot-card {
+    top: auto !important;
+    left: calc(10px + env(safe-area-inset-left)) !important;
+    right: calc(10px + env(safe-area-inset-right)) !important;
+    bottom: calc(12px + env(safe-area-inset-bottom)) !important;
+    max-height: min(74dvh, calc(100dvh - 88px - env(safe-area-inset-top) - env(safe-area-inset-bottom))) !important;
+    padding: 14px !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  #spotCard.spot-card h2,
+  .spot-card h2 {
+    position: sticky !important;
+    top: -14px !important;
+    z-index: 2 !important;
+    margin: -14px -14px 8px !important;
+    padding: 14px 14px 9px !important;
+    background: rgba(255,255,255,.98) !important;
+    border-bottom: 1px solid rgba(7,63,51,.10) !important;
+  }
+  #spotCard.spot-card .card-actions,
+  .spot-card .card-actions {
+    position: sticky !important;
+    bottom: -14px !important;
+    z-index: 2 !important;
+    margin: 10px -14px -14px !important;
+    padding: 10px 14px 14px !important;
+    background: linear-gradient(180deg, rgba(255,255,255,.80), rgba(255,255,255,.98) 38%) !important;
+  }
+}
+@media (max-width: 920px) and (max-height: 620px) {
+  #spotCard.spot-card,
+  .spot-card {
+    bottom: calc(10px + env(safe-area-inset-bottom)) !important;
+    max-height: min(78dvh, calc(100dvh - 72px - env(safe-area-inset-top) - env(safe-area-inset-bottom))) !important;
+  }
+}
+
+
+
+/* v102: 近くの釣り場を独自リストで本当に5段表示に変更 */
+@media (max-width: 920px) {
+  body.spot-card-open .map-tools,
+  body.spot-card-open #locateCatchButton,
+  body.spot-card-open #addSpotMode,
+  body.spot-card-open #addCatchMode { display: none !important; }
+  body.spot-card-open #spotCard.spot-card,
+  #spotCard.spot-card:not(.is-hidden),
+  .spot-card:not(.is-hidden) {
+    position: fixed !important;
+    top: calc(72px + env(safe-area-inset-top)) !important;
+    bottom: calc(6px + env(safe-area-inset-bottom)) !important;
+    left: calc(6px + env(safe-area-inset-left)) !important;
+    right: calc(6px + env(safe-area-inset-right)) !important;
+    width: auto !important;
+    max-width: none !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding: 14px 14px 76px !important;
+    border-radius: 18px !important;
+    z-index: 2147483300 !important;
+    background: rgba(255,255,255,.985) !important;
+  }
+  body.spot-card-open #spotCard.spot-card h2,
+  #spotCard.spot-card:not(.is-hidden) h2 {
+    position: sticky !important;
+    top: -14px !important;
+    z-index: 3 !important;
+    margin: -14px -14px 10px !important;
+    padding: 14px 14px 10px !important;
+    background: rgba(255,255,255,.985) !important;
+    border-bottom: 1px solid rgba(7,63,51,.12) !important;
+    font-size: 1.12rem !important;
+    line-height: 1.25 !important;
+  }
+  body.spot-card-open #spotCard.spot-card .card-flags,
+  #spotCard.spot-card:not(.is-hidden) .card-flags {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+    margin: 10px 0 !important;
+  }
+  body.spot-card-open #spotCard.spot-card .card-flags label,
+  #spotCard.spot-card:not(.is-hidden) .card-flags label,
+  body.spot-card-open #spotCard.spot-card .card-actions button,
+  #spotCard.spot-card:not(.is-hidden) .card-actions button {
+    min-height: 42px !important;
+    font-size: .9rem !important;
+  }
+  body.spot-card-open #spotCard.spot-card .card-actions,
+  #spotCard.spot-card:not(.is-hidden) .card-actions {
+    position: sticky !important;
+    bottom: -76px !important;
+    z-index: 3 !important;
+    margin: 12px -14px -76px !important;
+    padding: 12px 14px calc(14px + env(safe-area-inset-bottom)) !important;
+    background: linear-gradient(180deg, rgba(255,255,255,.70), rgba(255,255,255,.985) 34%) !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+}
+@media (max-width: 920px) and (max-height: 680px) {
+  body.spot-card-open #spotCard.spot-card,
+  #spotCard.spot-card:not(.is-hidden),
+  .spot-card:not(.is-hidden) {
+    top: calc(50px + env(safe-area-inset-top)) !important;
+    bottom: calc(4px + env(safe-area-inset-bottom)) !important;
+  }
+}
+
+/* v102: 記録フォームの「近くの釣り場」名称リストを本当に5段表示にする */
+.catch-spot-select-field {
+  grid-column: 1 / -1;
+}
+.visually-hidden-spot-select {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  clip: rect(0 0 0 0) !important;
+}
+.catch-spot-picker {
+  height: 340px !important;
+  max-height: 340px !important;
+  overflow-y: auto !important;
+  border: 1px solid rgba(7,63,51,.22) !important;
+  border-radius: 14px !important;
+  padding: 6px !important;
+  background: rgba(255,255,255,.98) !important;
+  -webkit-overflow-scrolling: touch !important;
+  display: grid !important;
+  grid-auto-rows: 58px !important;
+  gap: 5px !important;
+}
+.catch-spot-picker button {
+  width: 100% !important;
+  min-height: 58px !important;
+  padding: 8px 10px !important;
+  border: 1px solid rgba(7,63,51,.14) !important;
+  border-radius: 10px !important;
+  background: rgba(245, 250, 247, .96) !important;
+  color: #123a32 !important;
+  text-align: left !important;
+  font-weight: 800 !important;
+  line-height: 1.2 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+.catch-spot-picker button.is-selected {
+  background: rgba(15,123,99,.16) !important;
+  border-color: rgba(15,123,99,.50) !important;
+  box-shadow: inset 0 0 0 2px rgba(15,123,99,.14) !important;
+}
+.catch-spot-picker button:focus-visible {
+  outline: 3px solid rgba(15,123,99,.25) !important;
+  outline-offset: 2px !important;
+}
+@media (max-width: 920px) {
+  .catch-spot-picker {
+    height: min(46dvh, 360px) !important;
+    min-height: 320px !important;
+    max-height: 380px !important;
+    grid-auto-rows: 60px !important;
+  }
+  .catch-spot-picker button {
+    min-height: 60px !important;
+    font-size: 1rem !important;
+  }
+}
+
+/* v98: 近くの釣り場名称選択欄を広く表示 */
+.catch-spot-select-field {
+  grid-column: 1 / -1 !important;
+}
+.catch-spot-select-field .catch-spot-picker {
+  width: 100% !important;
+  height: 340px !important;
+  max-height: 340px !important;
+  grid-auto-rows: 58px !important;
+}
+.catch-spot-select-field .catch-spot-picker button {
+  min-height: 58px !important;
+  padding: 10px 12px !important;
+  font-size: .98rem !important;
+}
+@media (max-width: 920px) {
+  .catch-spot-select-field .catch-spot-picker {
+    height: min(48dvh, 380px) !important;
+    min-height: 320px !important;
+    max-height: 390px !important;
+    grid-auto-rows: 60px !important;
+  }
+  .catch-spot-select-field .catch-spot-picker button {
+    min-height: 60px !important;
+    font-size: 1rem !important;
+  }
+}
+
+
+/* v99: 近くの釣り場はネイティブselectを5段固定表示 */
+.catch-spot-select-field {
+  grid-column: 1 / -1 !important;
+  display: block !important;
+}
+.catch-spot-native-list,
+#catchSpot.catch-spot-native-list {
+  display: block !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  height: 310px !important;
+  min-height: 310px !important;
+  max-height: 310px !important;
+  overflow-y: auto !important;
+  border: 2px solid rgba(7,63,51,.28) !important;
+  border-radius: 16px !important;
+  padding: 6px !important;
+  background: rgba(255,255,255,.99) !important;
+  color: #123a32 !important;
+  font-size: 1rem !important;
+  font-weight: 800 !important;
+  line-height: 1.25 !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+#catchSpot.catch-spot-native-list option {
+  min-height: 56px !important;
+  height: 56px !important;
+  padding: 16px 12px !important;
+  font-size: 1rem !important;
+  line-height: 1.3 !important;
+}
+#catchSpot.catch-spot-native-list option:checked {
+  background: rgba(15,123,99,.22) !important;
+  color: #073f33 !important;
+}
+.catch-spot-picker.is-hidden-picker {
+  display: none !important;
+}
+@media (max-width: 920px) {
+  .catch-spot-native-list,
+  #catchSpot.catch-spot-native-list {
+    height: 325px !important;
+    min-height: 325px !important;
+    max-height: 325px !important;
+    font-size: 1.02rem !important;
+  }
+  #catchSpot.catch-spot-native-list option {
+    min-height: 58px !important;
+    height: 58px !important;
+    padding: 17px 12px !important;
+  }
+}
+
+/* v102: 「近くの釣り場」名称スクロール欄を大きく表示 */
+.catch-spot-hidden-select {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  overflow: hidden !important;
+}
+.catch-spot-select-field {
+  grid-column: 1 / -1 !important;
+}
+.catch-spot-select-field .five-row-spot-picker,
+#catchSpotPicker.five-row-spot-picker {
+  --spot-picker-row-height: 54px;
+  display: block !important;
+  width: 100% !important;
+  height: calc((var(--spot-picker-row-height) * 5) + 10px) !important;
+  min-height: calc((var(--spot-picker-row-height) * 5) + 10px) !important;
+  max-height: calc((var(--spot-picker-row-height) * 5) + 10px) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 5px !important;
+  margin-top: 8px !important;
+  border: 2px solid rgba(15, 111, 95, .38) !important;
+  border-radius: 16px !important;
+  background: rgba(255,255,255,.97) !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.7), 0 8px 22px rgba(0,0,0,.10) !important;
+  -webkit-overflow-scrolling: touch !important;
+  overscroll-behavior: contain !important;
+}
+#catchSpotPicker.five-row-spot-picker button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  width: 100% !important;
+  height: var(--spot-picker-row-height) !important;
+  min-height: var(--spot-picker-row-height) !important;
+  margin: 0 0 5px !important;
+  padding: 10px 12px !important;
+  border: 1px solid rgba(15,111,95,.18) !important;
+  border-radius: 12px !important;
+  background: rgba(248,253,250,.98) !important;
+  color: #073f33 !important;
+  font-size: .95rem !important;
+  font-weight: 850 !important;
+  line-height: 1.15 !important;
+  text-align: left !important;
+}
+#catchSpotPicker.five-row-spot-picker button:last-child { margin-bottom: 0 !important; }
+#catchSpotPicker.five-row-spot-picker button small {
+  flex: 0 0 auto !important;
+  max-width: 42% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font-size: .72rem !important;
+  font-weight: 750 !important;
+  color: rgba(7,63,51,.66) !important;
+}
+#catchSpotPicker.five-row-spot-picker button.is-selected {
+  background: rgba(15,111,95,.14) !important;
+  border-color: rgba(15,111,95,.55) !important;
+  box-shadow: inset 4px 0 0 rgba(15,111,95,.85) !important;
+}
+@media (max-width: 920px) {
+  .catch-spot-select-field .five-row-spot-picker,
+  #catchSpotPicker.five-row-spot-picker {
+    --spot-picker-row-height: 58px;
+    height: calc((var(--spot-picker-row-height) * 5) + 12px) !important;
+    min-height: calc((var(--spot-picker-row-height) * 5) + 12px) !important;
+    max-height: calc((var(--spot-picker-row-height) * 5) + 12px) !important;
+    padding: 6px !important;
+  }
+  #catchSpotPicker.five-row-spot-picker button {
+    font-size: 1rem !important;
+    padding: 10px 12px !important;
+  }
+}
+
+
+
+/* v102: 「近くの釣り場」名称スクロール欄をかなり広く表示 */
+.catch-spot-select-field {
+  grid-column: 1 / -1 !important;
+  display: block !important;
+  width: 100% !important;
+}
+.catch-spot-select-field > span {
+  display: block !important;
+  margin-bottom: 8px !important;
+  font-weight: 900 !important;
+}
+#catchSpot.catch-spot-hidden-select {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+.catch-spot-select-field .catch-spot-picker,
+.catch-spot-select-field .five-row-spot-picker,
+#catchSpotPicker,
+#catchSpotPicker.five-row-spot-picker {
+  --spot-picker-row-height: 64px !important;
+  display: block !important;
+  width: 100% !important;
+  height: clamp(390px, 58dvh, 620px) !important;
+  min-height: clamp(390px, 58dvh, 620px) !important;
+  max-height: clamp(390px, 58dvh, 620px) !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 8px !important;
+  margin-top: 8px !important;
+  border: 3px solid rgba(15,111,95,.48) !important;
+  border-radius: 18px !important;
+  background: rgba(255,255,255,.99) !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.78), 0 10px 28px rgba(0,0,0,.14) !important;
+  -webkit-overflow-scrolling: touch !important;
+  overscroll-behavior: contain !important;
+  touch-action: pan-y !important;
+}
+#catchSpotPicker button,
+#catchSpotPicker.five-row-spot-picker button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 10px !important;
+  width: 100% !important;
+  height: var(--spot-picker-row-height) !important;
+  min-height: var(--spot-picker-row-height) !important;
+  margin: 0 0 8px !important;
+  padding: 13px 14px !important;
+  border: 1px solid rgba(15,111,95,.20) !important;
+  border-radius: 14px !important;
+  background: rgba(248,253,250,.99) !important;
+  color: #073f33 !important;
+  font-size: 1.02rem !important;
+  font-weight: 900 !important;
+  line-height: 1.15 !important;
+  text-align: left !important;
+}
+#catchSpotPicker button small,
+#catchSpotPicker.five-row-spot-picker button small {
+  flex: 0 0 auto !important;
+  max-width: 44% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font-size: .76rem !important;
+  color: rgba(7,63,51,.66) !important;
+}
+#catchSpotPicker button.is-selected,
+#catchSpotPicker.five-row-spot-picker button.is-selected {
+  background: rgba(15,111,95,.16) !important;
+  border-color: rgba(15,111,95,.65) !important;
+  box-shadow: inset 5px 0 0 rgba(15,111,95,.95) !important;
+}
+@media (max-width: 920px) {
+  #catchPanel .catch-form {
+    max-height: calc(100dvh - 18px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom)) !important;
+  }
+  .catch-spot-select-field .catch-spot-picker,
+  .catch-spot-select-field .five-row-spot-picker,
+  #catchSpotPicker,
+  #catchSpotPicker.five-row-spot-picker {
+    --spot-picker-row-height: 66px !important;
+    height: clamp(430px, 62dvh, 680px) !important;
+    min-height: clamp(430px, 62dvh, 680px) !important;
+    max-height: clamp(430px, 62dvh, 680px) !important;
+  }
+  #catchSpotPicker button,
+  #catchSpotPicker.five-row-spot-picker button {
+    font-size: 1.06rem !important;
+    padding: 14px !important;
+  }
+}
+@media (max-width: 420px) {
+  .catch-spot-select-field .catch-spot-picker,
+  .catch-spot-select-field .five-row-spot-picker,
+  #catchSpotPicker,
+  #catchSpotPicker.five-row-spot-picker {
+    --spot-picker-row-height: 64px !important;
+    height: clamp(400px, 60dvh, 640px) !important;
+    min-height: clamp(400px, 60dvh, 640px) !important;
+    max-height: clamp(400px, 60dvh, 640px) !important;
+  }
+}
+
+
+
+/* v102: 左メニューの釣り場一覧を5段見やすくする。カードを小型化し、スクロール領域を広く確保。 */
+.sidebar-header {
+  padding: 12px 14px 8px !important;
+  gap: 10px !important;
+}
+.sidebar-header h1 {
+  font-size: 1.18rem !important;
+  line-height: 1.18 !important;
+}
+.sidebar-header .kicker {
+  font-size: .62rem !important;
+  margin-bottom: 1px !important;
+}
+.sidebar-header-actions .icon-button,
+.icon-button {
+  width: 34px !important;
+  height: 34px !important;
+}
+.controls {
+  padding: 0 12px 7px !important;
+}
+.search-box span,
+label span {
+  margin-bottom: 4px !important;
+  font-size: .76rem !important;
+}
+.search-box input,
+.controls input,
+.controls select,
+.controls textarea {
+  min-height: 36px !important;
+  padding: 7px 9px !important;
+  border-radius: 10px !important;
+  font-size: .86rem !important;
+}
+.filter-row {
+  gap: 5px !important;
+  margin-top: 7px !important;
+}
+.filter-chip,
+.list-tab,
+.data-button {
+  min-height: 32px !important;
+  padding: 6px 9px !important;
+  font-size: .78rem !important;
+  line-height: 1.08 !important;
+}
+.data-status {
+  margin: 7px 0 0 !important;
+  font-size: .72rem !important;
+  line-height: 1.25 !important;
+}
+.notice-banner {
+  margin: 6px 0 0 !important;
+  padding: 6px 8px !important;
+  font-size: .68rem !important;
+  line-height: 1.28 !important;
+  max-height: 42px !important;
+  overflow: auto !important;
+}
+.stats-grid {
+  gap: 6px !important;
+  margin-top: 7px !important;
+}
+.stats-grid span {
+  padding: 5px 3px !important;
+  border-radius: 11px !important;
+}
+.stats-grid strong {
+  font-size: .98rem !important;
+  line-height: 1 !important;
+}
+.stats-grid small {
+  font-size: .64rem !important;
+}
+.list-tabs {
+  gap: 6px !important;
+  margin-top: 7px !important;
+}
+.list-head,
+.catch-list-head {
+  padding: 5px 9px !important;
+  font-size: .66rem !important;
+}
+.spot-list,
+.catch-list {
+  flex: 1 1 auto !important;
+  min-height: 310px !important;
+  padding: 0 8px 6px !important;
+  scrollbar-gutter: stable !important;
+}
+.spot-item {
+  grid-template-columns: minmax(0, 1fr) 38px minmax(76px, 92px) 38px 38px !important;
+  gap: 4px !important;
+  align-items: center !important;
+  min-height: 56px !important;
+  margin: 0 0 6px !important;
+  padding: 7px 8px !important;
+  border-radius: 13px !important;
+}
+.spot-main strong,
+.catch-main strong {
+  font-size: .86rem !important;
+  line-height: 1.15 !important;
+}
+.spot-main small,
+.catch-main small {
+  margin-top: 2px !important;
+  font-size: .69rem !important;
+  line-height: 1.18 !important;
+}
+.flag {
+  min-width: 31px !important;
+  height: 28px !important;
+  border-radius: 9px !important;
+  font-size: .70rem !important;
+}
+.spot-species-control {
+  height: 29px !important;
+  border-radius: 999px !important;
+}
+.spot-species-select {
+  padding-left: 6px !important;
+  padding-right: 14px !important;
+  font-size: .66rem !important;
+}
+.catch-item {
+  grid-template-columns: 40px 1fr !important;
+  gap: 7px !important;
+  min-height: 56px !important;
+  margin: 0 0 6px !important;
+  padding: 8px !important;
+  border-radius: 13px !important;
+}
+.catch-item.has-photo {
+  grid-template-columns: 40px 50px 1fr !important;
+}
+.catch-num {
+  width: 32px !important;
+  height: 32px !important;
+  font-size: .78rem !important;
+}
+.catch-photo-thumb {
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 11px !important;
+}
+.record-tags {
+  gap: 4px !important;
+  margin-top: 4px !important;
+}
+.record-tags span,
+.big-bass-badge,
+.photo-badge {
+  font-size: .66rem !important;
+  padding: 2px 6px !important;
+}
+.sidebar-footer {
+  padding: 5px 10px 4px !important;
+  font-size: .70rem !important;
+}
+.sidebar-actions {
+  gap: 6px !important;
+  padding: 0 10px 8px !important;
+}
+.backup-reminder {
+  margin: 0 !important;
+  padding: 6px 8px !important;
+  border-radius: 11px !important;
+  font-size: .69rem !important;
+  line-height: 1.25 !important;
+}
+@media (max-height: 760px) {
+  .notice-banner { display: none !important; }
+  .sidebar-footer { display: none !important; }
+  .sidebar-actions { padding-bottom: 6px !important; }
+  .spot-list,
+  .catch-list { min-height: 330px !important; }
+}
+@media (max-width: 520px) {
+  .spot-item {
+    grid-template-columns: minmax(0, 1fr) 34px minmax(70px, 86px) 34px 34px !important;
+    min-height: 54px !important;
+    padding: 7px !important;
+  }
+  .flag { min-width: 28px !important; height: 27px !important; font-size: .66rem !important; }
+  .spot-species-select { font-size: .62rem !important; }
+}
+
+/* v102: 記録フォームの「近くの釣り場」スクロールカードも小型化し、5段が確実に見えるよう調整。 */
+#catchPanel .catch-form {
+  width: min(980px, calc(100vw - 20px)) !important;
+  max-height: calc(100dvh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+  padding: 12px !important;
+}
+#catchPanel .catch-form-header {
+  margin-bottom: 7px !important;
+}
+#catchPanel .catch-form-header h2 {
+  font-size: 1.06rem !important;
+  line-height: 1.2 !important;
+}
+#catchPanel .catch-location-box {
+  margin-bottom: 8px !important;
+  padding: 8px !important;
+}
+#catchPanel .record-entry-mode-row {
+  margin: 6px 0 8px !important;
+  padding: 7px !important;
+  gap: 6px !important;
+}
+#catchPanel .form-grid {
+  gap: 8px !important;
+}
+.catch-spot-select-field > span {
+  margin-bottom: 4px !important;
+  font-size: .86rem !important;
+}
+.catch-spot-select-field .field-hint {
+  display: block !important;
+  margin-top: 4px !important;
+  font-size: .70rem !important;
+  line-height: 1.25 !important;
+}
+.catch-spot-select-field .catch-spot-picker,
+.catch-spot-select-field .five-row-spot-picker,
+#catchSpotPicker,
+#catchSpotPicker.five-row-spot-picker {
+  --spot-picker-row-height: 46px !important;
+  --spot-picker-gap: 5px !important;
+  --spot-picker-padding: 6px !important;
+  width: 100% !important;
+  height: calc((var(--spot-picker-row-height) * 5) + (var(--spot-picker-gap) * 4) + (var(--spot-picker-padding) * 2)) !important;
+  min-height: calc((var(--spot-picker-row-height) * 5) + (var(--spot-picker-gap) * 4) + (var(--spot-picker-padding) * 2)) !important;
+  max-height: calc((var(--spot-picker-row-height) * 5) + (var(--spot-picker-gap) * 4) + (var(--spot-picker-padding) * 2)) !important;
+  padding: var(--spot-picker-padding) !important;
+  margin-top: 4px !important;
+  border-width: 2px !important;
+  border-radius: 14px !important;
+}
+#catchSpotPicker button,
+#catchSpotPicker.five-row-spot-picker button {
+  height: var(--spot-picker-row-height) !important;
+  min-height: var(--spot-picker-row-height) !important;
+  margin: 0 0 var(--spot-picker-gap) !important;
+  padding: 7px 10px !important;
+  border-radius: 10px !important;
+  font-size: .88rem !important;
+  line-height: 1.12 !important;
+}
+#catchSpotPicker button small,
+#catchSpotPicker.five-row-spot-picker button small {
+  max-width: 38% !important;
+  font-size: .65rem !important;
+}
+@media (max-width: 920px) {
+  #catchPanel .catch-form {
+    width: calc(100vw - 16px) !important;
+    max-height: calc(100dvh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+    padding: 10px !important;
+  }
+  #catchPanel .catch-form-header { margin-bottom: 5px !important; }
+  #catchPanel .record-entry-mode-row { margin: 5px 0 7px !important; padding: 6px !important; }
+  .catch-spot-select-field .catch-spot-picker,
+  .catch-spot-select-field .five-row-spot-picker,
+  #catchSpotPicker,
+  #catchSpotPicker.five-row-spot-picker {
+    --spot-picker-row-height: 50px !important;
+    --spot-picker-gap: 5px !important;
+    --spot-picker-padding: 6px !important;
+  }
+  #catchSpotPicker button,
+  #catchSpotPicker.five-row-spot-picker button {
+    padding: 8px 10px !important;
+    font-size: .94rem !important;
+  }
+}
+
+
+/* v104: 地図の拡大縮小は残し、メニュー/UIのブラウザ拡大を防止 */
+html,
+body {
+  touch-action: manipulation !important;
+  overscroll-behavior: none !important;
+  -webkit-text-size-adjust: 100% !important;
+  text-size-adjust: 100% !important;
+}
+.app-shell,
+.sidebar,
+#mobileMenu,
+.controls,
+.spot-list,
+.catch-list,
+.spot-card,
+.catch-panel,
+.catch-form,
+#spotPanel,
+#catchPanel,
+#backgroundPanel,
+#installPanel,
+#infoPanel,
+.map-tools,
+.mobile-menu-button,
+.menu-backdrop {
+  -webkit-text-size-adjust: 100% !important;
+  text-size-adjust: 100% !important;
+}
+.sidebar,
+#mobileMenu,
+.controls,
+.spot-list,
+.catch-list,
+.spot-card,
+.catch-form,
+.record-info-popup .leaflet-popup-content {
+  touch-action: pan-y !important;
+  overscroll-behavior: contain !important;
+}
+button,
+input,
+select,
+textarea,
+.filter-chip,
+.list-tab,
+.data-button,
+.icon-button,
+.locate-button,
+.spot-mode-button,
+.catch-mode-button,
+.record-filter-chip,
+.species-category-chip,
+.record-entry-mode-button {
+  touch-action: manipulation !important;
+}
+.map-pane,
+#map,
+#map.leaflet-container,
+.leaflet-container {
+  touch-action: none !important;
+}
+
+
+
+/* v105: メニュー/UIのピンチ拡大縮小をさらに強く防止。地図本体のLeafletズームは維持。 */
+html,
+body {
+  min-width: 100% !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  -webkit-text-size-adjust: 100% !important;
+  text-size-adjust: 100% !important;
+}
+#mobileMenu,
+.sidebar,
+.controls,
+.spot-list,
+.catch-list,
+.spot-card,
+.catch-panel,
+.catch-form,
+#spotPanel,
+#catchPanel,
+#backgroundPanel,
+#installPanel,
+#infoPanel,
+.map-tools,
+.mobile-menu-button,
+.menu-backdrop,
+.leaflet-control-container,
+.leaflet-popup,
+.record-info-popup .leaflet-popup-content {
+  -webkit-text-size-adjust: 100% !important;
+  text-size-adjust: 100% !important;
+  overscroll-behavior: contain !important;
+}
+#mobileMenu,
+.sidebar,
+.controls,
+.spot-list,
+.catch-list,
+.catch-form,
+.record-info-popup .leaflet-popup-content {
+  touch-action: pan-y !important;
+}
+button,
+.filter-chip,
+.list-tab,
+.data-button,
+.icon-button,
+.locate-button,
+.spot-mode-button,
+.catch-mode-button,
+.record-filter-chip,
+.species-category-chip,
+.record-entry-mode-button {
+  touch-action: manipulation !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+}
+.map-pane,
+#map,
+#map.leaflet-container,
+.leaflet-container,
+#map .leaflet-map-pane,
+#map .leaflet-tile-pane,
+#map .leaflet-marker-pane {
+  touch-action: none !important;
+}
+@media (hover: none), (pointer: coarse) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+    -webkit-text-size-adjust: 100% !important;
+    text-size-adjust: 100% !important;
+  }
+  .spot-species-select {
+    font-size: 16px !important;
+    transform: scale(.78) !important;
+    transform-origin: center center !important;
+    width: 128% !important;
+    margin-left: -14% !important;
+  }
+  .search-box input,
+  .species-search-row input {
+    font-size: 16px !important;
+  }
+}
+
+
+
+
+/* v107: かっこいい起動画面デザイン案。地図は裏で読み込み、タイトルを必ず先に見せる。 */
+.app-start-screen {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 2147483647 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: calc(22px + env(safe-area-inset-top)) calc(18px + env(safe-area-inset-right)) calc(22px + env(safe-area-inset-bottom)) calc(18px + env(safe-area-inset-left)) !important;
+  overflow: hidden !important;
+  color: #fff !important;
+  background:
+    radial-gradient(circle at 18% 16%, rgba(255, 196, 91, .24), transparent 25%),
+    radial-gradient(circle at 82% 18%, rgba(63, 201, 181, .22), transparent 28%),
+    radial-gradient(circle at 50% 100%, rgba(255, 155, 63, .36), transparent 34%),
+    linear-gradient(145deg, #04151f 0%, #06384a 42%, #0d6f5f 72%, #f28b36 125%) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  transition: opacity .46s ease, visibility .46s ease !important;
+  pointer-events: auto !important;
+  touch-action: none !important;
+  overscroll-behavior: none !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  isolation: isolate !important;
+}
+.app-start-screen::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: -18% !important;
+  z-index: -2 !important;
+  background:
+    linear-gradient(115deg, transparent 0 42%, rgba(255,255,255,.08) 43%, transparent 45% 100%),
+    linear-gradient(0deg, rgba(255,255,255,.075) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.055) 1px, transparent 1px) !important;
+  background-size: 100% 100%, 42px 42px, 42px 42px !important;
+  transform: rotate(-8deg) scale(1.08) !important;
+  animation: startMapDrift 11s ease-in-out infinite alternate !important;
+  opacity: .82 !important;
+}
+.app-start-screen::after {
+  content: "" !important;
+  position: absolute !important;
+  left: -12% !important;
+  right: -12% !important;
+  bottom: -12% !important;
+  height: 42% !important;
+  z-index: -1 !important;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(255, 222, 145, .34), transparent 48%),
+    repeating-linear-gradient(165deg, rgba(255,255,255,.10) 0 2px, transparent 2px 18px) !important;
+  transform: skewY(-6deg) !important;
+  opacity: .9 !important;
+}
+.app-start-screen.is-closing {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+.app-start-screen.is-hidden { display: none !important; }
+.app-start-card {
+  position: relative !important;
+  width: min(430px, 92vw) !important;
+  min-height: min(610px, 84dvh) !important;
+  display: grid !important;
+  align-content: center !important;
+  justify-items: center !important;
+  gap: 13px !important;
+  border-radius: 34px !important;
+  padding: 30px 22px 28px !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.08)),
+    rgba(2, 18, 26, .42) !important;
+  box-shadow:
+    0 28px 90px rgba(0,0,0,.42),
+    inset 0 0 0 1px rgba(255,255,255,.30),
+    inset 0 22px 80px rgba(255,255,255,.08) !important;
+  backdrop-filter: blur(13px) saturate(1.25) !important;
+  -webkit-backdrop-filter: blur(13px) saturate(1.25) !important;
+  text-align: center !important;
+  overflow: hidden !important;
+}
+.app-start-card::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 12px !important;
+  border-radius: 26px !important;
+  border: 1px solid rgba(255,255,255,.20) !important;
+  pointer-events: none !important;
+}
+.app-start-card::after {
+  content: "" !important;
+  position: absolute !important;
+  width: 210px !important;
+  height: 210px !important;
+  right: -78px !important;
+  top: -84px !important;
+  border-radius: 999px !important;
+  background: radial-gradient(circle, rgba(255, 197, 99, .28), transparent 68%) !important;
+  pointer-events: none !important;
+}
+.app-start-badge {
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 30px !important;
+  border-radius: 999px !important;
+  padding: 6px 12px !important;
+  background: rgba(3, 48, 54, .72) !important;
+  color: rgba(255,255,255,.96) !important;
+  border: 1px solid rgba(255,255,255,.22) !important;
+  font-size: .74rem !important;
+  font-weight: 950 !important;
+  letter-spacing: .16em !important;
+  text-transform: uppercase !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,.16) !important;
+}
+.app-start-icon-wrap {
+  position: relative !important;
+  width: min(166px, 41vw) !important;
+  height: min(166px, 41vw) !important;
+  display: grid !important;
+  place-items: center !important;
+  margin-top: 4px !important;
+}
+.app-start-icon-wrap::before,
+.app-start-icon-wrap::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: -12px !important;
+  border-radius: 34px !important;
+  border: 2px solid rgba(255, 220, 142, .34) !important;
+  animation: startIconPing 1.8s ease-out infinite !important;
+}
+.app-start-icon-wrap::after {
+  inset: -22px !important;
+  animation-delay: .45s !important;
+  border-color: rgba(73, 226, 196, .22) !important;
+}
+.app-start-icon {
+  position: relative !important;
+  z-index: 1 !important;
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 34px !important;
+  object-fit: cover !important;
+  box-shadow:
+    0 18px 48px rgba(0,0,0,.42),
+    0 0 0 4px rgba(255,255,255,.24),
+    0 0 44px rgba(255, 176, 73, .24) !important;
+}
+.app-start-kicker {
+  margin: 8px 0 0 !important;
+  font-size: .92rem !important;
+  line-height: 1.25 !important;
+  font-weight: 950 !important;
+  letter-spacing: .22em !important;
+  color: rgba(255, 236, 198, .92) !important;
+  text-transform: uppercase !important;
+  text-shadow: 0 2px 14px rgba(0,0,0,.34) !important;
+}
+.app-start-title {
+  display: grid !important;
+  gap: 2px !important;
+  margin: 0 !important;
+  font-size: clamp(2.55rem, 12vw, 4.55rem) !important;
+  line-height: .94 !important;
+  font-weight: 950 !important;
+  letter-spacing: .04em !important;
+  color: #fff !important;
+  text-shadow: 0 5px 22px rgba(0,0,0,.38) !important;
+}
+.app-start-title span:last-child {
+  color: #ffe1a1 !important;
+  -webkit-text-fill-color: #ffe1a1 !important;
+}
+.app-start-subtitle {
+  max-width: 320px !important;
+  margin: 2px 0 0 !important;
+  font-size: 1rem !important;
+  line-height: 1.55 !important;
+  font-weight: 850 !important;
+  color: rgba(255,255,255,.90) !important;
+}
+.app-start-pills {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  margin: 3px 0 0 !important;
+}
+.app-start-pills span {
+  display: inline-flex !important;
+  align-items: center !important;
+  min-height: 28px !important;
+  border-radius: 999px !important;
+  padding: 5px 10px !important;
+  background: rgba(3, 63, 59, .72) !important;
+  border: 1px solid rgba(255,255,255,.26) !important;
+  color: rgba(255,255,255,.90) !important;
+  font-size: .78rem !important;
+  font-weight: 900 !important;
+}
+.app-start-loading {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  min-height: 26px !important;
+  margin: 4px 0 0 !important;
+  font-size: .84rem !important;
+  font-weight: 950 !important;
+  color: rgba(255,255,255,.82) !important;
+}
+.app-start-loading::before {
+  content: "" !important;
+  width: 9px !important;
+  height: 9px !important;
+  border-radius: 999px !important;
+  background: #70ffe0 !important;
+  box-shadow: 0 0 0 0 rgba(112,255,224,.52) !important;
+  animation: startGpsPulse 1.3s ease-out infinite !important;
+}
+.app-start-loading::after { display: none !important; }
+.app-start-button {
+  position: relative !important;
+  min-height: 46px !important;
+  margin-top: 6px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  padding: 11px 22px !important;
+  background: linear-gradient(135deg, #fff7db, #ffffff) !important;
+  color: #073f33 !important;
+  -webkit-text-fill-color: #073f33 !important;
+  font-size: 1rem !important;
+  font-weight: 950 !important;
+  box-shadow: 0 14px 32px rgba(0,0,0,.25), inset 0 0 0 1px rgba(255,255,255,.85) !important;
+  touch-action: manipulation !important;
+}
+.app-start-button:active { transform: translateY(1px) !important; }
+@keyframes startMapDrift {
+  from { transform: rotate(-8deg) scale(1.08) translate3d(-8px, -6px, 0); }
+  to { transform: rotate(-8deg) scale(1.11) translate3d(10px, 8px, 0); }
+}
+@keyframes startIconPing {
+  from { transform: scale(.86); opacity: .62; }
+  to { transform: scale(1.13); opacity: 0; }
+}
+@keyframes startGpsPulse {
+  0% { box-shadow: 0 0 0 0 rgba(112,255,224,.52); }
+  100% { box-shadow: 0 0 0 12px rgba(112,255,224,0); }
+}
+@media (max-height: 640px) {
+  .app-start-card { min-height: auto !important; gap: 8px !important; padding: 22px 18px !important; }
+  .app-start-icon-wrap { width: min(118px, 32vw) !important; height: min(118px, 32vw) !important; }
+  .app-start-icon { border-radius: 25px !important; }
+  .app-start-title { font-size: clamp(2.15rem, 10vw, 3.55rem) !important; }
+  .app-start-subtitle { font-size: .9rem !important; line-height: 1.42 !important; }
+  .app-start-pills { display: none !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-start-screen::before,
+  .app-start-icon-wrap::before,
+  .app-start-icon-wrap::after,
+  .app-start-loading::before { animation: none !important; }
+}
+
+
+
+
+/* v108: 採用版タイトル画像を全面表示。開発者サイン入りアートを起動画面に使用。 */
+.app-start-screen {
+  padding: 0 !important;
+  background: #06131b url("assets/title-screen-yoshiyuki-tanaka-v108.png") center center / contain no-repeat !important;
+}
+.app-start-screen::before,
+.app-start-screen::after { display: none !important; }
+.app-start-card {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  display: block !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  overflow: hidden !important;
+}
+.app-start-card::before,
+.app-start-card::after,
+.app-start-badge,
+.app-start-icon-wrap,
+.app-start-kicker,
+.app-start-title,
+.app-start-subtitle,
+.app-start-pills,
+.app-start-loading {
+  display: none !important;
+}
+.app-start-button {
+  position: absolute !important;
+  left: 50% !important;
+  bottom: calc(18.5% + env(safe-area-inset-bottom)) !important;
+  transform: translateX(-50%) !important;
+  width: min(62vw, 420px) !important;
+  height: min(8vh, 82px) !important;
+  min-height: 54px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+  box-shadow: none !important;
+  opacity: .01 !important;
+  touch-action: manipulation !important;
+}
+.app-start-button:focus-visible {
+  opacity: 1 !important;
+  background: rgba(255, 226, 150, .18) !important;
+  outline: 3px solid rgba(255, 226, 150, .72) !important;
+  outline-offset: 3px !important;
+}
+@media (orientation: landscape) {
+  .app-start-screen {
+    background-size: auto 100% !important;
+  }
+  .app-start-button {
+    width: min(38vw, 420px) !important;
+    bottom: calc(18% + env(safe-area-inset-bottom)) !important;
+  }
+}
+@media (max-width: 430px) {
+  .app-start-button {
+    width: 64vw !important;
+    bottom: calc(18.5% + env(safe-area-inset-bottom)) !important;
+  }
+}
+
+
+/* v109: 「地図を開く」ボタンを押してからマップへ進む起動シークエンス。画像比率に合わせてタップ範囲を固定。 */
+.app-start-screen {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  background: #06131b !important;
+}
+.app-start-screen::before { display: none !important; }
+.app-start-card {
+  position: relative !important;
+  inset: auto !important;
+  width: min(100vw, calc(100dvh * .6666667)) !important;
+  height: auto !important;
+  aspect-ratio: 2 / 3 !important;
+  max-width: 100vw !important;
+  max-height: 100dvh !important;
+  display: block !important;
+  overflow: hidden !important;
+  transition: transform .42s ease, filter .42s ease !important;
+}
+.app-start-art {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  pointer-events: none !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+}
+.app-start-button {
+  position: absolute !important;
+  left: 50% !important;
+  top: 72.1% !important;
+  bottom: auto !important;
+  transform: translateX(-50%) !important;
+  width: 58% !important;
+  height: 7.4% !important;
+  min-height: 44px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+  box-shadow: none !important;
+  opacity: .01 !important;
+  cursor: pointer !important;
+  touch-action: manipulation !important;
+  z-index: 4 !important;
+}
+.app-start-button:focus-visible {
+  opacity: 1 !important;
+  background: rgba(255, 226, 150, .18) !important;
+  outline: 3px solid rgba(255, 226, 150, .78) !important;
+  outline-offset: 3px !important;
+}
+.app-start-screen.is-launching {
+  pointer-events: none !important;
+}
+.app-start-screen.is-launching .app-start-card {
+  transform: scale(1.018) !important;
+  filter: brightness(.74) saturate(1.04) !important;
+}
+.app-start-screen.is-launching::after {
+  content: "Now Loading..." !important;
+  display: inline-flex !important;
+  position: absolute !important;
+  left: 50% !important;
+  bottom: calc(5.2% + env(safe-area-inset-bottom)) !important;
+  transform: translateX(-50%) !important;
+  z-index: 5 !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 36px !important;
+  border-radius: 999px !important;
+  padding: 8px 15px !important;
+  background: rgba(2, 18, 26, .72) !important;
+  color: rgba(255,255,255,.94) !important;
+  -webkit-text-fill-color: rgba(255,255,255,.94) !important;
+  border: 1px solid rgba(255, 226, 150, .28) !important;
+  box-shadow: 0 10px 28px rgba(0,0,0,.28) !important;
+  font-weight: 900 !important;
+  font-size: .92rem !important;
+  letter-spacing: .04em !important;
+  backdrop-filter: blur(6px) saturate(1.08) !important;
+  -webkit-backdrop-filter: blur(6px) saturate(1.08) !important;
+}
+@media (min-aspect-ratio: 2/3) {
+  .app-start-card {
+    width: calc(100dvh * .6666667) !important;
+    height: 100dvh !important;
+  }
+}
+@media (max-aspect-ratio: 2/3) {
+  .app-start-card {
+    width: 100vw !important;
+    height: calc(100vw * 1.5) !important;
+  }
+}
+@media (max-height: 620px) {
+  .app-start-button { top: 72.0% !important; height: 7.8% !important; }
+  .app-start-screen.is-launching::after { bottom: calc(3.5% + env(safe-area-inset-bottom)) !important; }
+}
+
+
+/* v111: メニューの魚種選択を複数選択パネル化 */
+.spot-species-button {
+  width: 100% !important;
+  padding: 0 7px !important;
+  color: #073f33 !important;
+  -webkit-text-fill-color: #073f33 !important;
+  font-size: .68rem !important;
+  font-weight: 950 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  cursor: pointer !important;
+}
+.spot-species-button span {
+  display: block !important;
+  width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  pointer-events: none !important;
+}
+.spot-species-button.on {
+  background: #dff5ed !important;
+  border-color: rgba(15, 123, 99, .48) !important;
+  color: #075c49 !important;
+  -webkit-text-fill-color: #075c49 !important;
+}
+.spot-card-species-button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  min-height: 34px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  padding: 7px 10px !important;
+  background: #f1f5f3 !important;
+  color: #173f35 !important;
+  -webkit-text-fill-color: #173f35 !important;
+  font-weight: 900 !important;
+  box-shadow: inset 0 0 0 1px rgba(7,63,51,.12) !important;
+  cursor: pointer !important;
+}
+.spot-card-species-button.on {
+  background: #e1f5ee !important;
+  color: #075c49 !important;
+  -webkit-text-fill-color: #075c49 !important;
+  box-shadow: inset 0 0 0 1px rgba(15,123,99,.25) !important;
+}
+.spot-card-species-button span {
+  opacity: .78 !important;
+}
+.spot-card-species-button strong {
+  max-width: min(220px, 48vw) !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+.spot-species-panel .spot-species-form {
+  width: min(760px, calc(100vw - 28px)) !important;
+}
+.spot-species-panel-actions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  margin: 10px 0 !important;
+}
+.spot-species-panel-actions button {
+  min-height: 36px !important;
+  border: 1px solid rgba(10, 89, 74, .22) !important;
+  border-radius: 999px !important;
+  padding: 7px 12px !important;
+  background: rgba(255,255,255,.92) !important;
+  color: #0c5b4d !important;
+  -webkit-text-fill-color: #0c5b4d !important;
+  font-weight: 900 !important;
+  box-shadow: 0 5px 14px rgba(0,0,0,.08) !important;
+}
+.spot-species-choice-grid {
+  max-height: min(46dvh, 430px) !important;
+  overflow-y: auto !important;
+  padding: 2px 2px 4px !important;
+  -webkit-overflow-scrolling: touch !important;
+  overscroll-behavior: contain !important;
+}
+.spot-species-choice-grid label {
+  min-height: 40px !important;
+}
+.spot-species-choice-grid input {
+  flex: 0 0 auto !important;
+}
+@media (max-width: 920px) {
+  .spot-item {
+    grid-template-columns: minmax(0, 1fr) 36px minmax(74px, 96px) 36px 36px !important;
+  }
+  .spot-species-button {
+    min-width: 0 !important;
+    height: 30px !important;
+    padding: 0 5px !important;
+    font-size: .62rem !important;
+  }
+  .spot-species-panel .spot-species-form {
+    width: min(100%, 720px) !important;
+  }
+  .spot-species-choice-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    max-height: min(52dvh, 430px) !important;
+  }
+  .spot-card-species-button {
+    width: 100% !important;
+    justify-content: space-between !important;
+  }
+  .spot-card-species-button strong {
+    max-width: 58vw !important;
+  }
+}
+
+</style>
+  </head>
+  <body>
+    <div id="appStartScreen" class="app-start-screen" aria-live="polite">
+      <section class="app-start-card" aria-label="三重県釣りマップ 起動画面">
+        <img class="app-start-art" src="assets/title-screen-yoshiyuki-tanaka-v108.png" alt="三重県釣りマップ 起動画面">
+        <div class="app-start-badge">GPS MAP &amp; CATCH LOG</div>
+        <div class="app-start-icon-wrap" aria-hidden="true">
+          <img class="app-start-icon" src="icons/icon-192-v103.png" alt="">
+        </div>
+        <p class="app-start-kicker">Mie Fishing Map</p>
+        <h1 class="app-start-title"><span>三重県</span><span>釣りマップ</span></h1>
+        <p class="app-start-subtitle">水辺のポイントと釣果を、写真つきで残す自分だけのフィールドノート。</p>
+        <div class="app-start-pills" aria-hidden="true"><span>地図</span><span>釣果</span><span>写真</span><span>メモ</span></div>
+        <p class="app-start-loading">フィールドを読み込み中</p>
+        <button id="startScreenSkip" class="app-start-button" type="button">地図を開く</button>
+      </section>
+    </div>
+    <button id="menuBackdrop" class="menu-backdrop" type="button" aria-label="メニューを閉じる"></button>
+    <button id="menuToggle" class="mobile-menu-button" type="button" aria-controls="mobileMenu" aria-expanded="false">☰ メニュー</button>
+    <div class="map-tools" aria-label="地図操作">
+      <button id="locateCatchButton" class="locate-button" type="button">現在地メモ登録</button>
+      <button id="addSpotMode" class="spot-mode-button" type="button">釣り場追加</button>
+      <button id="addCatchMode" class="catch-mode-button" type="button">記録ピン追加</button>
+    </div>
+    <div id="positionAdjustBanner" class="position-adjust-banner is-hidden" role="status" aria-live="polite">
+      <span id="positionAdjustText">位置調整中です。新しい場所を地図上でタップしてください。</span>
+      <button id="cancelPositionAdjustButton" type="button">キャンセル</button>
+    </div>
+    <main class="app-shell">
+      <aside id="mobileMenu" class="sidebar" aria-label="釣り場リスト">
+        <header class="sidebar-header">
+          <div>
+            <p class="kicker">Mie Fishing Map</p>
+            <h1>三重県釣りマップ</h1>
+          </div>
+          <div class="sidebar-header-actions">
+            <button id="resetView" class="icon-button" type="button" title="初期表示に戻す" aria-label="初期表示に戻す">⌂</button>
+            <button id="closeMenuButton" class="icon-button mobile-close-button" type="button" title="メニューを閉じる" aria-label="メニューを閉じる">×</button>
+          </div>
+        </header>
+
+        <section class="controls" aria-label="検索と絞り込み">
+          <label class="search-box">
+            <span>検索</span>
+            <input id="searchInput" type="search" placeholder="池・川・ダム・港名・ルアー・条件">
+          </label>
+          <div class="filter-row" role="group" aria-label="種別フィルター">
+            <button class="filter-chip is-active" type="button" data-filter="all">すべて</button>
+            <button class="filter-chip" type="button" data-filter="池">池</button>
+            <button class="filter-chip" type="button" data-filter="池候補">池候補</button>
+            <button class="filter-chip" type="button" data-filter="川">川</button>
+            <button class="filter-chip" type="button" data-filter="ダム">ダム</button>
+            <button class="filter-chip" type="button" data-filter="港">港・漁港</button>
+            <button class="filter-chip" type="button" data-filter="マリーナ">マリーナ</button>
+          </div>
+          <p id="dataStatus" class="data-status" aria-live="polite">v111・魚種複数選択版</p>
+          <p class="notice-banner">掲載情報は釣りの許可を意味しません。現地看板・管理者・自治体・漁協の最新情報を必ず確認してください。</p>
+          <div class="stats-grid" aria-label="記録集計">
+            <span><strong id="spotCount">0</strong><small>釣り場</small></span>
+            <span><strong id="recordCount">0</strong><small>記録</small></span>
+            <span><strong id="bigBassCount">0</strong><small>40up</small></span>
+          </div>
+          <div class="list-tabs" role="tablist" aria-label="リスト切り替え">
+            <button id="spotTab" class="list-tab is-active" type="button" aria-selected="true">釣り場</button>
+            <button id="catchTab" class="list-tab" type="button" aria-selected="false">記録</button>
+          </div>
+          <div id="recordFilterRow" class="record-filter-row is-hidden" role="group" aria-label="記録フィルター">
+            <button class="record-filter-chip is-active" type="button" data-record-filter="all">すべて</button>
+            <button class="record-filter-chip" type="button" data-record-filter="photo">写真あり</button>
+            <button class="record-filter-chip" type="button" data-record-filter="bigBass">40up</button>
+            <button class="record-filter-chip" type="button" data-record-filter="catch">釣果</button>
+            <button class="record-filter-chip" type="button" data-record-filter="note">メモ</button>
+            <button class="record-filter-chip" type="button" data-record-filter="thisMonth">今月</button>
+          </div>
+        </section>
+
+        <section id="spotListHead" class="list-head" aria-label="チェック項目の説明">
+          <span>名称</span><span>釣れた</span><span>魚種</span><span>禁止</span><span>駐車</span>
+        </section>
+        <section id="catchListHead" class="catch-list-head is-hidden" aria-label="記録項目の説明">
+          <span>No.</span><span>場所・内容</span>
+        </section>
+
+        <section id="spotList" class="spot-list" aria-label="場所一覧"></section>
+        <section id="catchList" class="catch-list is-hidden" aria-label="釣果一覧"></section>
+
+        <footer class="sidebar-footer">
+          <span id="visibleCount">0件</span>
+          <span>v111・魚種複数選択版</span>
+        </footer>
+
+        <section class="settings-row sidebar-actions" aria-label="設定">
+          <button id="installAppButton" class="data-button install-button" type="button">アプリをダウンロード</button>
+          <button id="openInfoPanel" class="data-button" type="button">注意・規約</button>
+          <button id="changeBackgroundButton" class="data-button" type="button">背景画像を変更</button>
+          <button id="exportDataButton" class="data-button" type="button">バックアップ保存</button>
+          <label class="data-button import-data-label" for="importDataFile">バックアップ読込</label>
+          <input id="importDataFile" class="visually-hidden-file" type="file" accept="application/json,.json">
+          <p id="backupReminder" class="backup-reminder" aria-live="polite">バックアップ状態を確認しています。</p>
+        </section>
+      </aside>
+
+      <section class="map-pane" aria-label="国土地理院地図">
+        <div id="map"></div>
+        <div id="spotCard" class="spot-card is-hidden" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <section id="spotPanel" class="catch-panel" aria-label="釣り場登録" aria-hidden="true">
+      <form id="spotForm" class="catch-form">
+        <header class="catch-form-header">
+          <div><p class="kicker">Fishing Spot</p><h2>釣り場を追加</h2></div>
+          <button id="closeSpotPanel" class="icon-button" type="button" title="閉じる" aria-label="閉じる">×</button>
+        </header>
+        <input id="spotLat" type="hidden"><input id="spotLng" type="hidden"><input id="spotIdInput" type="hidden">
+        <p class="panel-warning">掲載されている場所でも、釣り禁止・立入禁止・私有地の場合があります。登録前と釣行前に現地の看板や管理者情報を確認してください。</p>
+        <div class="form-grid">
+          <label><span>名称</span><input id="spotNameInput" type="text" placeholder="例: 未命名の池、〇〇池" required></label>
+          <label><span>種別</span><select id="spotTypeInput"><option>池</option><option>川</option><option>ダム</option><option>港</option><option>マリーナ</option></select></label>
+          <label><span>地名</span><input id="spotAreaInput" type="text" placeholder="例: 津市〇〇町"></label>
+          <label class="full-width"><span>メモ</span><textarea id="spotMemoInput" rows="2" placeholder="進入口、目印、足場、駐車注意など"></textarea></label>
+        </div>
+        <div class="catch-actions"><button id="deleteSpot" class="delete-button" type="button">削除</button><button class="save-button" type="submit">保存</button></div>
+      </form>
+    </section>
+
+    <section id="catchPanel" class="catch-panel" aria-label="現地メモ・釣果記録" aria-hidden="true">
+      <form id="catchForm" class="catch-form">
+        <header class="catch-form-header">
+          <div><p class="kicker">Location Log</p><h2>現地メモ・釣果を記録</h2></div>
+          <button id="closeCatchPanel" class="icon-button" type="button" title="閉じる" aria-label="閉じる">×</button>
+        </header>
+        <input id="catchLat" type="hidden"><input id="catchLng" type="hidden"><input id="catchIdInput" type="hidden">
+        <div class="catch-location-box">
+          <p id="catchLocationStatus" class="catch-location-status" aria-live="polite">地図をタップするか、現在地ボタンで記録位置を指定してください。</p>
+          <button id="useCurrentLocationButton" class="location-inline-button" type="button">現在地を使う</button>
+        </div>
+        <div class="record-entry-mode-row" role="group" aria-label="入力モード">
+          <button class="record-entry-mode-button is-active" type="button" data-record-entry-mode="super" aria-pressed="true">超かんたん</button>
+          <button class="record-entry-mode-button" type="button" data-record-entry-mode="quick" aria-pressed="false">かんたん記録</button>
+          <button class="record-entry-mode-button" type="button" data-record-entry-mode="detail" aria-pressed="false">詳細入力</button>
+          <span class="quick-record-hint">超かんたんは、魚種・サイズ・写真・メモだけで素早く保存できます。</span>
+        </div>
+
+        <div class="form-grid">
+          <label class="super-record-hidden-field"><span>記録タイプ</span><select id="catchRecordType"><option value="note">現地メモ</option><option value="catch">釣果</option></select></label>
+          <label class="super-record-hidden-field"><span>周辺メモ種別</span><select id="catchPlaceKind"><option value="">選択してください</option><option>コンビニ</option><option>スーパー</option><option>曲がり角</option><option>入口・進入口</option><option>駐車場</option><option>トイレ</option><option>自販機</option><option>釣具店</option><option>目印</option><option>危険・注意</option><option>その他</option></select></label>
+          <label class="full-width location-note-field super-record-hidden-field"><span>名称・内容</span><input id="catchPlaceName" type="text" placeholder="例: コンビニあり、ここを左折、橋の手前で曲がる"></label>
+          <label class="full-width catch-spot-select-field"><span>近くの釣り場</span><select id="catchSpot" class="catch-spot-hidden-select" aria-label="選択中の近くの釣り場"></select><div id="catchSpotPicker" class="catch-spot-picker five-row-spot-picker" role="listbox" aria-label="近くの釣り場を5段表示で選択"></div><small class="field-hint">カードを小さくして5段見えるようにしました。上下にスクロールして釣り場名を選択できます。</small></label>
+          <label class="super-record-hidden-field"><span>日時</span><input id="catchTime" type="datetime-local"></label>
+          <label class="fishing-field full-width species-multi-field"><span>魚種（複数選択可）</span><input id="catchSpecies" type="hidden" value="ブラックバス"><div class="species-category-row" role="group" aria-label="魚種カテゴリ">
+              <button class="species-category-chip is-active" type="button" data-species-category-filter="popular">よく使う</button>
+              <button class="species-category-chip" type="button" data-species-category-filter="freshwater">淡水</button>
+              <button class="species-category-chip" type="button" data-species-category-filter="saltwater">海</button>
+              <button class="species-category-chip" type="button" data-species-category-filter="squid">イカ・タコ・エビ</button>
+              <button class="species-category-chip" type="button" data-species-category-filter="all">すべて</button>
+            </div>
+            <div class="species-search-row">
+              <input id="catchSpeciesSearch" type="search" inputmode="search" autocomplete="off" placeholder="魚種検索：例 メバル、バス、アジ">
+              <small id="speciesSearchStatus" class="species-search-status">よく使う魚種は記録履歴から自動で上に出ます。</small>
+            </div><div id="catchSpeciesGroup" class="multi-choice-grid" aria-label="魚種を複数選択">
+            <label><input type="checkbox" data-catch-species-option value="ブラックバス" checked><span>ブラックバス</span></label>
+            <label><input type="checkbox" data-catch-species-option value="ブルーギル"><span>ブルーギル</span></label>
+            <label><input type="checkbox" data-catch-species-option value="ナマズ"><span>ナマズ</span></label>
+            <label><input type="checkbox" data-catch-species-option value="ライギョ"><span>ライギョ</span></label>
+            <label><input type="checkbox" data-catch-species-option value="シーバス"><span>シーバス</span></label>
+            <label><input type="checkbox" data-catch-species-option value="キス"><span>キス</span></label>
+            <label><input type="checkbox" data-catch-species-option value="アジ"><span>アジ</span></label>
+            <label><input type="checkbox" data-catch-species-option value="メバル"><span>メバル</span></label>
+            <label><input type="checkbox" data-catch-species-option value="カサゴ"><span>カサゴ</span></label>
+            <label><input type="checkbox" data-catch-species-option value="チヌ"><span>チヌ</span></label>
+            <label><input type="checkbox" data-catch-species-option value="マゴチ"><span>マゴチ</span></label>
+            <label><input type="checkbox" data-catch-species-option value="ヒラメ"><span>ヒラメ</span></label>
+            <label><input type="checkbox" data-catch-species-option value="コイ"><span>コイ</span></label>
+            <label><input type="checkbox" data-catch-species-option value="フナ"><span>フナ</span></label>
+            <label><input type="checkbox" data-catch-species-option value="ヘラブナ"><span>ヘラブナ</span></label>
+            <label><input type="checkbox" data-catch-species-option value="スモールマウスバス"><span>スモールマウスバス</span></label>
+            <label><input type="checkbox" data-catch-species-option value="ニゴイ"><span>ニゴイ</span></label>
+            <label><input type="checkbox" data-catch-species-option value="ウグイ"><span>ウグイ</span></label>
+            <label><input type="checkbox" data-catch-species-option value="オイカワ"><span>オイカワ</span></label>
+            <label><input type="checkbox" data-catch-species-option value="カワムツ"><span>カワムツ</span></label>
+            <label><input type="checkbox" data-catch-species-option value="ハス"><span>ハス</span></label>
+            <label><input type="checkbox" data-catch-species-option value="モロコ"><span>モロコ</span></label>
+            <label><input type="checkbox" data-catch-species-option value="タナゴ"><span>タナゴ</span></label>
+            <label><input type="checkbox" data-catch-species-option value="ワカサギ"><span>ワカサギ</span></label>
+            <label><input type="checkbox" data-catch-species-option value="アユ"><span>アユ</span></label>
+            <label><input type="checkbox" data-catch-species-option value="アマゴ"><span>アマゴ</span></label>
+            <label><input type="checkbox" data-catch-species-option value="イワナ"><span>イワナ</span></label>
+            <label><input type="checkbox" data-catch-species-option value="ニジマス"><span>ニジマス</span></label>
+            <label><input type="checkbox" data-catch-species-option value="ウナギ"><span>ウナギ</span></label>
+            <label><input type="checkbox" data-catch-species-option value="ハゼ"><span>ハゼ</span></label>
+            <label><input type="checkbox" data-catch-species-option value="ボラ"><span>ボラ</span></label>
+            <label><input type="checkbox" data-catch-species-option value="サヨリ"><span>サヨリ</span></label>
+            <label><input type="checkbox" data-catch-species-option value="イワシ"><span>イワシ</span></label>
+            <label><input type="checkbox" data-catch-species-option value="サバ"><span>サバ</span></label>
+            <label><input type="checkbox" data-catch-species-option value="カマス"><span>カマス</span></label>
+            <label><input type="checkbox" data-catch-species-option value="タチウオ"><span>タチウオ</span></label>
+            <label><input type="checkbox" data-catch-species-option value="サゴシ"><span>サゴシ</span></label>
+            <label><input type="checkbox" data-catch-species-option value="ハマチ"><span>ハマチ</span></label>
+            <label><input type="checkbox" data-catch-species-option value="ツバス"><span>ツバス</span></label>
+            <label><input type="checkbox" data-catch-species-option value="ブリ"><span>ブリ</span></label>
+            <label><input type="checkbox" data-catch-species-option value="マダイ"><span>マダイ</span></label>
+            <label><input type="checkbox" data-catch-species-option value="グレ"><span>グレ</span></label>
+            <label><input type="checkbox" data-catch-species-option value="キビレ"><span>キビレ</span></label>
+            <label><input type="checkbox" data-catch-species-option value="アイナメ"><span>アイナメ</span></label>
+            <label><input type="checkbox" data-catch-species-option value="ベラ"><span>ベラ</span></label>
+            <label><input type="checkbox" data-catch-species-option value="ソイ"><span>ソイ</span></label>
+            <label><input type="checkbox" data-catch-species-option value="タケノコメバル"><span>タケノコメバル</span></label>
+            <label><input type="checkbox" data-catch-species-option value="アオリイカ"><span>アオリイカ</span></label>
+            <label><input type="checkbox" data-catch-species-option value="タコ"><span>タコ</span></label>
+            <label><input type="checkbox" data-catch-species-option value="テナガエビ"><span>テナガエビ</span></label>
+            <label><input type="checkbox" data-catch-species-option value="その他"><span>その他</span></label>
+          </div><small class="field-hint">淡水・海水の魚種を増やしました。複数の魚種をタップして選べます。</small></label>
+          <label class="fishing-field advanced-fishing-field"><span>何で釣れたか</span><select id="catchBait"><option value="">選択してください</option><option>ワーム</option><option>ミノー</option><option>クランクベイト</option><option>スピナーベイト</option><option>バイブレーション</option><option>ラバージグ</option><option>チャター</option><option>ビッグベイト</option><option>トップウォーター</option><option>その他</option></select></label>
+          <label class="fishing-field advanced-fishing-field"><span>ルアー名</span><input id="catchLureName" type="text" placeholder="例: カットテール、フリックシェイク"></label>
+          <label class="fishing-field advanced-fishing-field"><span>色</span><input id="catchLureColor" type="text" placeholder="例: グリパン、スカッパノン"></label>
+          <label class="fishing-field advanced-fishing-field"><span>重さ</span><input id="catchLureWeight" type="text" placeholder="例: 3.5g、1/4oz"></label>
+          <label class="fishing-field"><span>サイズ実寸cm</span><input id="catchSizeCm" type="number" inputmode="decimal" min="0" step="0.1" placeholder="例: 46.5"></label>
+          <label class="fishing-field"><span>サイズ分類</span><select id="catchSize"><option value="">選択してください</option><option>20cm未満</option><option>20cm台</option><option>30cm台</option><option>40cm台</option><option>50cm以上</option><option>未計測</option></select></label>
+          <label class="fishing-field advanced-fishing-field"><span>天気</span><select id="catchWeather"><option value="">選択してください</option><option>晴れ</option><option>曇り</option><option>雨</option><option>小雨</option><option>強風</option><option>雪</option></select></label>
+          <label class="fishing-field advanced-fishing-field"><span>風</span><select id="catchWind"><option value="">選択してください</option><option>無風</option><option>弱い</option><option>普通</option><option>強い</option></select></label>
+          <label class="fishing-field advanced-fishing-field"><span>水の状態</span><select id="catchWater"><option value="">選択してください</option><option>クリア</option><option>普通</option><option>濁り</option><option>増水</option><option>減水</option></select></label>
+          <label class="fishing-field advanced-fishing-field"><span>水位</span><select id="catchWaterLevel"><option value="">選択してください</option><option>満水</option><option>普通</option><option>減水</option><option>大減水</option><option>増水</option></select></label>
+          <label class="fishing-field advanced-fishing-field"><span>ベイト確認</span><select id="catchBaitfish"><option value="">選択してください</option><option>ギル</option><option>小魚</option><option>エビ</option><option>カエル</option><option>虫</option><option>不明</option></select></label>
+          <label class="fishing-field advanced-fishing-field"><span>カバー・地形</span><select id="catchCover"><option value="">選択してください</option><option>アシ</option><option>オーバーハング</option><option>沈み木</option><option>護岸</option><option>ウィード</option><option>ブレイク</option><option>流れ込み</option><option>堰堤</option><option>シェード</option></select></label>
+          <label class="fishing-field advanced-fishing-field"><span>反応場所</span><select id="catchReaction"><option value="">選択してください</option><option>岸際</option><option>ブレイク</option><option>流れ込み</option><option>堰堤</option><option>シェード</option><option>カバー奥</option><option>沖</option></select></label>
+          <label class="fishing-field advanced-fishing-field"><span>プレッシャー</span><select id="catchPressure"><option value="">選択してください</option><option>低い</option><option>普通</option><option>高い</option><option>人多い</option><option>先行者あり</option><option>足跡あり</option></select></label>
+          <label class="fishing-field advanced-fishing-field"><span>時間帯</span><select id="catchTimeBand"><option value="">自動/選択</option><option>朝</option><option>昼</option><option>夕方</option><option>夜</option></select></label>
+          <label class="full-width"><span>備考・メモ</span><textarea id="catchMemo" rows="2" placeholder="例: 風が当たる角、岸際に差していた、足場注意など"></textarea></label>
+
+          <div class="catch-photo-field">
+            <span class="catch-photo-title">添付写真</span>
+            <div class="photo-picker-grid">
+              <label class="photo-picker" for="catchPhoto"><span>写真フォルダーから選択</span><input id="catchPhoto" type="file" accept="image/*"></label>
+              <label class="photo-picker" for="catchCamera"><span>カメラで撮影</span><input id="catchCamera" type="file" accept="image/*" capture="environment"></label>
+            </div>
+            <figure id="catchPhotoPreview" class="catch-photo-preview is-hidden"><img id="catchPhotoImage" alt="添付する釣果写真"><button id="removeCatchPhoto" type="button">写真を外す</button></figure>
+            <p id="catchPhotoStatus" class="catch-photo-status" aria-live="polite">写真を選ぶと、この端末に圧縮保存します</p>
+          </div>
+        </div>
+        <div class="catch-actions"><button id="deleteCatch" class="delete-button" type="button">削除</button><button class="save-button" type="submit">保存</button></div>
+      </form>
+    </section>
+
+    <section id="backgroundPanel" class="catch-panel" aria-label="背景画像変更" aria-hidden="true">
+      <form id="backgroundForm" class="catch-form">
+        <header class="catch-form-header"><div><p class="kicker">Background</p><h2>背景画像を変更</h2></div><button id="closeBackgroundPanel" class="icon-button" type="button" title="閉じる" aria-label="閉じる">×</button></header>
+        <p class="panel-help">左側メニューの背景画像を、カメラ撮影または写真フォルダーから変更できます。</p>
+        <div class="background-picker-grid">
+          <label class="photo-picker" for="backgroundCamera"><span>カメラで撮影して背景にする</span><input id="backgroundCamera" type="file" accept="image/*" capture="environment"></label>
+          <label class="photo-picker" for="backgroundPicker"><span>写真フォルダーから選ぶ</span><input id="backgroundPicker" type="file" accept="image/*"></label>
+        </div>
+        <p id="backgroundStatus" class="catch-photo-status" aria-live="polite">画像は圧縮してこの端末に保存します</p>
+        <div class="catch-actions"><button id="resetBackgroundButton" class="delete-button" type="button">初期背景に戻す</button><button class="save-button" type="button" id="closeBackgroundDone">閉じる</button></div>
+      </form>
+    </section>
+
+    <section id="installPanel" class="catch-panel" aria-label="アプリのダウンロード" aria-hidden="true">
+      <form class="catch-form info-form">
+        <header class="catch-form-header"><div><p class="kicker">Install App</p><h2>アプリをダウンロード</h2></div><button id="closeInstallPanel" class="icon-button" type="button" title="閉じる" aria-label="閉じる">×</button></header>
+        <div class="info-content install-content"><section><h3>Android / Chrome</h3><p>この画面のボタンでインストール画面が出る場合は、そのまま進めてください。出ない場合はChrome右上の「︙」から「アプリをインストール」または「ホーム画面に追加」を選んでください。</p></section><section><h3>iPhone / Safari</h3><p>Safariで開いて、共有ボタンから「ホーム画面に追加」を選んでください。</p></section><section><h3>現在の状態</h3><p id="installStatus" class="catch-photo-status" aria-live="polite">端末の状態を確認しています。</p></section></div>
+        <div class="catch-actions"><button class="save-button" type="button" id="closeInstallDone">閉じる</button></div>
+      </form>
+    </section>
+
+    <section id="infoPanel" class="catch-panel" aria-label="注意・利用規約・プライバシー" aria-hidden="true">
+      <form class="catch-form info-form">
+        <header class="catch-form-header"><div><p class="kicker">Safety & Privacy</p><h2>注意・規約・バックアップ</h2></div><button id="closeInfoPanel" class="icon-button" type="button" title="閉じる" aria-label="閉じる">×</button></header>
+        <div class="info-content">
+          <section><h3>釣行時の注意</h3><p>掲載されている釣り場情報は、釣りの許可を意味するものではありません。釣行前に、現地の看板・管理者・自治体・漁協などの最新情報を必ず確認してください。</p><p>私有地への無断立ち入り、迷惑駐車、ゴミの放置は禁止です。禁止・危険・立入制限の表示がある場所では釣りをしないでください。</p></section>
+          <section><h3>野池バス記録</h3><p>水位、ベイト、カバー、反応場所、プレッシャー、ルアー名・色・重さ、実寸cmを残すと、別の池でも再現性を上げやすくなります。</p></section>
+          <section><h3>プライバシー</h3><p>釣果、写真、追加した釣り場、背景画像は基本的にこの端末内に保存されます。クラウド送信はしていません。</p><p>写真や位置情報は個人情報につながる場合があります。共有する前に、場所が特定されても問題ないか確認してください。</p></section>
+          <section><h3>データバックアップ</h3><p>端末変更、ブラウザのデータ削除、Safari/Chromeの保存領域整理で記録が消えることがあります。大事な記録は「バックアップ保存」でJSONファイルを保管してください。</p><p id="backupStatus" class="catch-photo-status" aria-live="polite">バックアップの保存・読込結果をここに表示します。</p></section>
+        </div>
+        <div class="catch-actions"><button class="save-button" type="button" id="closeInfoDone">閉じる</button></div>
+      </form>
+    </section>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="pwa-install.js?v=v111-multi-spot-species"></script>
+    <script src="app.js?v=v111-multi-spot-species"></script>
+  </body>
+</html>
