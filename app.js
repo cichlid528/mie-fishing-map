@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v100-custom-five-row-spot-picker";
+  const APP_VERSION = "v101-large-spot-picker";
 
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
@@ -11,7 +11,7 @@
   const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v86";
   const LEGACY_SINGLE_KEY = "mieFishingMap.v1";
 
-  // v97: 近くの釣り場を独自リストで本当に5段表示に変更。
+  // v101: 近くの釣り場名称スクロール欄をかなり広く表示。
   const MIE_CENTER = [34.55, 136.48];
   const MIE_HOME_ZOOM = 9;
   const MAP_MIN_ZOOM = 5;

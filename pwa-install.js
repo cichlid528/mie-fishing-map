@@ -2,7 +2,7 @@
   "use strict";
   window.__MIE_PWA_INSTALL_MANAGED__ = true;
 
-  const APP_VERSION = "v100-custom-five-row-spot-picker";
+  const APP_VERSION = "v101-large-spot-picker";
   const installButton = document.querySelector("#installAppButton");
   const installPanel = document.querySelector("#installPanel");
   const installStatus = document.querySelector("#installStatus");
