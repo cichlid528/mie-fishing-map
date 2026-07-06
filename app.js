@@ -1,16 +1,16 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v77-record-photo-attached";
+  const APP_VERSION = "v78-spot-checks-fixed";
 
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
   const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
   const BACKGROUND_STORAGE_KEY = "mie-fishing-map-sidebar-background-v1";
-  const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v77";
+  const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v78";
   const LEGACY_SINGLE_KEY = "mieFishingMap.v1";
 
-  // v77: 記録写真を保存前に確実に添付し、一覧と地図ポップアップにも表示。
+  // v78: 釣り場一覧のチェック項目を直接操作できるように修正。
   const MIE_CENTER = [34.55, 136.48];
   const MIE_HOME_ZOOM = 9;
   const MAP_MIN_ZOOM = 5;
@@ -398,7 +398,7 @@
     if (state.spotMode) state.catchMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v77・写真付き記録";
+    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v78・チェック項目修正";
   }
 
   function setCatchMode(value) {
@@ -406,7 +406,7 @@
     if (state.catchMode) state.spotMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v77・写真付き記録";
+    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v78・チェック項目修正";
   }
 
   function handleMapClick(latlng) {
@@ -488,19 +488,48 @@
     renderCatchList();
   }
 
+  function spotFlagControl(spotId, flag, active, label, activeText, offText = "—", warn = false) {
+    return `<label class="flag flag-check ${active ? (warn ? "warn" : "on") : ""}" title="${escapeHtml(label)}を切り替え">
+      <input class="flag-input" type="checkbox" data-flag-toggle="${escapeHtml(flag)}" data-spot-id="${escapeHtml(spotId)}" ${active ? "checked" : ""} aria-label="${escapeHtml(label)}">
+      <span>${active ? escapeHtml(activeText) : escapeHtml(offText)}</span>
+    </label>`;
+  }
+
   function renderSpotList() {
     const list = filteredSpots();
     els.visibleCount.textContent = `${list.length}件`;
     els.spotList.innerHTML = list.length ? list.map((spot) => {
       const s = spotState(spot.id);
-      return `<button class="spot-item ${spot.id === state.selectedSpotId ? "is-selected" : ""}" type="button" data-spot-id="${escapeHtml(spot.id)}">
-        <span class="spot-main"><strong>${escapeHtml(spot.name)}</strong><small>${escapeHtml(spot.type)} / ${escapeHtml(spot.area || "地名未設定")}</small></span>
-        <span class="flag ${s.caught ? "on" : ""}">${s.caught ? "✓" : "—"}</span>
-        <span class="flag ${s.species ? "on" : ""}">${s.species ? "有" : "—"}</span>
-        <span class="flag ${s.noFishing ? "warn" : ""}">${s.noFishing ? "禁" : "—"}</span>
-        <span class="flag ${s.parking ? "on" : ""}">${s.parking ? "P" : "—"}</span>
-      </button>`;
+      return `<div class="spot-item ${spot.id === state.selectedSpotId ? "is-selected" : ""}" data-spot-id="${escapeHtml(spot.id)}">
+        <button class="spot-main spot-open-button" type="button" data-spot-id="${escapeHtml(spot.id)}" aria-label="${escapeHtml(spot.name)}を地図で開く"><strong>${escapeHtml(spot.name)}</strong><small>${escapeHtml(spot.type)} / ${escapeHtml(spot.area || "地名未設定")}</small></button>
+        ${spotFlagControl(spot.id, "caught", Boolean(s.caught), "釣れた", "✓")}
+        ${spotFlagControl(spot.id, "species", Boolean(s.species), `魚種${s.species ? `: ${s.species}` : ""}`, "有")}
+        ${spotFlagControl(spot.id, "noFishing", Boolean(s.noFishing), "禁止", "禁", "—", true)}
+        ${spotFlagControl(spot.id, "parking", Boolean(s.parking), "駐車", "P")}
+      </div>`;
     }).join("") : '<p class="empty">該当する釣り場がありません。</p>';
+  }
+
+  function updateSpotListFlag(spotId, flag, checked) {
+    const spot = state.spots.find((s) => s.id === spotId);
+    if (!spot) return;
+    const s = spotState(spotId);
+    if (flag === "species") {
+      if (checked) {
+        const next = prompt("釣れた魚種を入力してください", s.species || "ブラックバス");
+        if (next === null) { renderSpotList(); return; }
+        s.species = next.trim() || "ブラックバス";
+      } else {
+        s.species = "";
+      }
+    } else if (["caught", "noFishing", "parking"].includes(flag)) {
+      s[flag] = Boolean(checked);
+    } else {
+      return;
+    }
+    persistSavedState();
+    if (state.selectedSpotId === spotId) showSpotCard(spot);
+    renderSpotList();
   }
 
   function recordTitle(record, index) {
@@ -1131,7 +1160,13 @@
     }));
     els.spotTab.addEventListener("click", () => { state.activeList = "spots"; renderLists(); });
     els.catchTab.addEventListener("click", () => { state.activeList = "catches"; renderLists(); });
+    els.spotList.addEventListener("change", (event) => {
+      const input = event.target.closest("input[data-flag-toggle]");
+      if (!input) return;
+      updateSpotListFlag(input.dataset.spotId, input.dataset.flagToggle, input.checked);
+    });
     els.spotList.addEventListener("click", (event) => {
+      if (event.target.closest("input[data-flag-toggle], .flag-check")) return;
       const item = event.target.closest("[data-spot-id]");
       if (item) selectSpot(item.dataset.spotId);
     });
@@ -1225,7 +1260,7 @@
     window.addEventListener("load", forceFullscreenLayout);
     window.addEventListener("resize", forceFullscreenLayout);
     registerServiceWorker();
-    els.dataStatus.textContent = `v77・写真付き記録 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
+    els.dataStatus.textContent = `v78・チェック項目修正 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
   }
 
   init();

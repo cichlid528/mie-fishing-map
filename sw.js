@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bass-spot-log-";
-const VERSION = "v77-record-photo-attached";
+const VERSION = "v78-spot-checks-fixed";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());
