@@ -2229,3 +2229,34 @@ body.position-adjusting .leaflet-container { cursor: crosshair !important; }
     bottom: calc(4px + env(safe-area-inset-bottom)) !important;
   }
 }
+
+/* v96: 記録フォームの「近くの釣り場」選択欄を5段表示にする */
+.catch-spot-select-field {
+  grid-column: 1 / -1;
+}
+#catchSpot {
+  min-height: 224px !important;
+  height: 224px !important;
+  overflow-y: auto !important;
+  border-radius: 14px !important;
+  padding: 6px !important;
+  line-height: 1.35 !important;
+  background: rgba(255,255,255,.98) !important;
+  -webkit-overflow-scrolling: touch;
+}
+#catchSpot option {
+  min-height: 40px;
+  padding: 10px 8px;
+  font-size: .95rem;
+}
+@media (max-width: 920px) {
+  #catchSpot {
+    min-height: 238px !important;
+    height: 238px !important;
+    font-size: 1rem !important;
+  }
+  #catchSpot option {
+    min-height: 42px;
+    padding: 11px 8px;
+  }
+}

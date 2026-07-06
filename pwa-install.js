@@ -2,7 +2,7 @@
   "use strict";
   window.__MIE_PWA_INSTALL_MANAGED__ = true;
 
-  const APP_VERSION = "v95-full-height-spot-card";
+  const APP_VERSION = "v96-five-row-spot-picker";
   const installButton = document.querySelector("#installAppButton");
   const installPanel = document.querySelector("#installPanel");
   const installStatus = document.querySelector("#installStatus");
