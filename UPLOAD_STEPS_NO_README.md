@@ -9,4 +9,4 @@ https://cichlid528.github.io/mie-fishing-map/reset-cache.html?auto=1
 
 5. その後、下のURLで確認します。
 
-https://cichlid528.github.io/mie-fishing-map/?v=v96-five-row-spot-picker
+https://cichlid528.github.io/mie-fishing-map/?v=v97-real-five-row-spot-picker

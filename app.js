@@ -1,7 +1,7 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v96-five-row-spot-picker";
+  const APP_VERSION = "v97-real-five-row-spot-picker";
 
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
@@ -11,7 +11,7 @@
   const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v86";
   const LEGACY_SINGLE_KEY = "mieFishingMap.v1";
 
-  // v96: 記録フォームの近くの釣り場選択欄を5段表示にする。
+  // v97: 近くの釣り場を独自リストで本当に5段表示に変更。
   const MIE_CENTER = [34.55, 136.48];
   const MIE_HOME_ZOOM = 9;
   const MAP_MIN_ZOOM = 5;
@@ -336,7 +336,7 @@
       "resetView", "locateCatchButton", "addSpotMode", "addCatchMode", "positionAdjustBanner", "positionAdjustText", "cancelPositionAdjustButton", "spotPanel", "spotForm", "spotLat", "spotLng", "spotIdInput",
       "spotNameInput", "spotTypeInput", "spotAreaInput", "spotMemoInput", "deleteSpot", "closeSpotPanel",
       "catchPanel", "catchForm", "catchLat", "catchLng", "catchIdInput", "catchLocationStatus", "useCurrentLocationButton",
-      "catchRecordType", "catchPlaceKind", "catchPlaceName", "catchSpot", "catchTime", "catchSpecies", "catchSpeciesGroup", "catchSpeciesSearch", "speciesSearchStatus", "catchBait", "catchLureName",
+      "catchRecordType", "catchPlaceKind", "catchPlaceName", "catchSpot", "catchSpotPicker", "catchTime", "catchSpecies", "catchSpeciesGroup", "catchSpeciesSearch", "speciesSearchStatus", "catchBait", "catchLureName",
       "catchLureColor", "catchLureWeight", "catchSizeCm", "catchSize", "catchWeather", "catchWind", "catchWater", "catchWaterLevel",
       "catchBaitfish", "catchCover", "catchReaction", "catchPressure", "catchTimeBand", "catchMemo", "catchPhoto", "catchCamera",
       "catchPhotoPreview", "catchPhotoImage", "removeCatchPhoto", "catchPhotoStatus", "deleteCatch", "closeCatchPanel",
@@ -447,7 +447,7 @@
       { position: "topright" }
     ).addTo(map);
 
-    els.dataStatus.textContent = "v96・釣り場欄5段表示";
+    els.dataStatus.textContent = "v97・釣り場名5段表示";
 
     addMieBoundaryLayer();
     map.on("click", (event) => handleMapClick(event.latlng));
@@ -550,7 +550,7 @@
     if (state.spotMode) state.catchMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v96・釣り場欄5段表示";
+    els.dataStatus.textContent = state.spotMode ? "地図をタップして釣り場を追加します。" : "v97・釣り場名5段表示";
   }
 
   function setCatchMode(value) {
@@ -560,7 +560,7 @@
     if (state.catchMode) state.spotMode = false;
     els.addSpotMode.classList.toggle("is-active", state.spotMode);
     els.addCatchMode.classList.toggle("is-active", state.catchMode);
-    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v96・釣り場欄5段表示";
+    els.dataStatus.textContent = state.catchMode ? "地図をタップして記録ピンを追加します。" : "v97・釣り場名5段表示";
   }
 
   function handleMapClick(latlng) {
@@ -1222,7 +1222,7 @@
     els.catchRecordType.value = record?.recordType || options.recordType || "note";
     els.catchPlaceKind.value = record?.placeKind || "";
     els.catchPlaceName.value = record?.placeName || "";
-    els.catchSpot.value = record?.spotId || (validPosition({ lat, lng }) ? nearestSpotId(lat, lng) : "");
+    setCatchSpotValue(record?.spotId || (validPosition({ lat, lng }) ? nearestSpotId(lat, lng) : ""), true);
     els.catchTime.value = record?.time || nowLocalInputValue();
     setSpeciesSearch("");
     setCatchSpeciesValue(record?.species || "ブラックバス");
@@ -1283,11 +1283,30 @@
     els.fishingFields.forEach((field) => field.classList.toggle("is-hidden", !isCatch));
   }
 
+  function setCatchSpotValue(value, scrollIntoView = false) {
+    const nextValue = String(value || "");
+    els.catchSpot.value = nextValue;
+    if (!els.catchSpotPicker) return;
+    els.catchSpotPicker.querySelectorAll("[data-catch-spot-picker]").forEach((button) => {
+      const selected = button.dataset.catchSpotPicker === nextValue;
+      button.classList.toggle("is-selected", selected);
+      button.setAttribute("aria-selected", String(selected));
+      if (selected && scrollIntoView) button.scrollIntoView({ block: "nearest" });
+    });
+  }
+
   function populateCatchSpots() {
     const current = els.catchSpot.value;
-    els.catchSpot.innerHTML = '<option value="">選択してください</option>' + state.spots
+    const optionsHtml = '<option value="">選択してください</option>' + state.spots
       .map((spot) => `<option value="${escapeHtml(spot.id)}">${escapeHtml(spot.name)}</option>`).join("");
-    if ([...els.catchSpot.options].some((option) => option.value === current)) els.catchSpot.value = current;
+    els.catchSpot.innerHTML = optionsHtml;
+    const exists = [...els.catchSpot.options].some((option) => option.value === current);
+    const nextValue = exists ? current : "";
+    if (els.catchSpotPicker) {
+      els.catchSpotPicker.innerHTML = `<button type="button" data-catch-spot-picker="" role="option">選択なし</button>` + state.spots
+        .map((spot) => `<button type="button" data-catch-spot-picker="${escapeHtml(spot.id)}" role="option">${escapeHtml(spot.name)}<small>${escapeHtml(spot.area || spot.type || "")}</small></button>`).join("");
+    }
+    setCatchSpotValue(nextValue);
   }
 
   function collectRecordForm() {
@@ -1553,7 +1572,7 @@
       } else {
         els.catchLat.value = latitude;
         els.catchLng.value = longitude;
-        els.catchSpot.value = nearestSpotId(latitude, longitude);
+        setCatchSpotValue(nearestSpotId(latitude, longitude), true);
         setCatchLocationStatus(latitude, longitude, "現在地", accuracy);
       }
       els.dataStatus.textContent = `現在地を取得しました（誤差約${Math.round(Number(accuracy) || 0)}m）`;
@@ -1824,6 +1843,11 @@
     els.closeCatchPanel.addEventListener("click", closeCatchPanel);
     els.deleteCatch.addEventListener("click", deleteSelectedCatch);
     els.catchRecordType.addEventListener("change", updateRecordTypeUI);
+    els.catchSpotPicker?.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-catch-spot-picker]");
+      if (!button) return;
+      setCatchSpotValue(button.dataset.catchSpotPicker || "", true);
+    });
     els.catchSpeciesGroup?.addEventListener("change", updateCatchSpeciesValueFromInputs);
     els.catchSpeciesSearch?.addEventListener("input", () => setSpeciesSearch(els.catchSpeciesSearch.value));
     els.catchTime.addEventListener("change", () => { if (!els.catchTimeBand.value) els.catchTimeBand.value = timeBandFromInput(els.catchTime.value); });
@@ -1872,7 +1896,7 @@
     window.addEventListener("load", () => { setMobileViewportHeight(); forceFullscreenLayout(); });
     window.addEventListener("resize", () => { setMobileViewportHeight(); forceFullscreenLayout(); });
     registerServiceWorker();
-    els.dataStatus.textContent = `v96・釣り場欄5段表示 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
+    els.dataStatus.textContent = `v97・釣り場名5段表示 / 釣り場${state.spots.length}件 / 記録${state.catches.length}件 / 40up${state.catches.filter(isBigBass).length}件`;
     updateBackupReminder();
   }
 
