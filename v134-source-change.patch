@@ -1,0 +1,54 @@
+diff --git a/app.js b/app.js
+--- a/app.js
++++ b/app.js
+@@ -3,8 +3,8 @@
+ (() => {
+   "use strict";
+ 
+-  const APP_VERSION = "v131-remove-chusei-green-park";
+-  const APP_STATUS_LABEL = "v131・中勢グリーンパーク削除版";
++  const APP_VERSION = "v134-nanairo-dam-fix";
++  const APP_STATUS_LABEL = "v134・宮川ダム・七色ダム・池原ダム反映版";
+@@ -127,14 +127,15 @@
+-  // v131: 中勢グリーンパーク池も除いた初期収録。
++  // v134: 大杉湖を宮川ダム、七色貯水池を七色ダムへ変更し、池原ダムを追加。
+   const seedSpots = [
+@@
+-    { id: "lake-osugi", name: "大杉湖", type: "ダム", area: "多気郡大台町", lat: 34.286385, lng: 136.19336, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },
+-    { id: "reservoir-nanairo", name: "七色貯水池", type: "ダム", area: "熊野市・紀和町周辺", lat: 33.991304, lng: 136.004799, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },
++    { id: "lake-osugi", name: "宮川ダム", type: "ダム", area: "多気郡大台町", lat: 34.286385, lng: 136.19336, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },
++    { id: "reservoir-nanairo", name: "七色ダム", type: "ダム", area: "熊野市・紀和町周辺", lat: 33.991304, lng: 136.004799, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },
++    { id: "dam-ikehara", name: "池原ダム", type: "ダム", area: "奈良県吉野郡下北山村", lat: 34.04694, lng: 135.97111, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },
+diff --git a/index.html b/index.html
+--- a/index.html
++++ b/index.html
+@@
+-v131-remove-chusei-green-park
++v134-nanairo-dam-fix
+@@
+-v131・中勢グリーンパーク削除版
++v134・宮川ダム・七色ダム・池原ダム反映版
+diff --git a/manifest.json b/manifest.json
+--- a/manifest.json
++++ b/manifest.json
+@@
+-  "start_url": "./index.html?v=v131-remove-chusei-green-park",
++  "start_url": "./index.html?v=v134-nanairo-dam-fix",
+diff --git a/pwa-install.js b/pwa-install.js
+--- a/pwa-install.js
++++ b/pwa-install.js
+@@
+-  const APP_VERSION = "v131-remove-chusei-green-park";
++  const APP_VERSION = "v134-nanairo-dam-fix";
+diff --git a/reset-cache.html b/reset-cache.html
+--- a/reset-cache.html
++++ b/reset-cache.html
+@@
+-v131-remove-chusei-green-park
++v134-nanairo-dam-fix
+diff --git a/sw.js b/sw.js
+--- a/sw.js
++++ b/sw.js
+@@
+-const VERSION = "v131-remove-chusei-green-park";
++const VERSION = "v134-nanairo-dam-fix";

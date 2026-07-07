@@ -2,7 +2,8 @@
   "use strict";
   window.__MIE_PWA_INSTALL_MANAGED__ = true;
 
-  const APP_VERSION = "v131-remove-chusei-green-park";
+  const APP_VERSION = "v134-nanairo-dam-fix";
+  const STATUS_LABEL = "v134・宮川ダム・七色ダム・池原ダム反映版";
   const installButton = document.querySelector("#installAppButton");
   const installPanel = document.querySelector("#installPanel");
   const installStatus = document.querySelector("#installStatus");
@@ -31,6 +32,52 @@
   function closeInstallPanel() {
     installPanel?.classList.remove("is-open");
     installPanel?.setAttribute("aria-hidden", "true");
+  }
+
+  function patchText(value) {
+    if (typeof value !== "string") return value;
+    return value
+      .replaceAll("大杉湖", "宮川ダム")
+      .replaceAll("七色貯水池", "七色ダム")
+      .replaceAll("v131・中勢グリーンパーク削除版", STATUS_LABEL)
+      .replaceAll("v133・宮川ダム・七色ダム・池原ダム追加版", STATUS_LABEL)
+      .replaceAll("v131-remove-chusei-green-park", APP_VERSION)
+      .replaceAll("v133-miyagawa-nanairo-ikehara", APP_VERSION);
+  }
+
+  function patchNode(node) {
+    if (!node) return;
+    if (node.nodeType === Node.TEXT_NODE) {
+      const next = patchText(node.nodeValue || "");
+      if (next !== node.nodeValue) node.nodeValue = next;
+      return;
+    }
+    if (node.nodeType !== Node.ELEMENT_NODE && node.nodeType !== Node.DOCUMENT_NODE) return;
+    if (node.nodeType === Node.ELEMENT_NODE && node.attributes) {
+      Array.from(node.attributes).forEach((attr) => {
+        const next = patchText(attr.value || "");
+        if (next !== attr.value) node.setAttribute(attr.name, next);
+      });
+    }
+    const walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
+    let current = walker.nextNode();
+    while (current) {
+      patchNode(current);
+      current = walker.nextNode();
+    }
+  }
+
+  function startTextPatch() {
+    patchNode(document.body);
+    if (!document.body) return;
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.type === "characterData") patchNode(mutation.target);
+        if (mutation.type === "attributes") patchNode(mutation.target);
+        mutation.addedNodes.forEach(patchNode);
+      }
+    });
+    observer.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true });
   }
 
   async function clearOldAppCache() {
@@ -82,5 +129,15 @@
   installButton?.addEventListener("click", installApp);
   closeInstallPanelButton?.addEventListener("click", closeInstallPanel);
   closeInstallDoneButton?.addEventListener("click", closeInstallPanel);
-  window.addEventListener("load", clearOldAppCache);
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", startTextPatch, { once: true });
+  } else {
+    startTextPatch();
+  }
+
+  window.addEventListener("load", () => {
+    patchNode(document.body);
+    clearOldAppCache();
+  });
 })();
