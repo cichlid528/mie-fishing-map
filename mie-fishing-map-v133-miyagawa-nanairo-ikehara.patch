@@ -1,0 +1,97 @@
+diff --git a/app.js b/app.js
+--- a/app.js
++++ b/app.js
+@@ -3,8 +3,8 @@
+ (() => {
+   "use strict";
+ 
+-  const APP_VERSION = "v131-remove-chusei-green-park";
+-  const APP_STATUS_LABEL = "v131・中勢グリーンパーク削除版";
++  const APP_VERSION = "v133-miyagawa-nanairo-ikehara";
++  const APP_STATUS_LABEL = "v133・宮川ダム・七色ダム・池原ダム追加版";
+@@ -125,17 +125,18 @@
+-  // v131: 中勢グリーンパーク池も除いた初期収録。
++  // v133: 大杉湖を宮川ダム、七色貯水池を七色ダムに変更し、奈良県の池原ダムを追加。
+   const seedSpots = [
+     { id: "lake-shorenji", name: "青蓮寺湖", type: "ダム", area: "名張市", lat: 34.600869, lng: 136.11885, zoom: 15, source: "指定リスト", subtype: "レイク・ダム湖" },
+     { id: "lake-hinachi", name: "ひなち湖", type: "ダム", area: "名張市", lat: 34.614467, lng: 136.164028, zoom: 15, source: "指定リスト", subtype: "レイク・ダム湖" },
+     { id: "reservoir-isaka", name: "伊坂貯水池", type: "ダム", area: "四日市市", lat: 35.041625, lng: 136.616311, zoom: 15, source: "指定リスト", subtype: "レイク・ダム湖" },
+     { id: "lake-shakujo", name: "錫杖湖", type: "ダム", area: "津市芸濃町", lat: 34.806622, lng: 136.378553, zoom: 15, source: "指定リスト", subtype: "レイク・ダム湖" },
+     { id: "dam-kimigano", name: "君ヶ野ダム", type: "ダム", area: "津市美杉町", lat: 34.5971, lng: 136.313183, zoom: 15, source: "指定リスト", subtype: "レイク・ダム湖" },
+     { id: "lake-okukahada", name: "奥香肌湖", type: "ダム", area: "松阪市飯高町", lat: 34.376861, lng: 136.196586, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },
+     { id: "lake-okuise", name: "奥伊勢湖", type: "ダム", area: "多気郡大台町", lat: 34.3892, lng: 136.4011, zoom: 15, source: "指定リスト", subtype: "レイク・ダム湖" },
+-    { id: "lake-osugi", name: "大杉湖", type: "ダム", area: "多気郡大台町", lat: 34.286385, lng: 136.19336, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },
+-    { id: "reservoir-nanairo", name: "七色貯水池", type: "ダム", area: "熊野市・紀和町周辺", lat: 33.991304, lng: 136.004799, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },
++    { id: "lake-osugi", name: "宮川ダム", type: "ダム", area: "多気郡大台町", lat: 34.286385, lng: 136.19336, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },
++    { id: "reservoir-nanairo", name: "七色ダム", type: "ダム", area: "熊野市・紀和町周辺", lat: 33.991304, lng: 136.004799, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },
++    { id: "dam-ikehara", name: "池原ダム", type: "ダム", area: "奈良県吉野郡下北山村", lat: 34.04694, lng: 135.97111, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },
+     { id: "pond-gokatsura", name: "五桂池", type: "池", area: "多気町五桂", lat: 34.466625, lng: 136.545533, zoom: 15, source: "指定リスト", candidate: true },
+     { id: "pond-ishigaki", name: "石垣池", type: "池", area: "鈴鹿市西玉垣町", lat: 34.856058, lng: 136.564767, zoom: 15, source: "指定リスト", candidate: true },
+     { id: "pond-madoro", name: "真泥池", type: "池", area: "伊賀市真泥", lat: 34.761728, lng: 136.193772, zoom: 16, source: "指定リスト", candidate: true },
+diff --git a/index.html b/index.html
+--- a/index.html
++++ b/index.html
+@@ -10,11 +10,11 @@
+     <meta name="apple-mobile-web-app-title" content="釣りマップ">
+     <meta name="apple-mobile-web-app-status-bar-style" content="default">
+     <title>三重県釣りマップ</title>
+-    <link rel="manifest" href="manifest.json?v=v131-remove-chusei-green-park">
++    <link rel="manifest" href="manifest.json?v=v133-miyagawa-nanairo-ikehara">
+     <link rel="apple-touch-icon" href="icons/apple-touch-icon-v103.png">
+     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQDP4nD8xQV9qVtAkM5OgFHJt0f9I=" crossorigin="">
+-    <link rel="stylesheet" href="style.css?v=v131-remove-chusei-green-park">
+-    <style id="v131-remove-chusei-green-park-fix">
++    <link rel="stylesheet" href="style.css?v=v133-miyagawa-nanairo-ikehara">
++    <style id="v133-miyagawa-nanairo-ikehara-fix">
+@@ -1996,7 +1996,7 @@
+-          <p id="dataStatus" class="data-status" aria-live="polite">v131・中勢グリーンパーク削除版</p>
++          <p id="dataStatus" class="data-status" aria-live="polite">v133・宮川ダム・七色ダム・池原ダム追加版</p>
+@@ -2029,7 +2029,7 @@
+-          <span>v131・中勢グリーンパーク削除版</span>
++          <span>v133・宮川ダム・七色ダム・池原ダム追加版</span>
+@@ -2220,8 +2220,8 @@
+-    <script src="pwa-install.js?v=v131-remove-chusei-green-park"></script>
+-    <script src="app.js?v=v131-remove-chusei-green-park"></script>
++    <script src="pwa-install.js?v=v133-miyagawa-nanairo-ikehara"></script>
++    <script src="app.js?v=v133-miyagawa-nanairo-ikehara"></script>
+diff --git a/manifest.json b/manifest.json
+--- a/manifest.json
++++ b/manifest.json
+@@ -4,7 +4,7 @@
+   "short_name": "釣りマップ",
+   "description": "国土地理院の地理院タイルを使った釣り場・釣果記録アプリ。記録写真の添付・一覧表示に対応。",
+-  "start_url": "./index.html?v=v131-remove-chusei-green-park",
++  "start_url": "./index.html?v=v133-miyagawa-nanairo-ikehara",
+   "scope": "./",
+diff --git a/pwa-install.js b/pwa-install.js
+--- a/pwa-install.js
++++ b/pwa-install.js
+@@ -4,7 +4,7 @@
+   "use strict";
+   window.__MIE_PWA_INSTALL_MANAGED__ = true;
+ 
+-  const APP_VERSION = "v131-remove-chusei-green-park";
++  const APP_VERSION = "v133-miyagawa-nanairo-ikehara";
+   const installButton = document.querySelector("#installAppButton");
+diff --git a/reset-cache.html b/reset-cache.html
+--- a/reset-cache.html
++++ b/reset-cache.html
+@@ -26,7 +26,7 @@
+       <p>古い地図や古いService Workerキャッシュが残っている場合、このページでアプリ本体の保存データは残したまま、キャッシュだけを削除します。</p>
+       <p>釣果・追加した釣り場・写真・背景画像などの <code>localStorage</code> データは削除しません。</p>
+       <button id="resetButton" type="button">キャッシュを消して開き直す</button>
+-      <a href="./?v=v131-remove-chusei-green-park">そのまま開く</a>
++      <a href="./?v=v133-miyagawa-nanairo-ikehara">そのまま開く</a>
+@@ -49,7 +49,7 @@
+           say("完了しました。最新版を開き直します…");
+           const url = new URL("./", location.href);
+-          url.searchParams.set("v", "v131-remove-chusei-green-park");
++          url.searchParams.set("v", "v133-miyagawa-nanairo-ikehara");
+           url.searchParams.set("reset", Date.now().toString());
+diff --git a/sw.js b/sw.js
+--- a/sw.js
++++ b/sw.js
+@@ -1,5 +1,5 @@
+ const CACHE_PREFIX = "bass-spot-log-";
+-const VERSION = "v131-remove-chusei-green-park";
++const VERSION = "v133-miyagawa-nanairo-ikehara";
