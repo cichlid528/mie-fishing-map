@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v130-remove-selected-ponds";
-  const APP_STATUS_LABEL = "v130・指定池ポイント削除版";
+  const APP_VERSION = "v131-remove-chusei-green-park";
+  const APP_STATUS_LABEL = "v131・中勢グリーンパーク削除版";
   const GSI_POND_VECTOR_URLS = [
     // v121: スマホで外部PBF解析ライブラリが失敗しても動くよう、GeoJSONを先に試す。
     "https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/{z}/{x}/{y}.geojson",
@@ -59,7 +59,7 @@
   const LEGACY_SINGLE_KEY = "mieFishingMap.v1";
   const POINTS_CLEARED_STORAGE_KEY = "mie-fishing-map-v129-curated-spots-installed";
 
-  // v130: この版で削除するポイント。表記ゆれ（南部公園池/南部丘陵公園池、那坂/垂坂など）も同じ削除対象にする。
+  // v131: この版で削除するポイント。表記ゆれも同じ削除対象にする。
   const REMOVED_SPOT_IDS_V130 = new Set([
     "pond-kasado-reservoir",
     "pond-kameyama-sunshine",
@@ -67,7 +67,8 @@
     "pond-nanbu-kyuryo",
     "pond-tarusaka-park",
     "pond-mie-prefectural-forest",
-    "pond-daibutsuyama-park"
+    "pond-daibutsuyama-park",
+    "pond-chusei-green"
   ]);
   const REMOVED_SPOT_NAMES_V130 = new Set([
     "傘の調整池",
@@ -79,7 +80,11 @@
     "那坂公園池",
     "垂坂公園池",
     "三重県民の森池",
-    "大仏山公園池"
+    "大仏山公園池",
+    "中勢グリーンパーク池",
+    "中勢グリーンパーク",
+    "中世グリーンパーク池",
+    "中世グリーンパーク"
   ]);
 
   function isRemovedSpotV130(spot) {
@@ -117,7 +122,7 @@
     return POPULAR_SPECIES.has(String(name || "").trim());
   }
 
-  // v130: 指定リストから不要な池候補ポイントを削除した初期収録。
+  // v131: 中勢グリーンパーク池も除いた初期収録。
   const seedSpots = [
     { id: "lake-shorenji", name: "青蓮寺湖", type: "ダム", area: "名張市", lat: 34.600869, lng: 136.11885, zoom: 15, source: "指定リスト", subtype: "レイク・ダム湖" },
     { id: "lake-hinachi", name: "ひなち湖", type: "ダム", area: "名張市", lat: 34.614467, lng: 136.164028, zoom: 15, source: "指定リスト", subtype: "レイク・ダム湖" },
@@ -134,7 +139,6 @@
     { id: "pond-taisho", name: "大正池", type: "池", area: "伊賀市丸柱", lat: 34.856969, lng: 136.135019, zoom: 16, source: "指定リスト", candidate: true },
     { id: "pond-nameri", name: "なめり湖", type: "池", area: "松阪市嬉野森本町", lat: 34.585853, lng: 136.429147, zoom: 16, source: "指定リスト", candidate: true },
     { id: "pond-tsuga", name: "津賀池", type: "池", area: "鈴鹿市津賀町", lat: 34.897558, lng: 136.508433, zoom: 16, source: "指定リスト", candidate: true },
-    { id: "pond-chusei-green", name: "中勢グリーンパーク池", type: "池", area: "津市あのつ台", lat: 34.7601, lng: 136.5022, zoom: 16, source: "指定リスト", candidate: true },
     { id: "river-miyagawa", name: "宮川", type: "川", area: "伊勢市・大台町", lat: 34.514956, lng: 136.702382, zoom: 11, source: "指定リスト" },
     { id: "river-kumozu", name: "雲出川", type: "川", area: "津市・松阪市", lat: 34.647855, lng: 136.523611, zoom: 12, source: "指定リスト" },
     { id: "river-kushida", name: "櫛田川", type: "川", area: "松阪市・多気町", lat: 34.533946, lng: 136.579491, zoom: 12, source: "指定リスト" },
@@ -354,7 +358,7 @@
     state.positionOverrides = safeParse(localStorage.getItem(POSITION_STORAGE_KEY), {});
     state.backupMeta = safeParse(localStorage.getItem(BACKUP_META_STORAGE_KEY), {});
 
-    // v130: 以前の版や手動追加に残っている削除対象ポイントも、スマホ上で再表示されないよう整理する。
+    // v131: 以前の版や手動追加に残っている削除対象ポイントも、スマホ上で再表示されないよう整理する。
     let removedSpotCleanupChanged = false;
     const nextSavedState = {};
     Object.keys(state.savedState || {}).forEach((id) => {

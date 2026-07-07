@@ -1,4 +1,4 @@
-# v130・指定池ポイント削除版 アップロード手順
+# v131・中勢グリーンパーク削除版 アップロード手順
 
 1. ZIPを解凍します。
 2. 中身をGitHubリポジトリ `mie-fishing-map` の直下へ上書きアップロードします。
@@ -9,6 +9,6 @@ https://cichlid528.github.io/mie-fishing-map/reset-cache.html?auto=1
 
 5. その後、下のURLで確認します。
 
-https://cichlid528.github.io/mie-fishing-map/?v=v130-remove-selected-ponds
+https://cichlid528.github.io/mie-fishing-map/?v=v131-remove-chusei-green-park
 
-今回の変更: 指定されたレイク・ダム湖、池候補、川・河口、港・漁港、マリーナの合計62件を初期ポイントとして追加しました。
+今回の変更: 中勢グリーンパーク池をポイント一覧から削除しました。

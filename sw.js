@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bass-spot-log-";
-const VERSION = "v130-remove-selected-ponds";
+const VERSION = "v131-remove-chusei-green-park";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());
