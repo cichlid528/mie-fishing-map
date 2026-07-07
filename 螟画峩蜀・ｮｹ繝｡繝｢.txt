@@ -1,0 +1,18 @@
+変更内容メモ
+
+- app.js
+  - APP_VERSION を v118-clear-all-points に更新
+  - APP_STATUS_LABEL を v118・全ポイント削除版 に更新
+  - seedSpots を空配列に変更
+  - 初回起動時に localStorage の保存スポット、記録、位置調整を一度だけ空にする処理を追加
+  - 過去版の池候補追加/地理院池候補取得ボタン呼び出しがあれば無効化
+
+- pwa-install.js
+  - v115相当のシンプルなPWAインストール補助だけに戻す
+  - 地理院池候補取得、池候補追加、自動取得処理は含めない
+
+- index.html
+  - app.js / pwa-install.js / style.css の読み込みクエリを v118-clear-all-points に更新
+
+- clear-all-points.html
+  - 端末内のポイント系localStorageを手動削除する保険ページ
