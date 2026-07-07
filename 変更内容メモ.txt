@@ -1,0 +1,22 @@
+v127 変更内容
+
+- app.js
+  - APP_VERSION を v127-clear-all-points-strict に更新
+  - APP_STATUS_LABEL を v127・全ポイント削除版 に更新
+  - seedSpots を空配列に変更
+  - 国土地理院池候補のURL・補助候補・読み込みライブラリを空に変更
+  - installGsiPondButton() を無効化
+  - init() から installGsiPondButton() 呼び出しを削除
+  - loadState() に端末内ポイント削除の一度きり処理を追加
+
+- index.html
+  - 読み込みバージョンを v127 に更新
+  - 池候補フィルターを削除
+  - 表示バージョンを v127・全ポイント削除版 に更新
+
+- pwa-install.js
+  - 起動時に端末内ポイントを一度だけ削除
+  - キャッシュ削除も継続
+
+- clear-all-points.html
+  - 端末に残ったデータを手動削除する保険ページ
