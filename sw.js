@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bass-spot-log-";
-const VERSION = "v127-clear-spots-remove-candidate";
+const VERSION = "v129-smartphone-force-refresh";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());

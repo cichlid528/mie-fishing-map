@@ -1,4 +1,4 @@
-# v128・指定ポイント追加版 アップロード手順
+# v129・スマホ反映強制更新版 アップロード手順
 
 1. ZIPを解凍します。
 2. 中身をGitHubリポジトリ `mie-fishing-map` の直下へ上書きアップロードします。
@@ -9,6 +9,6 @@ https://cichlid528.github.io/mie-fishing-map/reset-cache.html?auto=1
 
 5. その後、下のURLで確認します。
 
-https://cichlid528.github.io/mie-fishing-map/?v=v128-curated-spot-list
+https://cichlid528.github.io/mie-fishing-map/?v=v129-smartphone-force-refresh
 
 今回の変更: 指定されたレイク・ダム湖、池候補、川・河口、港・漁港、マリーナの合計62件を初期ポイントとして追加しました。

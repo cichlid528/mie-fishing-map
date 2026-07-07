@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v128-curated-spot-list";
-  const APP_STATUS_LABEL = "v128・指定ポイント追加版";
+  const APP_VERSION = "v129-smartphone-force-refresh";
+  const APP_STATUS_LABEL = "v129・スマホ反映強制更新版";
   const GSI_POND_VECTOR_URLS = [
     // v121: スマホで外部PBF解析ライブラリが失敗しても動くよう、GeoJSONを先に試す。
     "https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/{z}/{x}/{y}.geojson",
@@ -57,7 +57,7 @@
   const BACKUP_META_STORAGE_KEY = "mie-fishing-map-backup-meta-v1";
   const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v86";
   const LEGACY_SINGLE_KEY = "mieFishingMap.v1";
-  const POINTS_CLEARED_STORAGE_KEY = "mie-fishing-map-v127-points-cleared";
+  const POINTS_CLEARED_STORAGE_KEY = "mie-fishing-map-v129-curated-spots-installed";
 
   // v104: 地図の拡大縮小は残し、メニュー/UI側のページ拡大を防止。
   const MIE_CENTER = [34.55, 136.48];
@@ -87,7 +87,7 @@
     return POPULAR_SPECIES.has(String(name || "").trim());
   }
 
-  // v128: ユーザー指定リストの釣り場ポイントを初期収録。
+  // v129: スマホでも指定リストが確実に反映されるよう初期収録。
   const seedSpots = [
     { id: "lake-shorenji", name: "青蓮寺湖", type: "ダム", area: "名張市", lat: 34.600869, lng: 136.11885, zoom: 15, source: "指定リスト", subtype: "レイク・ダム湖" },
     { id: "lake-hinachi", name: "ひなち湖", type: "ダム", area: "名張市", lat: 34.614467, lng: 136.164028, zoom: 15, source: "指定リスト", subtype: "レイク・ダム湖" },
@@ -313,7 +313,7 @@
   }
 
   function loadState() {
-    // v128: 以前の手動追加ポイント・古い池候補を一度だけ整理して、指定リストを基準に始める。
+    // v129: スマホにv127の「ポイント初期化」状態が残っていても、指定リスト62件を確実に表示する。
     // 釣果記録は安全のため残します。
     if (!localStorage.getItem(POINTS_CLEARED_STORAGE_KEY)) {
       localStorage.removeItem(STORAGE_KEY);
