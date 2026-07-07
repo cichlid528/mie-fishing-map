@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v125-list-focus-hard-fix";
-  const APP_STATUS_LABEL = "v125・一覧クリック地図移動修正版";
+  const APP_VERSION = "v126-menu-zoom-button-fix";
+  const APP_STATUS_LABEL = "v126・メニューボタン位置修正版";
   const GSI_POND_VECTOR_URLS = [
     // v121: スマホで外部PBF解析ライブラリが失敗しても動くよう、GeoJSONを先に試す。
     "https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/{z}/{x}/{y}.geojson",

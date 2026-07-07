@@ -3599,3 +3599,33 @@ body.map-popup-open.spot-card-open #spotCard.spot-card:not(.is-hidden) {
     display: none !important;
   }
 }
+
+/* v126: スマホのメニューボタンをLeafletの拡大縮小ボタンと重ならない位置へ移動 */
+@media (max-width: 920px) {
+  #menuToggle.mobile-menu-button {
+    top: calc(84px + env(safe-area-inset-top)) !important;
+    left: calc(12px + env(safe-area-inset-left)) !important;
+    min-width: 104px !important;
+    min-height: 44px !important;
+    padding: 10px 13px !important;
+    z-index: 2147483600 !important;
+  }
+  #map .leaflet-top.leaflet-left,
+  .leaflet-top.leaflet-left {
+    top: calc(4px + env(safe-area-inset-top)) !important;
+    left: calc(4px + env(safe-area-inset-left)) !important;
+  }
+  #map .leaflet-control-zoom,
+  .leaflet-control-zoom {
+    margin-top: 10px !important;
+    margin-left: 10px !important;
+  }
+  body.menu-open #menuToggle.mobile-menu-button,
+  body.panel-open #menuToggle.mobile-menu-button,
+  body.position-adjusting #menuToggle.mobile-menu-button,
+  body.map-popup-open #menuToggle.mobile-menu-button,
+  body.record-popup-open #menuToggle.mobile-menu-button {
+    display: none !important;
+  }
+}
+

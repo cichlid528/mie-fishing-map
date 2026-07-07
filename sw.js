@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bass-spot-log-";
-const VERSION = "v125-list-focus-hard-fix";
+const VERSION = "v126-menu-zoom-button-fix";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());
