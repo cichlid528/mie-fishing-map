@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v129-smartphone-force-refresh";
-  const APP_STATUS_LABEL = "v129・スマホ反映強制更新版";
+  const APP_VERSION = "v130-remove-selected-ponds";
+  const APP_STATUS_LABEL = "v130・指定池ポイント削除版";
   const GSI_POND_VECTOR_URLS = [
     // v121: スマホで外部PBF解析ライブラリが失敗しても動くよう、GeoJSONを先に試す。
     "https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/{z}/{x}/{y}.geojson",
@@ -59,6 +59,36 @@
   const LEGACY_SINGLE_KEY = "mieFishingMap.v1";
   const POINTS_CLEARED_STORAGE_KEY = "mie-fishing-map-v129-curated-spots-installed";
 
+  // v130: この版で削除するポイント。表記ゆれ（南部公園池/南部丘陵公園池、那坂/垂坂など）も同じ削除対象にする。
+  const REMOVED_SPOT_IDS_V130 = new Set([
+    "pond-kasado-reservoir",
+    "pond-kameyama-sunshine",
+    "pond-kameyama-park",
+    "pond-nanbu-kyuryo",
+    "pond-tarusaka-park",
+    "pond-mie-prefectural-forest",
+    "pond-daibutsuyama-park"
+  ]);
+  const REMOVED_SPOT_NAMES_V130 = new Set([
+    "傘の調整池",
+    "加佐登調整池",
+    "亀山サンシャインパーク池",
+    "亀山公園池",
+    "南部公園池",
+    "南部丘陵公園池",
+    "那坂公園池",
+    "垂坂公園池",
+    "三重県民の森池",
+    "大仏山公園池"
+  ]);
+
+  function isRemovedSpotV130(spot) {
+    if (!spot) return false;
+    const id = String(spot.id || "").trim();
+    const name = String(spot.name || "").trim();
+    return REMOVED_SPOT_IDS_V130.has(id) || REMOVED_SPOT_NAMES_V130.has(name);
+  }
+
   // v104: 地図の拡大縮小は残し、メニュー/UI側のページ拡大を防止。
   const MIE_CENTER = [34.55, 136.48];
   const MIE_HOME_ZOOM = 9;
@@ -87,7 +117,7 @@
     return POPULAR_SPECIES.has(String(name || "").trim());
   }
 
-  // v129: スマホでも指定リストが確実に反映されるよう初期収録。
+  // v130: 指定リストから不要な池候補ポイントを削除した初期収録。
   const seedSpots = [
     { id: "lake-shorenji", name: "青蓮寺湖", type: "ダム", area: "名張市", lat: 34.600869, lng: 136.11885, zoom: 15, source: "指定リスト", subtype: "レイク・ダム湖" },
     { id: "lake-hinachi", name: "ひなち湖", type: "ダム", area: "名張市", lat: 34.614467, lng: 136.164028, zoom: 15, source: "指定リスト", subtype: "レイク・ダム湖" },
@@ -104,14 +134,7 @@
     { id: "pond-taisho", name: "大正池", type: "池", area: "伊賀市丸柱", lat: 34.856969, lng: 136.135019, zoom: 16, source: "指定リスト", candidate: true },
     { id: "pond-nameri", name: "なめり湖", type: "池", area: "松阪市嬉野森本町", lat: 34.585853, lng: 136.429147, zoom: 16, source: "指定リスト", candidate: true },
     { id: "pond-tsuga", name: "津賀池", type: "池", area: "鈴鹿市津賀町", lat: 34.897558, lng: 136.508433, zoom: 16, source: "指定リスト", candidate: true },
-    { id: "pond-kasado-reservoir", name: "加佐登調整池", type: "池", area: "鈴鹿市加佐登", lat: 34.8874, lng: 136.5315, zoom: 16, source: "指定リスト", candidate: true },
-    { id: "pond-kameyama-sunshine", name: "亀山サンシャインパーク池", type: "池", area: "亀山市布気町", lat: 34.8578, lng: 136.4848, zoom: 16, source: "指定リスト", candidate: true },
-    { id: "pond-kameyama-park", name: "亀山公園池", type: "池", area: "亀山市若山町", lat: 34.8587, lng: 136.4527, zoom: 16, source: "指定リスト", candidate: true },
-    { id: "pond-nanbu-kyuryo", name: "南部丘陵公園池", type: "池", area: "四日市市波木町", lat: 34.9398, lng: 136.5825, zoom: 16, source: "指定リスト", candidate: true },
-    { id: "pond-tarusaka-park", name: "垂坂公園池", type: "池", area: "四日市市垂坂町", lat: 35.0115, lng: 136.6122, zoom: 16, source: "指定リスト", candidate: true },
     { id: "pond-chusei-green", name: "中勢グリーンパーク池", type: "池", area: "津市あのつ台", lat: 34.7601, lng: 136.5022, zoom: 16, source: "指定リスト", candidate: true },
-    { id: "pond-mie-prefectural-forest", name: "三重県民の森池", type: "池", area: "菰野町千草", lat: 35.0335, lng: 136.4594, zoom: 16, source: "指定リスト", candidate: true },
-    { id: "pond-daibutsuyama-park", name: "大仏山公園池", type: "池", area: "明和町・伊勢市周辺", lat: 34.5136, lng: 136.6367, zoom: 16, source: "指定リスト", candidate: true },
     { id: "river-miyagawa", name: "宮川", type: "川", area: "伊勢市・大台町", lat: 34.514956, lng: 136.702382, zoom: 11, source: "指定リスト" },
     { id: "river-kumozu", name: "雲出川", type: "川", area: "津市・松阪市", lat: 34.647855, lng: 136.523611, zoom: 12, source: "指定リスト" },
     { id: "river-kushida", name: "櫛田川", type: "川", area: "松阪市・多気町", lat: 34.533946, lng: 136.579491, zoom: 12, source: "指定リスト" },
@@ -330,6 +353,29 @@
     state.catches = safeParse(localStorage.getItem(CATCH_STORAGE_KEY), []).map(normalizeRecord);
     state.positionOverrides = safeParse(localStorage.getItem(POSITION_STORAGE_KEY), {});
     state.backupMeta = safeParse(localStorage.getItem(BACKUP_META_STORAGE_KEY), {});
+
+    // v130: 以前の版や手動追加に残っている削除対象ポイントも、スマホ上で再表示されないよう整理する。
+    let removedSpotCleanupChanged = false;
+    const nextSavedState = {};
+    Object.keys(state.savedState || {}).forEach((id) => {
+      if (!REMOVED_SPOT_IDS_V130.has(String(id || "").trim())) nextSavedState[id] = state.savedState[id];
+      else removedSpotCleanupChanged = true;
+    });
+    state.savedState = nextSavedState;
+    const customBefore = state.customSpots.length;
+    state.customSpots = state.customSpots.filter((spot) => !isRemovedSpotV130(spot));
+    if (state.customSpots.length !== customBefore) removedSpotCleanupChanged = true;
+    const nextPositionOverrides = {};
+    Object.keys(state.positionOverrides || {}).forEach((id) => {
+      if (!REMOVED_SPOT_IDS_V130.has(String(id || "").trim())) nextPositionOverrides[id] = state.positionOverrides[id];
+      else removedSpotCleanupChanged = true;
+    });
+    state.positionOverrides = nextPositionOverrides;
+    if (removedSpotCleanupChanged) {
+      saveJson(STORAGE_KEY, state.savedState);
+      saveJson(CUSTOM_SPOT_STORAGE_KEY, state.customSpots);
+      saveJson(POSITION_STORAGE_KEY, state.positionOverrides);
+    }
 
     const legacy = safeParse(localStorage.getItem(LEGACY_SINGLE_KEY), null);
     if (false && legacy && state.customSpots.length === 0 && Array.isArray(legacy.spots)) {
