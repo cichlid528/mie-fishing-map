@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v126-menu-zoom-button-fix";
-  const APP_STATUS_LABEL = "v126・メニューボタン位置修正版";
+  const APP_VERSION = "v127-clear-spots-remove-candidate";
+  const APP_STATUS_LABEL = "v127・ポイント初期化版";
   const GSI_POND_VECTOR_URLS = [
     // v121: スマホで外部PBF解析ライブラリが失敗しても動くよう、GeoJSONを先に試す。
     "https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/{z}/{x}/{y}.geojson",
@@ -57,6 +57,7 @@
   const BACKUP_META_STORAGE_KEY = "mie-fishing-map-backup-meta-v1";
   const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v86";
   const LEGACY_SINGLE_KEY = "mieFishingMap.v1";
+  const POINTS_CLEARED_STORAGE_KEY = "mie-fishing-map-v127-points-cleared";
 
   // v104: 地図の拡大縮小は残し、メニュー/UI側のページ拡大を防止。
   const MIE_CENTER = [34.55, 136.48];
@@ -86,102 +87,8 @@
     return POPULAR_SPECIES.has(String(name || "").trim());
   }
 
-  const seedSpots = [
-    { id: "ano-river", name: "安濃川", type: "川", area: "津市・芸濃町周辺", lat: 34.727056, lng: 136.515436, zoom: 13 },
-    { id: "shidomo-river", name: "志登茂川", type: "川", area: "津市北部", lat: 34.766730, lng: 136.505533, zoom: 13 },
-    { id: "iwata-river", name: "岩田川", type: "川", area: "津市中心部", lat: 34.713058, lng: 136.514262, zoom: 14 },
-    { id: "kumozu-river", name: "雲出川", type: "川", area: "津市・松阪市", lat: 34.647855, lng: 136.523611, zoom: 12 },
-    { id: "kushida-river", name: "櫛田川", type: "川", area: "松阪市・多気町", lat: 34.533946, lng: 136.579491, zoom: 12 },
-    { id: "miya-river", name: "宮川", type: "川", area: "伊勢市・大台町", lat: 34.514956, lng: 136.702382, zoom: 11 },
-    { id: "suzuka-river", name: "鈴鹿川", type: "川", area: "鈴鹿市・亀山市", lat: 34.894369, lng: 136.561703, zoom: 12 },
-    { id: "machiya-river", name: "町屋川", type: "川", area: "四日市市・桑名市", lat: 35.0128, lng: 136.6610, zoom: 12 },
-    { id: "ano-dam", name: "安濃ダム", type: "ダム", area: "津市芸濃町", lat: 34.807137, lng: 136.383074, zoom: 15 },
-    { id: "kimigano-dam", name: "君ヶ野ダム", type: "ダム", area: "津市美杉町", lat: 34.597100, lng: 136.313183, zoom: 15 },
-    { id: "misetani-dam", name: "三瀬谷ダム", type: "ダム", area: "多気郡大台町", lat: 34.3892, lng: 136.4011, zoom: 15 },
-    { id: "miyagawa-dam", name: "宮川ダム", type: "ダム", area: "多気郡大台町", lat: 34.286385, lng: 136.193360, zoom: 14 },
-    { id: "hachisu-dam", name: "蓮ダム", type: "ダム", area: "松阪市飯高町", lat: 34.379054, lng: 136.208732, zoom: 14 },
-    { id: "hinachi-dam", name: "比奈知ダム", type: "ダム", area: "名張市", lat: 34.613780, lng: 136.155521, zoom: 15 },
-    { id: "shorenji-dam", name: "青蓮寺ダム", type: "ダム", area: "名張市", lat: 34.604084, lng: 136.119925, zoom: 15 },
-    { id: "isakadamu", name: "伊坂ダム", type: "ダム", area: "四日市市", lat: 35.0386, lng: 136.6186, zoom: 15 },
-    { id: "shakujo-lake", name: "錫杖湖", type: "ダム", area: "津市芸濃町", lat: 34.806622, lng: 136.378553, zoom: 15, source: "国土地理院", subtype: "ダム湖" },
-    { id: "okukahada-lake", name: "奥香肌湖", type: "ダム", area: "松阪市飯高町", lat: 34.376861, lng: 136.196586, zoom: 14, source: "国土地理院", subtype: "ダム湖" },
-    { id: "shorenji-lake", name: "青蓮寺湖", type: "ダム", area: "名張市", lat: 34.600869, lng: 136.118850, zoom: 15, source: "国土地理院", subtype: "ダム湖" },
-    { id: "hinachi-lake", name: "ひなち湖", type: "ダム", area: "名張市", lat: 34.614467, lng: 136.164028, zoom: 15, source: "国土地理院", subtype: "ダム湖" },
-    { id: "nanairo-reservoir", name: "七色貯水池", type: "ダム", area: "熊野市・紀和町周辺", lat: 33.991304, lng: 136.004799, zoom: 14, source: "国土地理院", subtype: "ダム湖" },
-    { id: "isaka-reservoir", name: "伊坂貯水池", type: "ダム", area: "四日市市", lat: 35.041625, lng: 136.616311, zoom: 15, source: "国土地理院", subtype: "ダム湖" },
-    { id: "gokatsura-pond", name: "五桂池", type: "池", area: "多気町五桂", lat: 34.466625, lng: 136.545533, zoom: 15, source: "三重県ため池DB", candidate: true },
-    { id: "ishigaki-pond", name: "石垣池", type: "池", area: "鈴鹿市西玉垣町", lat: 34.856058, lng: 136.564767, zoom: 15, source: "三重県ため池DB", candidate: true },
-    { id: "official-pond-001", name: "なめり湖", type: "池", area: "松阪市嬉野森本町", lat: 34.585853, lng: 136.429147, zoom: 16, source: "三重県ため池DB", candidate: true },
-    { id: "official-pond-002", name: "真泥池", type: "池", area: "伊賀市真泥", lat: 34.761728, lng: 136.193772, zoom: 16, source: "三重県ため池DB", candidate: true },
-    { id: "official-pond-003", name: "滝谷池", type: "池", area: "伊賀市槇山", lat: 34.882522, lng: 136.115892, zoom: 16, source: "三重県ため池DB", candidate: true },
-    { id: "official-pond-004", name: "横山池", type: "池", area: "津市芸濃町椋本", lat: 34.815886, lng: 136.419051, zoom: 16, source: "三重県ため池DB", candidate: true },
-    { id: "official-pond-005", name: "風早池", type: "池", area: "津市戸木町", lat: 34.689244, lng: 136.453000, zoom: 16, source: "三重県ため池DB", candidate: true },
-    { id: "official-pond-006", name: "笠田大溜", type: "池", area: "いなべ市員弁町笠田新田", lat: 35.130256, lng: 136.559475, zoom: 16, source: "三重県ため池DB", candidate: true },
-    { id: "official-pond-007", name: "大正池", type: "池", area: "伊賀市丸柱", lat: 34.856969, lng: 136.135019, zoom: 16, source: "三重県ため池DB", candidate: true },
-    { id: "official-pond-008", name: "古田池", type: "池", area: "松阪市嬉野宮野町", lat: 34.612864, lng: 136.407917, zoom: 16, source: "三重県ため池DB", candidate: true },
-    { id: "official-pond-009", name: "津賀池", type: "池", area: "鈴鹿市津賀町", lat: 34.897558, lng: 136.508433, zoom: 16, source: "三重県ため池DB", candidate: true },
-    { id: "official-pond-010", name: "惣谷池", type: "池", area: "津市白山町上ﾉ村", lat: 34.677294, lng: 136.324125, zoom: 16, source: "三重県ため池DB", candidate: true },
-    { id: "official-pond-011", name: "牛尾崎池", type: "池", area: "度会郡玉城町上田辺", lat: 34.498581, lng: 136.620492, zoom: 16, source: "三重県ため池DB", candidate: true },
-    { id: "official-pond-012", name: "大杣池", type: "池", area: "伊賀市柘植町", lat: 34.843558, lng: 136.283369, zoom: 16, source: "三重県ため池DB", candidate: true },
-    { id: "official-pond-013", name: "鴉山池", type: "池", area: "伊賀市柘植町", lat: 34.842808, lng: 136.274119, zoom: 16, source: "三重県ため池DB", candidate: true },
-    { id: "official-pond-014", name: "七郷池", type: "池", area: "津市安濃町草生", lat: 34.752133, lng: 136.415111, zoom: 16, source: "三重県ため池DB", candidate: true },
-    { id: "official-pond-015", name: "高束池", type: "池", area: "松阪市飯南町粥見", lat: 34.444714, lng: 136.366378, zoom: 16, source: "三重県ため池DB", candidate: true },
-    { id: "official-pond-016", name: "汁谷池", type: "池", area: "度会郡玉城町宮古", lat: 34.458917, lng: 136.628175, zoom: 16, source: "三重県ため池DB", candidate: true },
-    { id: "official-pond-017", name: "竹谷池", type: "池", area: "伊賀市柘植町", lat: 34.834647, lng: 136.261289, zoom: 16, source: "三重県ため池DB", candidate: true },
-    { id: "official-pond-018", name: "両ヶ池", type: "池", area: "いなべ市大安町平塚", lat: 35.103506, lng: 136.526503, zoom: 16, source: "三重県ため池DB", candidate: true },
-    { id: "official-pond-019", name: "山田池", type: "池", area: "津市森町北谷", lat: 34.686578, lng: 136.422500, zoom: 16, source: "三重県ため池DB", candidate: true },
-    { id: "official-pond-020", name: "嘉古部池", type: "池", area: "津市美里町三郷", lat: 34.729759, lng: 136.393052, zoom: 16, source: "三重県ため池DB", candidate: true },
-    { id: "nanairo-dam", name: "七色ダム", type: "ダム", area: "熊野市・紀和町周辺", lat: 33.962596, lng: 136.002566, zoom: 14 },
-    { id: "port-yokkaichi", name: "四日市港", type: "港", area: "四日市市", lat: 34.9577, lng: 136.6421, zoom: 15 },
-    { id: "port-shiroko", name: "白子漁港", type: "港", area: "鈴鹿市白子", lat: 34.8288, lng: 136.6048, zoom: 17 },
-    { id: "port-tsu", name: "津港", type: "港", area: "津市なぎさまち周辺", lat: 34.7276, lng: 136.5311, zoom: 16 },
-    { id: "port-matsusaka", name: "松阪港", type: "港", area: "松阪市大口町周辺", lat: 34.5987, lng: 136.5829, zoom: 16 },
-    { id: "port-toba", name: "鳥羽港", type: "港", area: "鳥羽市鳥羽", lat: 34.4868, lng: 136.8462, zoom: 16 },
-    { id: "port-owase", name: "尾鷲港", type: "港", area: "尾鷲市", lat: 34.0713, lng: 136.2025, zoom: 16 },
-    { id: "marina-kawage", name: "マリーナ河芸", type: "マリーナ", area: "津市河芸町東千里", lat: 34.798339, lng: 136.562838, zoom: 18 },
-    { id: "marina-tsu-yacht", name: "津ヨットハーバー", type: "マリーナ", area: "津市津興", lat: 34.708344, lng: 136.524048, zoom: 17 },
-    { id: "marina-toba", name: "鳥羽マリーナ", type: "マリーナ", area: "鳥羽市千賀町", lat: 34.388732, lng: 136.880716, zoom: 17 },
-    { id: "kawakami-dam", name: "川上ダム", type: "ダム", area: "伊賀市", lat: 34.7003, lng: 136.1404, zoom: 15, source: "国土地理院目視調整" },
-    { id: "nakazato-dam", name: "中里ダム", type: "ダム", area: "いなべ市藤原町", lat: 35.1516, lng: 136.4997, zoom: 15, source: "国土地理院目視調整" },
-    { id: "nagaragawa-estuary-barrage", name: "長良川河口堰", type: "ダム", area: "桑名市長島町", lat: 35.0707, lng: 136.6917, zoom: 15, source: "国土地理院目視調整" },
-    { id: "kasado-reservoir", name: "加佐登調整池", type: "池", area: "鈴鹿市加佐登", lat: 34.8874, lng: 136.5315, zoom: 16, source: "国土地理院目視調整", candidate: true },
-    { id: "kameyama-sunshine-pond", name: "亀山サンシャインパーク池", type: "池", area: "亀山市布気町", lat: 34.8578, lng: 136.4848, zoom: 16, source: "国土地理院目視調整", candidate: true },
-    { id: "kameyama-park-pond", name: "亀山公園池", type: "池", area: "亀山市若山町", lat: 34.8587, lng: 136.4527, zoom: 16, source: "国土地理院目視調整", candidate: true },
-    { id: "nanbu-kyuryo-park-pond", name: "南部丘陵公園池", type: "池", area: "四日市市波木町", lat: 34.9398, lng: 136.5825, zoom: 16, source: "国土地理院目視調整", candidate: true },
-    { id: "tarusaka-park-pond", name: "垂坂公園池", type: "池", area: "四日市市垂坂町", lat: 35.0115, lng: 136.6122, zoom: 16, source: "国土地理院目視調整", candidate: true },
-    { id: "chusei-green-park-pond", name: "中勢グリーンパーク池", type: "池", area: "津市あのつ台", lat: 34.7601, lng: 136.5022, zoom: 16, source: "国土地理院目視調整", candidate: true },
-    { id: "mie-prefectural-forest-pond", name: "三重県民の森池", type: "池", area: "菰野町千草", lat: 35.0335, lng: 136.4594, zoom: 16, source: "国土地理院目視調整", candidate: true },
-    { id: "daibutsuyama-park-pond", name: "大仏山公園池", type: "池", area: "明和町・伊勢市周辺", lat: 34.5136, lng: 136.6367, zoom: 16, source: "国土地理院目視調整", candidate: true },
-    { id: "kuwana-port", name: "桑名港", type: "港", area: "桑名市", lat: 35.0639, lng: 136.7005, zoom: 16, source: "国土地理院文字位置目安" },
-    { id: "tomisu-hara-port", name: "富洲原港", type: "港", area: "四日市市富洲原", lat: 35.0108, lng: 136.6639, zoom: 16, source: "国土地理院文字位置目安" },
-    { id: "kasumigaura-wharf", name: "霞ヶ浦ふ頭", type: "港", area: "四日市市霞", lat: 34.9727, lng: 136.6483, zoom: 16, source: "国土地理院文字位置目安" },
-    { id: "isodu-fishing-port", name: "磯津漁港", type: "港", area: "四日市市磯津", lat: 34.9033, lng: 136.6402, zoom: 16, source: "国土地理院文字位置目安" },
-    { id: "kusu-fishing-port", name: "楠漁港", type: "港", area: "四日市市楠町", lat: 34.8969, lng: 136.6322, zoom: 16, source: "国土地理院文字位置目安" },
-    { id: "chiyozaki-fishing-port", name: "千代崎漁港", type: "港", area: "鈴鹿市南若松町", lat: 34.8481, lng: 136.6214, zoom: 16, source: "国土地理院文字位置目安" },
-    { id: "kawage-fishing-port", name: "河芸漁港", type: "港", area: "津市河芸町", lat: 34.8038, lng: 136.5699, zoom: 16, source: "国土地理院文字位置目安" },
-    { id: "karasu-fishing-port", name: "香良洲漁港", type: "港", area: "津市香良洲町", lat: 34.6665, lng: 136.5386, zoom: 16, source: "国土地理院文字位置目安" },
-    { id: "oyodo-fishing-port", name: "大淀漁港", type: "港", area: "明和町大淀", lat: 34.5402, lng: 136.6570, zoom: 16, source: "国土地理院文字位置目安" },
-    { id: "futami-fishing-port", name: "二見浦漁港", type: "港", area: "伊勢市二見町", lat: 34.5102, lng: 136.7812, zoom: 16, source: "国土地理院文字位置目安" },
-    { id: "matsushita-fishing-port", name: "松下漁港", type: "港", area: "伊勢市二見町松下", lat: 34.5041, lng: 136.8035, zoom: 16, source: "国土地理院文字位置目安" },
-    { id: "sakate-port", name: "坂手港", type: "港", area: "鳥羽市坂手町", lat: 34.4851, lng: 136.8625, zoom: 16, source: "国土地理院文字位置目安" },
-    { id: "arashima-fishing-port", name: "安楽島漁港", type: "港", area: "鳥羽市安楽島町", lat: 34.4759, lng: 136.8659, zoom: 16, source: "国土地理院文字位置目安" },
-    { id: "ijika-fishing-port", name: "石鏡漁港", type: "港", area: "鳥羽市石鏡町", lat: 34.4478, lng: 136.9219, zoom: 16, source: "国土地理院文字位置目安" },
-    { id: "kunizaki-fishing-port", name: "国崎漁港", type: "港", area: "鳥羽市国崎町", lat: 34.4193, lng: 136.9230, zoom: 16, source: "国土地理院文字位置目安" },
-    { id: "osatsu-fishing-port", name: "相差漁港", type: "港", area: "鳥羽市相差町", lat: 34.3890, lng: 136.9053, zoom: 16, source: "国土地理院文字位置目安" },
-    { id: "nakiri-fishing-port", name: "波切漁港", type: "港", area: "志摩市大王町波切", lat: 34.2761, lng: 136.8990, zoom: 16, source: "国土地理院文字位置目安" },
-    { id: "katada-fishing-port", name: "片田漁港", type: "港", area: "志摩市志摩町片田", lat: 34.2498, lng: 136.8394, zoom: 16, source: "国土地理院文字位置目安" },
-    { id: "wagu-fishing-port", name: "和具漁港", type: "港", area: "志摩市志摩町和具", lat: 34.2526, lng: 136.7877, zoom: 16, source: "国土地理院文字位置目安" },
-    { id: "hamajima-port", name: "浜島港", type: "港", area: "志摩市浜島町", lat: 34.2975, lng: 136.7580, zoom: 16, source: "国土地理院文字位置目安" },
-    { id: "gokasho-port", name: "五ヶ所浦漁港", type: "港", area: "南伊勢町五ヶ所浦", lat: 34.3510, lng: 136.7013, zoom: 16, source: "国土地理院文字位置目安" },
-    { id: "nishiki-fishing-port", name: "錦漁港", type: "港", area: "大紀町錦", lat: 34.2116, lng: 136.3969, zoom: 16, source: "国土地理院文字位置目安" },
-    { id: "kiinagashima-port", name: "紀伊長島港", type: "港", area: "紀北町長島", lat: 34.2080, lng: 136.3372, zoom: 16, source: "国土地理院文字位置目安" },
-    { id: "hikimoto-port", name: "引本港", type: "港", area: "紀北町引本浦", lat: 34.1306, lng: 136.2361, zoom: 16, source: "国土地理院文字位置目安" },
-    { id: "kuki-fishing-port", name: "九鬼漁港", type: "港", area: "尾鷲市九鬼町", lat: 33.9965, lng: 136.2517, zoom: 16, source: "国土地理院文字位置目安" },
-    { id: "kata-port", name: "賀田港", type: "港", area: "尾鷲市賀田町", lat: 33.9724, lng: 136.2214, zoom: 16, source: "国土地理院文字位置目安" },
-    { id: "atashika-port", name: "新鹿港", type: "港", area: "熊野市新鹿町", lat: 33.9309, lng: 136.1404, zoom: 16, source: "国土地理院文字位置目安" },
-    { id: "kinomoto-port", name: "木本港", type: "港", area: "熊野市木本町", lat: 33.8898, lng: 136.1016, zoom: 16, source: "国土地理院文字位置目安" },
-    { id: "udono-port", name: "鵜殿港", type: "港", area: "紀宝町鵜殿", lat: 33.7338, lng: 136.0120, zoom: 16, source: "国土地理院文字位置目安" }
-  ];
+  // v127: 初期収録の釣り場ポイントは全削除。必要な場所は「釣り場追加」から登録します。
+  const seedSpots = [];
 
   const $ = (id) => document.getElementById(id);
   const els = {};
@@ -343,6 +250,14 @@
   }
 
   function loadState() {
+    // v127: 以前の内蔵ポイント・池候補・手動追加ポイントを一度だけ消して、空の地図から始める。
+    // 釣果記録は安全のため残します。
+    if (!localStorage.getItem(POINTS_CLEARED_STORAGE_KEY)) {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(CUSTOM_SPOT_STORAGE_KEY);
+      localStorage.removeItem(POSITION_STORAGE_KEY);
+      localStorage.setItem(POINTS_CLEARED_STORAGE_KEY, JSON.stringify({ clearedAt: new Date().toISOString(), version: APP_VERSION }));
+    }
     state.savedState = safeParse(localStorage.getItem(STORAGE_KEY), {});
     Object.keys(state.savedState).forEach((id) => {
       state.savedState[id] = normalizeSavedSpotState(state.savedState[id]);
@@ -354,7 +269,7 @@
     state.backupMeta = safeParse(localStorage.getItem(BACKUP_META_STORAGE_KEY), {});
 
     const legacy = safeParse(localStorage.getItem(LEGACY_SINGLE_KEY), null);
-    if (legacy && state.customSpots.length === 0 && Array.isArray(legacy.spots)) {
+    if (false && legacy && state.customSpots.length === 0 && Array.isArray(legacy.spots)) {
       state.customSpots = legacy.spots.map((spot) => ({
         ...spot,
         id: spot.id || uid("spot"),
@@ -1102,7 +1017,7 @@
         ${spotFlagControl(spot.id, "noFishing", Boolean(s.noFishing), "禁止", "禁", "—", true)}
         ${spotFlagControl(spot.id, "parking", Boolean(s.parking), "駐車", "P")}
       </div>`;
-    }).join("") : '<p class="empty">該当する釣り場がありません。</p>';
+    }).join("") : '<p class="empty">釣り場ポイントはありません。地図の「釣り場追加」から登録できます。</p>';
   }
 
   function saveSpotListState(spotId) {
@@ -2941,32 +2856,8 @@
   }
 
   function installGsiPondButton() {
-    const tools = document.querySelector(".map-tools");
-    if (tools && !document.getElementById("scanGsiPondCandidates")) {
-      const button = document.createElement("button");
-      button.id = "scanGsiPondCandidates";
-      button.type = "button";
-      button.className = "spot-mode-button";
-      button.textContent = "地図ラベル名で池候補追加";
-      button.title = "目的の『○○池』ラベルを画面中央に合わせて押すと、地図ラベル名を読み取って池候補として追加します。取得できない場合は池名入力で追加できます。";
-      bindGsiPondButton(button);
-      tools.appendChild(button);
-    }
-
-    const controls = document.querySelector(".controls");
-    if (controls && !document.getElementById("scanGsiPondCandidatesMenu")) {
-      const button = document.createElement("button");
-      button.id = "scanGsiPondCandidatesMenu";
-      button.type = "button";
-      button.className = "data-button gsi-pond-menu-button";
-      button.textContent = "地図ラベル名で池候補追加";
-      button.title = "目的の『○○池』ラベルを画面中央に合わせて押すと、地図ラベル名で池候補として追加します。";
-      button.style.width = "100%";
-      button.style.marginTop = "8px";
-      bindGsiPondButton(button);
-      const notice = controls.querySelector(".notice-banner");
-      controls.insertBefore(button, notice || null);
-    }
+    // v127: 池候補追加ボタンは削除。釣り場は「釣り場追加」から手動登録します。
+    return;
   }
 
   function registerServiceWorker() {
