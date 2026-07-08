@@ -1,13 +1,13 @@
 (() => {
   "use strict";
 
-  const PATCH_VERSION = "v149-pet-speed-light-bigger-text";
-  const PATCH_STATUS_LABEL = "v149・釣りニャン高速化・軽量化版";
+  const PATCH_VERSION = "v150-pet-light-float";
+  const PATCH_STATUS_LABEL = "v150・釣りニャン軽量ふわふわ復活版";
   const SOURCE_APP_URLS = [
     "https://cdn.jsdelivr.net/gh/cichlid528/mie-fishing-map@486490f1fda171ba9dfdf8ac9a431d4b3b09c530/app.js",
     "https://raw.githubusercontent.com/cichlid528/mie-fishing-map/486490f1fda171ba9dfdf8ac9a431d4b3b09c530/app.js"
   ];
-  const SOURCE_CACHE_KEY = "mie-fishing-map-source-cache-486490f1-v149";
+  const SOURCE_CACHE_KEY = "mie-fishing-map-source-cache-486490f1-v150";
 
   const oldOsugiLine = '    { id: "lake-osugi", name: "大杉湖", type: "ダム", area: "多気郡大台町", lat: 34.286385, lng: 136.19336, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },';
   const newOsugiLine = '    { id: "lake-osugi", name: "宮川ダム", type: "ダム", area: "多気郡大台町", lat: 34.286385, lng: 136.19336, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },';
@@ -16,7 +16,7 @@
   const ikeharaLine = '    { id: "dam-ikehara", name: "池原ダム", type: "ダム", area: "奈良県吉野郡下北山村", lat: 34.04694, lng: 135.97111, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },';
 
   function showLoadError(error) {
-    console.error("Mie Fishing Map v149 loader failed", error);
+    console.error("Mie Fishing Map v150 loader failed", error);
     const message = "アプリ本体の読み込みに失敗しました。通信状況を確認して、reset-cache.html?auto=1 を開き直してください。";
     const target = document.querySelector("#dataStatus") || document.body;
     if (!target) return;
@@ -55,7 +55,7 @@
     let patched = source
       .replace('const APP_VERSION = "v131-remove-chusei-green-park";', `const APP_VERSION = "${PATCH_VERSION}";`)
       .replace('const APP_STATUS_LABEL = "v131・中勢グリーンパーク削除版";', `const APP_STATUS_LABEL = "${PATCH_STATUS_LABEL}";`)
-      .replace('// v131: 中勢グリーンパーク池も除いた初期収録。', '// v149: 釣りニャン高速化・軽量化版。')
+      .replace('// v131: 中勢グリーンパーク池も除いた初期収録。', '// v150: 釣りニャン軽量ふわふわ復活版。')
       .replace(oldOsugiLine, newOsugiLine)
       .replace(oldNanairoLine, `${newNanairoLine}\n${ikeharaLine}`);
 
@@ -72,7 +72,7 @@
     }
 
     const petCatchBridge = `
-  // v149: 釣りニャンの「釣果記録」ボタンから、アプリ本体の釣果記録画面をすぐ開くための橋渡し。
+  // v150: 釣りニャンの「釣果記録」ボタンから、アプリ本体の釣果記録画面をすぐ開くための橋渡し。
   window.__MIE_OPEN_CATCH_PANEL_FROM_PET__ = function openCatchPanelFromPet() {
     try {
       state.positionAdjustSpotId = null;
