@@ -2,8 +2,8 @@
   "use strict";
   window.__MIE_PWA_INSTALL_MANAGED__ = true;
 
-  const APP_VERSION = "v144-bubble-text-right";
-  const STATUS_LABEL = "v144・釣りニャン吹き出し文字右寄せ調整版";
+  const APP_VERSION = "v145-bubble-text-lower";
+  const STATUS_LABEL = "v145・釣りニャン吹き出し文字下げ調整版";
   const PET_NAME = "爆釣にゃん師匠";
   const PET_BUBBLE_IMAGE_SRC = `assets/turi-nyan-speech-bubble-v142.png?v=${APP_VERSION}`;
   const PET_IMAGE_SRC = `assets/turi-nyan-pose-front-v138.png?v=${APP_VERSION}`;
@@ -92,6 +92,7 @@
       .replaceAll("v141・釣りニャン吹き出し文字調整版", STATUS_LABEL)
       .replaceAll("v142・釣りニャン吹き出し右下しっぽ版", STATUS_LABEL)
       .replaceAll("v143・釣りニャン吹き出し文字内側調整版", STATUS_LABEL)
+      .replaceAll("v144・釣りニャン吹き出し文字右寄せ調整版", STATUS_LABEL)
       .replaceAll("v131-remove-chusei-green-park", APP_VERSION)
       .replaceAll("v133-miyagawa-nanairo-ikehara", APP_VERSION)
       .replaceAll("v134-nanairo-dam-fix", APP_VERSION)
@@ -103,7 +104,8 @@
       .replaceAll("v140-speech-pointer-bubble", APP_VERSION)
       .replaceAll("v141-bubble-text-fit", APP_VERSION)
       .replaceAll("v142-bubble-tail-right", APP_VERSION)
-      .replaceAll("v143-bubble-text-inside", APP_VERSION);
+      .replaceAll("v143-bubble-text-inside", APP_VERSION)
+      .replaceAll("v144-bubble-text-right", APP_VERSION);
   }
 
   function patchNode(node) {
@@ -164,7 +166,7 @@
         width: min(392px, calc(100vw - 28px));
         aspect-ratio: 1 / 1;
         min-height: 0;
-        padding: 74px 70px 142px 98px;
+        padding: 96px 70px 120px 98px;
         border: 0;
         border-radius: 0;
         background-color: transparent;
@@ -174,7 +176,7 @@
         background-position: center;
         color: #17120d;
         box-shadow: none;
-        font-size: .72rem;
+        font-size: .70rem;
         font-weight: 900;
         line-height: 1.24;
         letter-spacing: -.02em;
@@ -189,7 +191,7 @@
       }
       #turiNyanPet.is-speaking .pet-bubble { display: block; }
       #turiNyanPet .pet-bubble strong { display: block; color: #8d321d; font-size: .70rem; line-height: 1.05; margin-bottom: 2px; white-space: nowrap; }
-      #turiNyanPet #turiNyanMessage { display: block; max-width: 100%; min-height: 2.0em; max-height: 3.5em; font-size: .58rem; line-height: 1.18; overflow: hidden; overflow-wrap: anywhere; word-break: keep-all; }
+      #turiNyanPet #turiNyanMessage { display: block; max-width: 100%; min-height: 2.0em; max-height: 3.5em; font-size: .56rem; line-height: 1.16; overflow: hidden; overflow-wrap: anywhere; word-break: keep-all; }
       #turiNyanPet .pet-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px; margin-top: 5px; max-width: 100%; }
       #turiNyanPet .pet-actions button {
         border: 0;
@@ -250,9 +252,9 @@
           bottom: calc(96px + env(safe-area-inset-bottom));
         }
         #turiNyanPet .pet-button { width: 92px; height: 92px; }
-        #turiNyanPet .pet-bubble { width: min(318px, calc(100vw - 16px)); aspect-ratio: 1 / 1; min-height: 0; padding: 58px 52px 114px 78px; font-size: .66rem; }
+        #turiNyanPet .pet-bubble { width: min(318px, calc(100vw - 16px)); aspect-ratio: 1 / 1; min-height: 0; padding: 78px 52px 94px 78px; font-size: .64rem; }
         #turiNyanPet .pet-bubble strong { font-size: .60rem; margin-bottom: 1px; }
-        #turiNyanPet #turiNyanMessage { min-height: 1.9em; max-height: 3.2em; font-size: .49rem; line-height: 1.15; }
+        #turiNyanPet #turiNyanMessage { min-height: 1.9em; max-height: 3.2em; font-size: .47rem; line-height: 1.12; }
         #turiNyanPet .pet-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px; margin-top: 4px; }
         #turiNyanPet .pet-actions button { min-height: 16px; padding: 2px 3px; font-size: .46rem; }
         body.menu-open #turiNyanPet,

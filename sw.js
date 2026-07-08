@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bass-spot-log-";
-const VERSION = "v144-bubble-text-right";
+const VERSION = "v145-bubble-text-lower";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());
