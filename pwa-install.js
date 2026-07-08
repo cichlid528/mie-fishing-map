@@ -2,26 +2,27 @@
   "use strict";
   window.__MIE_PWA_INSTALL_MANAGED__ = true;
 
-  const APP_VERSION = "v138-turi-nyan-no-circle-bubble";
-  const STATUS_LABEL = "v138・釣りニャン丸アイコン撤去・漫画吹き出し版";
+  const APP_VERSION = "v140-speech-pointer-bubble";
+  const STATUS_LABEL = "v140・釣りニャン指差し吹き出し採用版";
   const PET_NAME = "爆釣にゃん師匠";
+  const PET_BUBBLE_IMAGE_SRC = `assets/turi-nyan-speech-bubble-v140.png?v=${APP_VERSION}`;
   const PET_IMAGE_SRC = `assets/turi-nyan-pose-front-v138.png?v=${APP_VERSION}`;
   const PET_BACK_IMAGE_SRC = `assets/turi-nyan-back-v138.png?v=${APP_VERSION}`;
   const PET_SIDE_IMAGE_SRC = `assets/turi-nyan-side-v138.png?v=${APP_VERSION}`;
   const PET_SQUAT_IMAGE_SRC = `assets/turi-nyan-squat-front-v138.png?v=${APP_VERSION}`;
   const PET_EXPRESSION_IMAGES = {
-    smile: `assets/turi-nyan-expression-smile-v138.png?v=${APP_VERSION}`,
-    serious: `assets/turi-nyan-expression-serious-v138.png?v=${APP_VERSION}`,
-    wink: `assets/turi-nyan-expression-wink-v138.png?v=${APP_VERSION}`,
-    surprise: `assets/turi-nyan-expression-surprise-v138.png?v=${APP_VERSION}`,
-    thinking: `assets/turi-nyan-expression-thinking-v138.png?v=${APP_VERSION}`,
-    happy: `assets/turi-nyan-expression-happy-v138.png?v=${APP_VERSION}`,
-    sad: `assets/turi-nyan-expression-sad-v138.png?v=${APP_VERSION}`,
-    angry: `assets/turi-nyan-expression-angry-v138.png?v=${APP_VERSION}`,
-    shy: `assets/turi-nyan-expression-shy-v138.png?v=${APP_VERSION}`,
-    dreamy: `assets/turi-nyan-expression-dreamy-v138.png?v=${APP_VERSION}`,
-    worried: `assets/turi-nyan-expression-worried-v138.png?v=${APP_VERSION}`,
-    sleepy: `assets/turi-nyan-expression-sleepy-v138.png?v=${APP_VERSION}`
+    smile: `assets/turi-nyan-expression-smile-v139.png?v=${APP_VERSION}`,
+    serious: `assets/turi-nyan-expression-serious-v139.png?v=${APP_VERSION}`,
+    wink: `assets/turi-nyan-expression-wink-v139.png?v=${APP_VERSION}`,
+    surprise: `assets/turi-nyan-expression-surprise-v139.png?v=${APP_VERSION}`,
+    thinking: `assets/turi-nyan-expression-thinking-v139.png?v=${APP_VERSION}`,
+    happy: `assets/turi-nyan-expression-happy-v139.png?v=${APP_VERSION}`,
+    sad: `assets/turi-nyan-expression-sad-v139.png?v=${APP_VERSION}`,
+    angry: `assets/turi-nyan-expression-angry-v139.png?v=${APP_VERSION}`,
+    shy: `assets/turi-nyan-expression-shy-v139.png?v=${APP_VERSION}`,
+    dreamy: `assets/turi-nyan-expression-dreamy-v139.png?v=${APP_VERSION}`,
+    worried: `assets/turi-nyan-expression-worried-v139.png?v=${APP_VERSION}`,
+    sleepy: `assets/turi-nyan-expression-sleepy-v139.png?v=${APP_VERSION}`
   };
   const PET_MODE_LABELS = {
     front: "立ち姿",
@@ -85,12 +86,16 @@
       .replaceAll("v135・釣りニャン追加版", STATUS_LABEL)
       .replaceAll("v136・釣りニャン後ろ姿モーション追加版", STATUS_LABEL)
       .replaceAll("v137・釣りニャン表情モーション採用版", STATUS_LABEL)
+      .replaceAll("v138・釣りニャン丸アイコン撤去・漫画吹き出し版", STATUS_LABEL)
+      .replaceAll("v139・釣りニャン口元透過修正版", STATUS_LABEL)
       .replaceAll("v131-remove-chusei-green-park", APP_VERSION)
       .replaceAll("v133-miyagawa-nanairo-ikehara", APP_VERSION)
       .replaceAll("v134-nanairo-dam-fix", APP_VERSION)
       .replaceAll("v135-turi-nyan-pet", APP_VERSION)
       .replaceAll("v136-turi-nyan-motion", APP_VERSION)
-      .replaceAll("v137-turi-nyan-motion-sheet", APP_VERSION);
+      .replaceAll("v137-turi-nyan-motion-sheet", APP_VERSION)
+      .replaceAll("v138-turi-nyan-no-circle-bubble", APP_VERSION)
+      .replaceAll("v139-turi-nyan-mouth-alpha-fix", APP_VERSION);
   }
 
   function patchNode(node) {
@@ -147,45 +152,27 @@
       #turiNyanPet .pet-bubble {
         display: none;
         position: relative;
-        width: min(252px, calc(100vw - 34px));
-        padding: 12px 14px 13px;
-        border: 3px solid #1d1711;
-        border-radius: 22px;
-        background: #fffdf6;
+        width: min(330px, calc(100vw - 34px));
+        min-height: 172px;
+        padding: 46px 42px 62px 48px;
+        border: 0;
+        border-radius: 0;
+        background-color: transparent;
+        background-image: var(--turi-nyan-bubble-image);
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+        background-position: center;
         color: #17120d;
-        box-shadow: 5px 6px 0 rgba(29,23,17,.22), 0 14px 36px rgba(0,0,0,.20);
+        box-shadow: none;
         font-weight: 900;
         line-height: 1.48;
         pointer-events: auto;
         text-shadow: none;
       }
-      #turiNyanPet .pet-bubble::before {
-        content: "";
-        position: absolute;
-        right: 28px;
-        bottom: -18px;
-        width: 28px;
-        height: 24px;
-        background: #fffdf6;
-        border-right: 3px solid #1d1711;
-        border-bottom: 3px solid #1d1711;
-        transform: skew(22deg) rotate(22deg);
-        transform-origin: top left;
-        box-shadow: 5px 5px 0 rgba(29,23,17,.18);
-      }
+      #turiNyanPet .pet-bubble::before,
       #turiNyanPet .pet-bubble::after {
-        content: "にゃ！";
-        position: absolute;
-        top: -15px;
-        left: 16px;
-        padding: 2px 9px;
-        border: 2px solid #1d1711;
-        border-radius: 999px;
-        background: #ffe48a;
-        color: #7b3215;
-        font-size: .78rem;
-        font-weight: 1000;
-        transform: rotate(-4deg);
+        content: none !important;
+        display: none !important;
       }
       #turiNyanPet.is-speaking .pet-bubble { display: block; }
       #turiNyanPet .pet-bubble strong { color: #8d321d; font-size: 1.02em; }
@@ -246,7 +233,7 @@
           bottom: calc(96px + env(safe-area-inset-bottom));
         }
         #turiNyanPet .pet-button { width: 92px; height: 92px; }
-        #turiNyanPet .pet-bubble { width: min(220px, calc(100vw - 28px)); font-size: .84rem; }
+        #turiNyanPet .pet-bubble { width: min(286px, calc(100vw - 28px)); min-height: 150px; padding: 38px 34px 52px 38px; font-size: .82rem; }
         body.menu-open #turiNyanPet,
         body.panel-open #turiNyanPet,
         body.position-adjusting #turiNyanPet,
@@ -359,6 +346,7 @@
     const pet = document.createElement("aside");
     pet.id = "turiNyanPet";
     pet.setAttribute("aria-label", `${PET_NAME} ナビ`);
+    pet.style.setProperty("--turi-nyan-bubble-image", `url("${PET_BUBBLE_IMAGE_SRC}")`);
     pet.innerHTML = `
       <div class="pet-bubble" role="status" aria-live="polite">
         <strong>${PET_NAME}</strong><br>
@@ -382,7 +370,7 @@
       } else if (pet.classList.contains("is-speaking")) {
         speakLookout();
       } else {
-        speakPet("呼んだかにゃ？ 漫画みたいな吹き出しに変えたにゃ。", 8000, "wink");
+        speakPet("呼んだかにゃ？ 指定の吹き出しを採用したにゃ。", 8000, "wink");
       }
     });
     document.getElementById("turiNyanClose")?.addEventListener("click", (event) => {
@@ -410,7 +398,7 @@
       }
     });
 
-    window.setTimeout(() => speakPet("爆釣にゃん師匠だにゃ。丸アイコンなしで登場するにゃ。", 7600, "happy"), 1600);
+    window.setTimeout(() => speakPet("爆釣にゃん師匠だにゃ。新しい漫画吹き出しで案内するにゃ。", 7600, "happy"), 1600);
     window.setTimeout(() => speakLookout(), 10500);
     schedulePatrolMotion();
   }

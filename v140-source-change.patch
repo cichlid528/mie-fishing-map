@@ -1,0 +1,6 @@
+v140 changes summary:
+- APP_VERSION -> v140-speech-pointer-bubble
+- STATUS_LABEL -> v140・釣りニャン指差し吹き出し採用版
+- Added assets/turi-nyan-speech-bubble-v140.png
+- Updated pet bubble CSS to use the supplied speech-bubble image as background.
+- Kept v139 mouth-alpha fixes and all Turi-Nyan motion assets.

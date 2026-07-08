@@ -1,0 +1,4 @@
+v139 changes:
+- regenerated expression motion image references from v138 to v139
+- fixed mouth/chin alpha transparency in expression PNGs while keeping outer background transparent
+- bumped cache/version strings to v139-turi-nyan-mouth-alpha-fix
