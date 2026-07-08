@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const PATCH_VERSION = "v145-bubble-text-lower";
-  const PATCH_STATUS_LABEL = "v145・釣りニャン吹き出し文字下げ調整版";
+  const PATCH_VERSION = "v146-pet-reaction-mode";
+  const PATCH_STATUS_LABEL = "v146・釣りニャン反応モード追加版";
   const SOURCE_APP_URLS = [
     "https://cdn.jsdelivr.net/gh/cichlid528/mie-fishing-map@486490f1fda171ba9dfdf8ac9a431d4b3b09c530/app.js",
     "https://raw.githubusercontent.com/cichlid528/mie-fishing-map/486490f1fda171ba9dfdf8ac9a431d4b3b09c530/app.js"
@@ -49,7 +49,7 @@
     let patched = source
       .replace('const APP_VERSION = "v131-remove-chusei-green-park";', `const APP_VERSION = "${PATCH_VERSION}";`)
       .replace('const APP_STATUS_LABEL = "v131・中勢グリーンパーク削除版";', `const APP_STATUS_LABEL = "${PATCH_STATUS_LABEL}";`)
-      .replace('// v131: 中勢グリーンパーク池も除いた初期収録。', '// v145: 吹き出し文字を一段下げて内側に収まるよう調整。')
+      .replace('// v131: 中勢グリーンパーク池も除いた初期収録。', '// v146: 釣りニャン反応モードとセリフを追加。')
       .replace(oldOsugiLine, newOsugiLine)
       .replace(oldNanairoLine, `${newNanairoLine}\n${ikeharaLine}`);
 

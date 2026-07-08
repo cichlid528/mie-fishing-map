@@ -2,14 +2,15 @@
   "use strict";
   window.__MIE_PWA_INSTALL_MANAGED__ = true;
 
-  const APP_VERSION = "v145-bubble-text-lower";
-  const STATUS_LABEL = "v145・釣りニャン吹き出し文字下げ調整版";
+  const APP_VERSION = "v146-pet-reaction-mode";
+  const STATUS_LABEL = "v146・釣りニャン反応モード追加版";
   const PET_NAME = "爆釣にゃん師匠";
   const PET_BUBBLE_IMAGE_SRC = `assets/turi-nyan-speech-bubble-v142.png?v=${APP_VERSION}`;
   const PET_IMAGE_SRC = `assets/turi-nyan-pose-front-v138.png?v=${APP_VERSION}`;
   const PET_BACK_IMAGE_SRC = `assets/turi-nyan-back-v138.png?v=${APP_VERSION}`;
   const PET_SIDE_IMAGE_SRC = `assets/turi-nyan-side-v138.png?v=${APP_VERSION}`;
   const PET_SQUAT_IMAGE_SRC = `assets/turi-nyan-squat-front-v138.png?v=${APP_VERSION}`;
+  const PET_CELEBRATE_IMAGE_SRC = `assets/turi-nyan-medetai-v146.png?v=${APP_VERSION}`;
   const PET_EXPRESSION_IMAGES = {
     smile: `assets/turi-nyan-expression-smile-v139.png?v=${APP_VERSION}`,
     serious: `assets/turi-nyan-expression-serious-v139.png?v=${APP_VERSION}`,
@@ -40,7 +41,8 @@
     shy: "ドヤ顔",
     dreamy: "うっとり",
     worried: "焦り",
-    sleepy: "ねむい"
+    sleepy: "ねむい",
+    celebrate: "めでたい"
   };
   const installButton = document.querySelector("#installAppButton");
   const installPanel = document.querySelector("#installPanel");
@@ -51,6 +53,11 @@
   let petHideTimer = null;
   let petMotionTimer = null;
   let patrolMotionTimer = null;
+  let knownCatchCount = 0;
+  const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
+  const BACKUP_META_STORAGE_KEY = "mie-fishing-map-backup-meta-v1";
+  const PET_LAST_NO_RECORD_PROMPT_KEY = "mie-fishing-map-pet-no-record-prompt-v146";
+  const PET_LAST_BACKUP_PROMPT_KEY = "mie-fishing-map-pet-backup-prompt-v146";
 
   function isStandalone() {
     return window.matchMedia?.("(display-mode: standalone)")?.matches || window.navigator.standalone === true;
@@ -93,6 +100,7 @@
       .replaceAll("v142・釣りニャン吹き出し右下しっぽ版", STATUS_LABEL)
       .replaceAll("v143・釣りニャン吹き出し文字内側調整版", STATUS_LABEL)
       .replaceAll("v144・釣りニャン吹き出し文字右寄せ調整版", STATUS_LABEL)
+      .replaceAll("v145・釣りニャン吹き出し文字下げ調整版", STATUS_LABEL)
       .replaceAll("v131-remove-chusei-green-park", APP_VERSION)
       .replaceAll("v133-miyagawa-nanairo-ikehara", APP_VERSION)
       .replaceAll("v134-nanairo-dam-fix", APP_VERSION)
@@ -105,7 +113,8 @@
       .replaceAll("v141-bubble-text-fit", APP_VERSION)
       .replaceAll("v142-bubble-tail-right", APP_VERSION)
       .replaceAll("v143-bubble-text-inside", APP_VERSION)
-      .replaceAll("v144-bubble-text-right", APP_VERSION);
+      .replaceAll("v144-bubble-text-right", APP_VERSION)
+      .replaceAll("v145-bubble-text-lower", APP_VERSION);
   }
 
   function patchNode(node) {
@@ -191,7 +200,7 @@
       }
       #turiNyanPet.is-speaking .pet-bubble { display: block; }
       #turiNyanPet .pet-bubble strong { display: block; color: #8d321d; font-size: .70rem; line-height: 1.05; margin-bottom: 2px; white-space: nowrap; }
-      #turiNyanPet #turiNyanMessage { display: block; max-width: 100%; min-height: 2.0em; max-height: 3.5em; font-size: .56rem; line-height: 1.16; overflow: hidden; overflow-wrap: anywhere; word-break: keep-all; }
+      #turiNyanPet #turiNyanMessage { display: block; max-width: 100%; min-height: 2.0em; max-height: 3.8em; font-size: .55rem; line-height: 1.14; overflow: hidden; overflow-wrap: anywhere; word-break: keep-all; }
       #turiNyanPet .pet-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px; margin-top: 5px; max-width: 100%; }
       #turiNyanPet .pet-actions button {
         border: 0;
@@ -254,7 +263,7 @@
         #turiNyanPet .pet-button { width: 92px; height: 92px; }
         #turiNyanPet .pet-bubble { width: min(318px, calc(100vw - 16px)); aspect-ratio: 1 / 1; min-height: 0; padding: 78px 52px 94px 78px; font-size: .64rem; }
         #turiNyanPet .pet-bubble strong { font-size: .60rem; margin-bottom: 1px; }
-        #turiNyanPet #turiNyanMessage { min-height: 1.9em; max-height: 3.2em; font-size: .47rem; line-height: 1.12; }
+        #turiNyanPet #turiNyanMessage { min-height: 1.9em; max-height: 3.4em; font-size: .46rem; line-height: 1.10; }
         #turiNyanPet .pet-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px; margin-top: 4px; }
         #turiNyanPet .pet-actions button { min-height: 16px; padding: 2px 3px; font-size: .46rem; }
         body.menu-open #turiNyanPet,
@@ -299,20 +308,130 @@
     if (mode === "lookout") return PET_BACK_IMAGE_SRC;
     if (mode === "side") return PET_SIDE_IMAGE_SRC;
     if (mode === "squat") return PET_SQUAT_IMAGE_SRC;
+    if (mode === "celebrate") return PET_CELEBRATE_IMAGE_SRC;
     return PET_EXPRESSION_IMAGES[mode] || PET_IMAGE_SRC;
   }
 
   function randomPetMessage() {
     const messages = [
-      "安全第一にゃ。看板確認にゃ。",
-      "釣果を残すにゃ。次に役立つにゃ。",
-      "バックアップで記録を守るにゃ。",
-      "宮川・七色・池原も確認にゃ。",
-      "表情を変えて案内にゃ。",
-      "見回り中にゃ。",
-      "天気と水位もメモにゃ。"
+      "今日も安全第一にゃ",
+      "釣果を記録するにゃ",
+      "バックアップ忘れてないかにゃ？",
+      "このポイントは現地確認してにゃ",
+      "そろそろ釣り行くにゃ？",
+      "大漁祈願にゃ！",
+      "記録を守るにゃ"
     ];
     return messages[Math.floor(Math.random() * messages.length)];
+  }
+
+
+  function safeJson(value, fallback) {
+    try { return JSON.parse(value || ""); } catch (error) { return fallback; }
+  }
+
+  function catchRecordsFrom(value) {
+    const records = Array.isArray(value) ? value : safeJson(value, []);
+    return Array.isArray(records) ? records.filter((record) => record && (record.recordType !== "note")) : [];
+  }
+
+  function currentCatchRecords() {
+    return catchRecordsFrom(localStorage.getItem(CATCH_STORAGE_KEY));
+  }
+
+  function recordDateMs(record) {
+    const raw = record?.time || record?.datetime || record?.createdAt || record?.updatedAt || "";
+    const ms = Date.parse(raw);
+    return Number.isFinite(ms) ? ms : 0;
+  }
+
+  function recordSizeCm(record) {
+    const candidates = [record?.sizeCm, record?.actualSizeCm, record?.size, record?.sizeClass];
+    for (const value of candidates) {
+      const match = String(value || "").match(/(\d+(?:\.\d+)?)/);
+      if (match) return Number(match[1]);
+    }
+    return 0;
+  }
+
+  function newestRecord(records) {
+    return records.slice().sort((a, b) => recordDateMs(b) - recordDateMs(a))[0] || records[records.length - 1] || null;
+  }
+
+  function isRateLimited(key, hours = 12) {
+    const last = Number(localStorage.getItem(key) || 0);
+    if (last && Date.now() - last < hours * 60 * 60 * 1000) return true;
+    localStorage.setItem(key, String(Date.now()));
+    return false;
+  }
+
+  function showCatchReaction(records) {
+    const latest = newestRecord(records) || {};
+    if (recordSizeCm(latest) >= 50) {
+      speakPet("大漁祈願にゃ！", 9000, "celebrate");
+      return;
+    }
+    speakPet("釣果記録できたにゃ！", 8200, "celebrate");
+  }
+
+  function handleCatchStorageChange(beforeRaw, afterRaw) {
+    const before = catchRecordsFrom(beforeRaw);
+    const after = catchRecordsFrom(afterRaw);
+    if (after.length > Math.max(before.length, knownCatchCount)) {
+      knownCatchCount = after.length;
+      window.setTimeout(() => showCatchReaction(after), 250);
+    } else {
+      knownCatchCount = Math.max(knownCatchCount, after.length);
+    }
+  }
+
+  function installPetRecordWatcher() {
+    if (window.__TURI_NYAN_RECORD_WATCHER__) return;
+    window.__TURI_NYAN_RECORD_WATCHER__ = true;
+    knownCatchCount = currentCatchRecords().length;
+    const originalSetItem = Storage.prototype.setItem;
+    Storage.prototype.setItem = function(key, value) {
+      const stringKey = String(key || "");
+      const before = stringKey === CATCH_STORAGE_KEY ? localStorage.getItem(CATCH_STORAGE_KEY) : null;
+      const result = originalSetItem.apply(this, arguments);
+      if (this === window.localStorage && stringKey === CATCH_STORAGE_KEY) {
+        window.setTimeout(() => handleCatchStorageChange(before, String(value || "")), 0);
+      }
+      return result;
+    };
+  }
+
+  function latestCatchAgeDays() {
+    const records = currentCatchRecords();
+    if (!records.length) return Infinity;
+    const latest = newestRecord(records);
+    const ms = recordDateMs(latest);
+    if (!ms) return Infinity;
+    return (Date.now() - ms) / (24 * 60 * 60 * 1000);
+  }
+
+  function backupLooksOld() {
+    const records = currentCatchRecords();
+    if (!records.length) return false;
+    const meta = safeJson(localStorage.getItem(BACKUP_META_STORAGE_KEY), null);
+    if (!meta || typeof meta !== "object") return true;
+    const raw = meta.lastBackupAt || meta.backupAt || meta.exportedAt || meta.updatedAt || meta.createdAt || "";
+    const ms = Date.parse(raw);
+    if (!Number.isFinite(ms)) return true;
+    return Date.now() - ms > 14 * 24 * 60 * 60 * 1000;
+  }
+
+  function runPetCareChecks() {
+    window.setTimeout(() => {
+      if (backupLooksOld() && !isRateLimited(PET_LAST_BACKUP_PROMPT_KEY, 12)) {
+        speakPet("バックアップ忘れてないかにゃ？", 8500, "worried");
+      }
+    }, 14500);
+    window.setTimeout(() => {
+      if (latestCatchAgeDays() >= 14 && !isRateLimited(PET_LAST_NO_RECORD_PROMPT_KEY, 18)) {
+        speakPet("そろそろ釣り行くにゃ？", 8500, "thinking");
+      }
+    }, 25500);
   }
 
   function setPetMotion(mode = "front", durationMs = 0) {
@@ -373,7 +492,7 @@
     pet.innerHTML = `
       <div class="pet-bubble" role="status" aria-live="polite">
         <strong>${PET_NAME}</strong><br>
-        <span id="turiNyanMessage">今日も安全第一でいくにゃ。</span>
+        <span id="turiNyanMessage">今日も安全第一にゃ</span>
         <div class="pet-actions">
           <button id="turiNyanRecord" type="button">釣果記録</button>
           <button id="turiNyanLookout" class="pet-lookout" type="button">見回り</button>
@@ -393,7 +512,7 @@
       } else if (pet.classList.contains("is-speaking")) {
         speakLookout();
       } else {
-        speakPet("呼んだかにゃ？ 調整済みにゃ。", 8000, "wink");
+        speakPet(randomPetMessage(), 8000, "wink");
       }
     });
     document.getElementById("turiNyanClose")?.addEventListener("click", (event) => {
@@ -415,15 +534,16 @@
       const button = document.querySelector("#addCatchMode");
       if (button) {
         button.click();
-        speakPet("釣果を残すにゃ。サイズもメモにゃ。", 7000, "happy");
+        speakPet("釣果を記録するにゃ", 7000, "happy");
       } else {
-        speakPet("記録ボタン準備中にゃ。もう一回にゃ。", 7000);
+        speakPet("釣果を記録するにゃ", 7000);
       }
     });
 
-    window.setTimeout(() => speakPet("爆釣にゃん師匠だにゃ。", 7600, "happy"), 1600);
+    window.setTimeout(() => speakPet("今日も安全第一にゃ", 7600, "happy"), 1600);
     window.setTimeout(() => speakLookout(), 10500);
     schedulePatrolMotion();
+    runPetCareChecks();
   }
 
   async function clearOldAppCache() {
@@ -460,6 +580,8 @@
       ? "iPhoneはSafariで開いて、共有ボタンから『ホーム画面に追加』を選んでください。"
       : "Chrome右上の『︙』から『アプリをインストール』または『ホーム画面に追加』を選んでください。");
   }
+
+  installPetRecordWatcher();
 
   window.addEventListener("beforeinstallprompt", (event) => {
     event.preventDefault();
