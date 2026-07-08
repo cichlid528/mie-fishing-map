@@ -2,28 +2,28 @@
   "use strict";
   window.__MIE_PWA_INSTALL_MANAGED__ = true;
 
-  const APP_VERSION = "v148-pet-catch-button-fast";
-  const STATUS_LABEL = "v148・釣りニャン釣果記録ボタン高速化版";
+  const APP_VERSION = "v149-pet-speed-light-bigger-text";
+  const STATUS_LABEL = "v149・釣りニャン高速化・軽量化版";
   const PET_NAME = "爆釣にゃん師匠";
-  const PET_BUBBLE_IMAGE_SRC = `assets/turi-nyan-speech-bubble-v142.png?v=${APP_VERSION}`;
-  const PET_IMAGE_SRC = `assets/turi-nyan-pose-front-v138.png?v=${APP_VERSION}`;
-  const PET_BACK_IMAGE_SRC = `assets/turi-nyan-back-v138.png?v=${APP_VERSION}`;
-  const PET_SIDE_IMAGE_SRC = `assets/turi-nyan-side-v138.png?v=${APP_VERSION}`;
-  const PET_SQUAT_IMAGE_SRC = `assets/turi-nyan-squat-front-v138.png?v=${APP_VERSION}`;
-  const PET_CELEBRATE_IMAGE_SRC = `assets/turi-nyan-medetai-v146.png?v=${APP_VERSION}`;
+  const PET_BUBBLE_IMAGE_SRC = `assets/turi-nyan-speech-bubble-v149.png?v=${APP_VERSION}`;
+  const PET_IMAGE_SRC = `assets/turi-nyan-pose-front-v149.png?v=${APP_VERSION}`;
+  const PET_BACK_IMAGE_SRC = `assets/turi-nyan-back-v149.png?v=${APP_VERSION}`;
+  const PET_SIDE_IMAGE_SRC = `assets/turi-nyan-side-v149.png?v=${APP_VERSION}`;
+  const PET_SQUAT_IMAGE_SRC = `assets/turi-nyan-squat-front-v149.png?v=${APP_VERSION}`;
+  const PET_CELEBRATE_IMAGE_SRC = `assets/turi-nyan-medetai-v149.png?v=${APP_VERSION}`;
   const PET_EXPRESSION_IMAGES = {
-    smile: `assets/turi-nyan-expression-smile-v139.png?v=${APP_VERSION}`,
-    serious: `assets/turi-nyan-expression-serious-v139.png?v=${APP_VERSION}`,
-    wink: `assets/turi-nyan-expression-wink-v139.png?v=${APP_VERSION}`,
-    surprise: `assets/turi-nyan-expression-surprise-v139.png?v=${APP_VERSION}`,
-    thinking: `assets/turi-nyan-expression-thinking-v139.png?v=${APP_VERSION}`,
-    happy: `assets/turi-nyan-expression-happy-v139.png?v=${APP_VERSION}`,
-    sad: `assets/turi-nyan-expression-sad-v139.png?v=${APP_VERSION}`,
-    angry: `assets/turi-nyan-expression-angry-v139.png?v=${APP_VERSION}`,
-    shy: `assets/turi-nyan-expression-shy-v139.png?v=${APP_VERSION}`,
-    dreamy: `assets/turi-nyan-expression-dreamy-v139.png?v=${APP_VERSION}`,
-    worried: `assets/turi-nyan-expression-worried-v139.png?v=${APP_VERSION}`,
-    sleepy: `assets/turi-nyan-expression-sleepy-v139.png?v=${APP_VERSION}`
+    smile: `assets/turi-nyan-expression-smile-v149.png?v=${APP_VERSION}`,
+    serious: `assets/turi-nyan-expression-serious-v149.png?v=${APP_VERSION}`,
+    wink: `assets/turi-nyan-expression-wink-v149.png?v=${APP_VERSION}`,
+    surprise: `assets/turi-nyan-expression-surprise-v149.png?v=${APP_VERSION}`,
+    thinking: `assets/turi-nyan-expression-thinking-v149.png?v=${APP_VERSION}`,
+    happy: `assets/turi-nyan-expression-happy-v149.png?v=${APP_VERSION}`,
+    sad: `assets/turi-nyan-expression-sad-v149.png?v=${APP_VERSION}`,
+    angry: `assets/turi-nyan-expression-angry-v149.png?v=${APP_VERSION}`,
+    shy: `assets/turi-nyan-expression-shy-v149.png?v=${APP_VERSION}`,
+    dreamy: `assets/turi-nyan-expression-dreamy-v149.png?v=${APP_VERSION}`,
+    worried: `assets/turi-nyan-expression-worried-v149.png?v=${APP_VERSION}`,
+    sleepy: `assets/turi-nyan-expression-sleepy-v149.png?v=${APP_VERSION}`
   };
   const PET_MODE_LABELS = {
     front: "立ち姿",
@@ -102,6 +102,7 @@
       .replaceAll("v144・釣りニャン吹き出し文字右寄せ調整版", STATUS_LABEL)
       .replaceAll("v145・釣りニャン吹き出し文字下げ調整版", STATUS_LABEL)
       .replaceAll("v146・釣りニャン反応モード追加版", STATUS_LABEL)
+      .replaceAll("v147・釣りニャン釣果記録ボタン連動版", STATUS_LABEL)
       .replaceAll("v131-remove-chusei-green-park", APP_VERSION)
       .replaceAll("v133-miyagawa-nanairo-ikehara", APP_VERSION)
       .replaceAll("v134-nanairo-dam-fix", APP_VERSION)
@@ -116,27 +117,34 @@
       .replaceAll("v143-bubble-text-inside", APP_VERSION)
       .replaceAll("v144-bubble-text-right", APP_VERSION)
       .replaceAll("v145-bubble-text-lower", APP_VERSION)
-      .replaceAll("v146-pet-reaction-mode", APP_VERSION);
+      .replaceAll("v146-pet-reaction-mode", APP_VERSION)
+      .replaceAll("v147-pet-catch-record-button", APP_VERSION)
+      .replaceAll("v148-pet-catch-button-fast", APP_VERSION);
   }
 
-  function patchNode(node) {
+  function patchSingleNode(node) {
     if (!node) return;
     if (node.nodeType === Node.TEXT_NODE) {
       const next = patchText(node.nodeValue || "");
       if (next !== node.nodeValue) node.nodeValue = next;
       return;
     }
-    if (node.nodeType !== Node.ELEMENT_NODE && node.nodeType !== Node.DOCUMENT_NODE) return;
     if (node.nodeType === Node.ELEMENT_NODE && node.attributes) {
-      Array.from(node.attributes).forEach((attr) => {
+      for (const attr of Array.from(node.attributes)) {
         const next = patchText(attr.value || "");
         if (next !== attr.value) node.setAttribute(attr.name, next);
-      });
+      }
     }
+  }
+
+  function patchNode(node) {
+    if (!node) return;
+    patchSingleNode(node);
+    if (node.nodeType !== Node.ELEMENT_NODE && node.nodeType !== Node.DOCUMENT_NODE) return;
     const walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
     let current = walker.nextNode();
     while (current) {
-      patchNode(current);
+      patchSingleNode(current);
       current = walker.nextNode();
     }
   }
@@ -144,14 +152,27 @@
   function startTextPatch() {
     patchNode(document.body);
     if (!document.body) return;
+    let scheduled = false;
+    const schedulePatch = () => {
+      if (scheduled) return;
+      scheduled = true;
+      window.requestAnimationFrame?.(() => {
+        scheduled = false;
+        patchNode(document.body);
+      }) || window.setTimeout(() => { scheduled = false; patchNode(document.body); }, 35);
+    };
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
-        if (mutation.type === "characterData") patchNode(mutation.target);
-        if (mutation.type === "attributes") patchNode(mutation.target);
-        mutation.addedNodes.forEach(patchNode);
+        if (mutation.type === "characterData") {
+          patchSingleNode(mutation.target);
+        } else if (mutation.addedNodes?.length) {
+          mutation.addedNodes.forEach(patchNode);
+        } else {
+          schedulePatch();
+        }
       }
     });
-    observer.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true });
+    observer.observe(document.body, { childList: true, subtree: true, characterData: true });
   }
 
   function injectPetStyles() {
@@ -174,10 +195,10 @@
         display: none;
         position: relative;
         box-sizing: border-box;
-        width: min(392px, calc(100vw - 28px));
+        width: min(404px, calc(100vw - 24px));
         aspect-ratio: 1 / 1;
         min-height: 0;
-        padding: 96px 70px 120px 98px;
+        padding: 104px 68px 118px 104px;
         border: 0;
         border-radius: 0;
         background-color: transparent;
@@ -187,7 +208,7 @@
         background-position: center;
         color: #17120d;
         box-shadow: none;
-        font-size: .70rem;
+        font-size: .78rem;
         font-weight: 900;
         line-height: 1.24;
         letter-spacing: -.02em;
@@ -201,17 +222,17 @@
         display: none !important;
       }
       #turiNyanPet.is-speaking .pet-bubble { display: block; }
-      #turiNyanPet .pet-bubble strong { display: block; color: #8d321d; font-size: .70rem; line-height: 1.05; margin-bottom: 2px; white-space: nowrap; }
-      #turiNyanPet #turiNyanMessage { display: block; max-width: 100%; min-height: 2.0em; max-height: 3.8em; font-size: .55rem; line-height: 1.14; overflow: hidden; overflow-wrap: anywhere; word-break: keep-all; }
+      #turiNyanPet .pet-bubble strong { display: block; color: #8d321d; font-size: .78rem; line-height: 1.05; margin-bottom: 2px; white-space: nowrap; }
+      #turiNyanPet #turiNyanMessage { display: block; max-width: 100%; min-height: 2.0em; max-height: 3.7em; font-size: .62rem; line-height: 1.16; overflow: hidden; overflow-wrap: anywhere; word-break: keep-all; }
       #turiNyanPet .pet-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px; margin-top: 5px; max-width: 100%; }
       #turiNyanPet .pet-actions button {
         border: 0;
-        min-height: 19px;
-        padding: 2px 4px;
+        min-height: 25px;
+        padding: 4px 6px;
         border-radius: 999px;
         background: #0f6f5f;
         color: #fff;
-        font-size: .55rem;
+        font-size: .62rem;
         line-height: 1;
         font-weight: 900;
         box-shadow: 0 5px 12px rgba(15,111,95,.18);
@@ -220,8 +241,8 @@
       #turiNyanPet .pet-actions button.pet-secondary { background: rgba(15,111,95,.10); color: #0d5f52; }
       #turiNyanPet .pet-actions button.pet-lookout { background: rgba(201,79,39,.12); color: #8d321d; }
       #turiNyanPet .pet-button {
-        width: 112px;
-        height: 112px;
+        width: 104px;
+        height: 104px;
         border: 0;
         border-radius: 0;
         padding: 0;
@@ -230,7 +251,7 @@
         overflow: visible;
         cursor: pointer;
         pointer-events: auto;
-        animation: turiNyanBob 3.2s ease-in-out infinite;
+        animation: turiNyanBob 4.8s ease-in-out infinite;
         touch-action: manipulation;
       }
       #turiNyanPet .pet-button img {
@@ -262,12 +283,12 @@
           right: calc(10px + env(safe-area-inset-right));
           bottom: calc(96px + env(safe-area-inset-bottom));
         }
-        #turiNyanPet .pet-button { width: 92px; height: 92px; }
-        #turiNyanPet .pet-bubble { width: min(318px, calc(100vw - 16px)); aspect-ratio: 1 / 1; min-height: 0; padding: 78px 52px 94px 78px; font-size: .64rem; }
-        #turiNyanPet .pet-bubble strong { font-size: .60rem; margin-bottom: 1px; }
-        #turiNyanPet #turiNyanMessage { min-height: 1.9em; max-height: 3.4em; font-size: .46rem; line-height: 1.10; }
-        #turiNyanPet .pet-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px; margin-top: 4px; }
-        #turiNyanPet .pet-actions button { min-height: 16px; padding: 2px 3px; font-size: .46rem; }
+        #turiNyanPet .pet-button { width: 78px; height: 78px; animation: none; }
+        #turiNyanPet .pet-bubble { width: min(344px, calc(100vw - 10px)); aspect-ratio: 1 / 1; min-height: 0; padding: 94px 54px 104px 96px; font-size: .70rem; }
+        #turiNyanPet .pet-bubble strong { font-size: .68rem; margin-bottom: 2px; }
+        #turiNyanPet #turiNyanMessage { min-height: 2.1em; max-height: 3.5em; font-size: .54rem; line-height: 1.14; }
+        #turiNyanPet .pet-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; margin-top: 6px; }
+        #turiNyanPet .pet-actions button { min-height: 24px; padding: 4px 5px; font-size: .54rem; }
         body.menu-open #turiNyanPet,
         body.panel-open #turiNyanPet,
         body.position-adjusting #turiNyanPet,
@@ -481,11 +502,11 @@
         speakPet("夕まずめ見回り中にゃ。", 5600, "lookout");
       }
       schedulePatrolMotion();
-    }, 42000);
+    }, 120000);
   }
 
 
-  function waitForCatchPanelBridge(timeoutMs = 1800) {
+  function waitForCatchPanelBridge(timeoutMs = 320) {
     const existing = window.__MIE_OPEN_CATCH_PANEL_FROM_PET__;
     if (typeof existing === "function") return Promise.resolve(existing);
     return new Promise((resolve) => {
@@ -511,7 +532,7 @@
           return;
         }
         if (Date.now() - startedAt >= timeoutMs) finish(null);
-      }, 80);
+      }, 35);
       window.setTimeout(() => finish(typeof window.__MIE_OPEN_CATCH_PANEL_FROM_PET__ === "function" ? window.__MIE_OPEN_CATCH_PANEL_FROM_PET__ : null), timeoutMs + 120);
     });
   }
@@ -522,9 +543,10 @@
       button.dataset.busy = "1";
       button.disabled = true;
     }
-    speakPet("釣果記録を開くにゃ", 2200, "thinking");
+    const instantOpen = window.__MIE_OPEN_CATCH_PANEL_FROM_PET__;
+    if (!instantOpen) speakPet("釣果記録を開くにゃ", 1400, "thinking");
     try {
-      const openFromPet = await waitForCatchPanelBridge(1800);
+      const openFromPet = window.__MIE_OPEN_CATCH_PANEL_FROM_PET__ || await waitForCatchPanelBridge(320);
       if (typeof openFromPet === "function" && openFromPet()) {
         window.setTimeout(() => speakPet("釣果記録を開いたにゃ", 4200, "happy"), 120);
         return;
@@ -566,7 +588,7 @@
         </div>
       </div>
       <button class="pet-button" id="turiNyanButton" type="button" aria-label="${PET_NAME}に話しかける">
-        <img id="turiNyanImage" src="${PET_IMAGE_SRC}" alt="${PET_NAME}">
+        <img id="turiNyanImage" src="${PET_IMAGE_SRC}" alt="${PET_NAME}" decoding="async" loading="lazy">
       </button>
     `;
     document.body.appendChild(pet);
@@ -599,9 +621,11 @@
       openCatchRecordFromPet(event.currentTarget);
     });
 
-    window.setTimeout(() => speakPet("今日も安全第一にゃ", 7600, "happy"), 1600);
-    window.setTimeout(() => speakLookout(), 10500);
-    schedulePatrolMotion();
+    window.setTimeout(() => speakPet("今日も安全第一にゃ", 5200, "happy"), 1200);
+    if (!window.matchMedia?.("(max-width: 920px)")?.matches) {
+      window.setTimeout(() => speakLookout(), 14000);
+      schedulePatrolMotion();
+    }
     runPetCareChecks();
   }
 
