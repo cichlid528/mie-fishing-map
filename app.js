@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const PATCH_VERSION = "v142-bubble-tail-right";
-  const PATCH_STATUS_LABEL = "v142・釣りニャン吹き出し右下しっぽ版";
+  const PATCH_VERSION = "v143-bubble-text-inside";
+  const PATCH_STATUS_LABEL = "v143・釣りニャン吹き出し文字内側調整版";
   const SOURCE_APP_URLS = [
     "https://cdn.jsdelivr.net/gh/cichlid528/mie-fishing-map@486490f1fda171ba9dfdf8ac9a431d4b3b09c530/app.js",
     "https://raw.githubusercontent.com/cichlid528/mie-fishing-map/486490f1fda171ba9dfdf8ac9a431d4b3b09c530/app.js"
@@ -15,7 +15,7 @@
   const ikeharaLine = '    { id: "dam-ikehara", name: "池原ダム", type: "ダム", area: "奈良県吉野郡下北山村", lat: 34.04694, lng: 135.97111, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },';
 
   function showLoadError(error) {
-    console.error("Mie Fishing Map v141 loader failed", error);
+    console.error("Mie Fishing Map v143 loader failed", error);
     const message = "アプリ本体の読み込みに失敗しました。通信状況を確認して、reset-cache.html?auto=1 を開き直してください。";
     const target = document.querySelector("#dataStatus") || document.body;
     if (!target) return;
@@ -49,7 +49,7 @@
     let patched = source
       .replace('const APP_VERSION = "v131-remove-chusei-green-park";', `const APP_VERSION = "${PATCH_VERSION}";`)
       .replace('const APP_STATUS_LABEL = "v131・中勢グリーンパーク削除版";', `const APP_STATUS_LABEL = "${PATCH_STATUS_LABEL}";`)
-      .replace('// v131: 中勢グリーンパーク池も除いた初期収録。', '// v142: 吹き出しのしっぽを右下に移動。')
+      .replace('// v131: 中勢グリーンパーク池も除いた初期収録。', '// v143: 吹き出し内に文字が収まるよう調整。')
       .replace(oldOsugiLine, newOsugiLine)
       .replace(oldNanairoLine, `${newNanairoLine}\n${ikeharaLine}`);
 

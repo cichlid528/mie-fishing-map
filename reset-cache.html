@@ -24,7 +24,7 @@
       <p>古い地図や古いService Workerキャッシュが残っている場合、このページでアプリ本体の保存データは残したまま、キャッシュだけを削除します。</p>
       <p>釣果・追加した釣り場・写真・背景画像などの <code>localStorage</code> データは削除しません。</p>
       <button id="resetButton" type="button">キャッシュを消して開き直す</button>
-      <a href="./?v=v142-bubble-tail-right">そのまま開く</a>
+      <a href="./?v=v143-bubble-text-inside">そのまま開く</a>
       <p id="status" class="status" aria-live="polite">準備できました。</p>
     </main>
     <script>
@@ -46,7 +46,7 @@
 
           say("完了しました。最新版を開き直します…");
           const url = new URL("./", location.href);
-          url.searchParams.set("v", "v142-bubble-tail-right");
+          url.searchParams.set("v", "v143-bubble-text-inside");
           url.searchParams.set("reset", Date.now().toString());
           setTimeout(() => location.replace(url.toString()), 500);
         } catch (error) {

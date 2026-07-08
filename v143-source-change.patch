@@ -1,0 +1,5 @@
+v143 changes:
+- Keep right-bottom speech bubble tail.
+- Preserve square bubble aspect ratio.
+- Shrink and constrain message text/buttons inside the bubble safe area.
+- Shorten pet messages to prevent overflow on mobile.
