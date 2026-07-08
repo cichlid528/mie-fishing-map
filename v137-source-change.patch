@@ -1,0 +1,9 @@
+# v137 source change summary
+
+- v136-turi-nyan-motion -> v137-turi-nyan-motion-sheet
+- 釣りニャンのモーション提案画像を採用
+- 立ち姿・横向き・後ろ姿・しゃがみ姿をassetsへ追加
+- 表情12種類をassetsへ追加
+- 吹き出しに「表情」ボタンを追加
+- ランダム発話時に表情画像へ切り替え
+- 宮川ダム・七色ダム・池原ダム反映は継続

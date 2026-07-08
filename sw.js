@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bass-spot-log-";
-const VERSION = "v134-nanairo-dam-fix";
+const VERSION = "v137-turi-nyan-motion-sheet";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());
