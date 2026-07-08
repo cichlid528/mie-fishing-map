@@ -2,8 +2,8 @@
   "use strict";
   window.__MIE_PWA_INSTALL_MANAGED__ = true;
 
-  const APP_VERSION = "v147-pet-catch-record-button";
-  const STATUS_LABEL = "v147・釣りニャン釣果記録ボタン連動版";
+  const APP_VERSION = "v148-pet-catch-button-fast";
+  const STATUS_LABEL = "v148・釣りニャン釣果記録ボタン高速化版";
   const PET_NAME = "爆釣にゃん師匠";
   const PET_BUBBLE_IMAGE_SRC = `assets/turi-nyan-speech-bubble-v142.png?v=${APP_VERSION}`;
   const PET_IMAGE_SRC = `assets/turi-nyan-pose-front-v138.png?v=${APP_VERSION}`;
@@ -56,8 +56,8 @@
   let knownCatchCount = 0;
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
   const BACKUP_META_STORAGE_KEY = "mie-fishing-map-backup-meta-v1";
-  const PET_LAST_NO_RECORD_PROMPT_KEY = "mie-fishing-map-pet-no-record-prompt-v147";
-  const PET_LAST_BACKUP_PROMPT_KEY = "mie-fishing-map-pet-backup-prompt-v147";
+  const PET_LAST_NO_RECORD_PROMPT_KEY = "mie-fishing-map-pet-no-record-prompt-v148";
+  const PET_LAST_BACKUP_PROMPT_KEY = "mie-fishing-map-pet-backup-prompt-v148";
 
   function isStandalone() {
     return window.matchMedia?.("(display-mode: standalone)")?.matches || window.navigator.standalone === true;
@@ -484,6 +484,69 @@
     }, 42000);
   }
 
+
+  function waitForCatchPanelBridge(timeoutMs = 1800) {
+    const existing = window.__MIE_OPEN_CATCH_PANEL_FROM_PET__;
+    if (typeof existing === "function") return Promise.resolve(existing);
+    return new Promise((resolve) => {
+      let done = false;
+      const startedAt = Date.now();
+      let timer = null;
+      const finish = (fn = null) => {
+        if (done) return;
+        done = true;
+        window.clearInterval(timer);
+        window.removeEventListener("mie:pet-catch-bridge-ready", onReady);
+        resolve(fn);
+      };
+      const onReady = () => {
+        const fn = window.__MIE_OPEN_CATCH_PANEL_FROM_PET__;
+        finish(typeof fn === "function" ? fn : null);
+      };
+      window.addEventListener("mie:pet-catch-bridge-ready", onReady, { once: true });
+      timer = window.setInterval(() => {
+        const fn = window.__MIE_OPEN_CATCH_PANEL_FROM_PET__;
+        if (typeof fn === "function") {
+          finish(fn);
+          return;
+        }
+        if (Date.now() - startedAt >= timeoutMs) finish(null);
+      }, 80);
+      window.setTimeout(() => finish(typeof window.__MIE_OPEN_CATCH_PANEL_FROM_PET__ === "function" ? window.__MIE_OPEN_CATCH_PANEL_FROM_PET__ : null), timeoutMs + 120);
+    });
+  }
+
+  async function openCatchRecordFromPet(button = null) {
+    if (button?.dataset?.busy === "1") return;
+    if (button) {
+      button.dataset.busy = "1";
+      button.disabled = true;
+    }
+    speakPet("釣果記録を開くにゃ", 2200, "thinking");
+    try {
+      const openFromPet = await waitForCatchPanelBridge(1800);
+      if (typeof openFromPet === "function" && openFromPet()) {
+        window.setTimeout(() => speakPet("釣果記録を開いたにゃ", 4200, "happy"), 120);
+        return;
+      }
+      const catchModeButton = document.querySelector("#addCatchMode");
+      if (catchModeButton) {
+        catchModeButton.click();
+        speakPet("地図をタップして記録にゃ", 5200, "happy");
+        return;
+      }
+      speakPet("まだ準備中にゃ。少し待ってにゃ", 6200, "worried");
+    } catch (error) {
+      console.error("釣りニャンから釣果記録を開けませんでした", error);
+      speakPet("釣果記録を開けなかったにゃ", 6200, "worried");
+    } finally {
+      if (button) {
+        button.disabled = false;
+        delete button.dataset.busy;
+      }
+    }
+  }
+
   function injectPet() {
     if (!document.body || document.getElementById("turiNyanPet")) return;
     injectPetStyles();
@@ -533,24 +596,7 @@
     });
     document.getElementById("turiNyanRecord")?.addEventListener("click", (event) => {
       event.stopPropagation();
-      const openFromPet = window.__MIE_OPEN_CATCH_PANEL_FROM_PET__;
-      if (typeof openFromPet === "function" && openFromPet()) {
-        speakPet("釣果記録を開いたにゃ", 5200, "happy");
-        return;
-      }
-      const currentLocationButton = document.querySelector("#locateCatchButton");
-      if (currentLocationButton) {
-        currentLocationButton.click();
-        speakPet("現在地で記録するにゃ", 6500, "happy");
-        return;
-      }
-      const catchModeButton = document.querySelector("#addCatchMode");
-      if (catchModeButton) {
-        catchModeButton.click();
-        speakPet("地図をタップして記録にゃ", 7000, "happy");
-      } else {
-        speakPet("釣果記録を開けなかったにゃ", 7000, "worried");
-      }
+      openCatchRecordFromPet(event.currentTarget);
     });
 
     window.setTimeout(() => speakPet("今日も安全第一にゃ", 7600, "happy"), 1600);
