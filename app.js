@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const PATCH_VERSION = "v146-pet-reaction-mode";
-  const PATCH_STATUS_LABEL = "v146・釣りニャン反応モード追加版";
+  const PATCH_VERSION = "v147-pet-catch-record-button";
+  const PATCH_STATUS_LABEL = "v147・釣りニャン釣果記録ボタン連動版";
   const SOURCE_APP_URLS = [
     "https://cdn.jsdelivr.net/gh/cichlid528/mie-fishing-map@486490f1fda171ba9dfdf8ac9a431d4b3b09c530/app.js",
     "https://raw.githubusercontent.com/cichlid528/mie-fishing-map/486490f1fda171ba9dfdf8ac9a431d4b3b09c530/app.js"
@@ -15,7 +15,7 @@
   const ikeharaLine = '    { id: "dam-ikehara", name: "池原ダム", type: "ダム", area: "奈良県吉野郡下北山村", lat: 34.04694, lng: 135.97111, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },';
 
   function showLoadError(error) {
-    console.error("Mie Fishing Map v145 loader failed", error);
+    console.error("Mie Fishing Map v147 loader failed", error);
     const message = "アプリ本体の読み込みに失敗しました。通信状況を確認して、reset-cache.html?auto=1 を開き直してください。";
     const target = document.querySelector("#dataStatus") || document.body;
     if (!target) return;
@@ -49,7 +49,7 @@
     let patched = source
       .replace('const APP_VERSION = "v131-remove-chusei-green-park";', `const APP_VERSION = "${PATCH_VERSION}";`)
       .replace('const APP_STATUS_LABEL = "v131・中勢グリーンパーク削除版";', `const APP_STATUS_LABEL = "${PATCH_STATUS_LABEL}";`)
-      .replace('// v131: 中勢グリーンパーク池も除いた初期収録。', '// v146: 釣りニャン反応モードとセリフを追加。')
+      .replace('// v131: 中勢グリーンパーク池も除いた初期収録。', '// v147: 釣りニャン釣果記録ボタン連動版。')
       .replace(oldOsugiLine, newOsugiLine)
       .replace(oldNanairoLine, `${newNanairoLine}\n${ikeharaLine}`);
 
@@ -64,6 +64,42 @@
     if (!patched.includes('id: "dam-ikehara"')) {
       patched = patched.replace(newNanairoLine, `${newNanairoLine}\n${ikeharaLine}`);
     }
+
+    const petCatchBridge = `
+  // v147: 釣りニャンの「釣果記録」ボタンから、アプリ本体の釣果記録画面を直接開くための橋渡し。
+  window.__MIE_OPEN_CATCH_PANEL_FROM_PET__ = function openCatchPanelFromPet() {
+    try {
+      state.positionAdjustSpotId = null;
+      updatePositionAdjustBanner();
+      if (state.spotMode) setSpotMode(false);
+      if (state.catchMode) setCatchMode(false);
+      try { hideSpotCard(); } catch (error) {}
+      try { map?.closePopup?.(); } catch (error) {}
+      document.body.classList.remove("map-popup-open", "record-popup-open", "spot-card-open");
+
+      let lat = MIE_CENTER[0];
+      let lng = MIE_CENTER[1];
+      const center = map?.getCenter?.();
+      if (center && isInsideMieNavBounds(center.lat, center.lng)) {
+        lat = Number(center.lat);
+        lng = Number(center.lng);
+      }
+      const latlng = (typeof L !== "undefined" && L.latLng) ? L.latLng(lat, lng) : { lat, lng };
+      openCatchPanel(null, latlng, { recordType: "catch", recordMode: "super" });
+      setCatchLocationStatus(lat, lng, "地図中央");
+      closeMobileMenu();
+      if (els?.dataStatus) els.dataStatus.textContent = "釣果記録を開きました。位置は地図中央です。必要なら現在地を使ってください。";
+      return true;
+    } catch (error) {
+      console.error("釣りニャンから釣果記録を開けませんでした", error);
+      return false;
+    }
+  };
+`;
+    if (!patched.includes("__MIE_OPEN_CATCH_PANEL_FROM_PET__")) {
+      patched = patched.replace("  function closeCatchPanel() {", `${petCatchBridge}\n  function closeCatchPanel() {`);
+    }
+
     return patched;
   }
 

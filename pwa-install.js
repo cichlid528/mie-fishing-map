@@ -2,8 +2,8 @@
   "use strict";
   window.__MIE_PWA_INSTALL_MANAGED__ = true;
 
-  const APP_VERSION = "v146-pet-reaction-mode";
-  const STATUS_LABEL = "v146・釣りニャン反応モード追加版";
+  const APP_VERSION = "v147-pet-catch-record-button";
+  const STATUS_LABEL = "v147・釣りニャン釣果記録ボタン連動版";
   const PET_NAME = "爆釣にゃん師匠";
   const PET_BUBBLE_IMAGE_SRC = `assets/turi-nyan-speech-bubble-v142.png?v=${APP_VERSION}`;
   const PET_IMAGE_SRC = `assets/turi-nyan-pose-front-v138.png?v=${APP_VERSION}`;
@@ -56,8 +56,8 @@
   let knownCatchCount = 0;
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
   const BACKUP_META_STORAGE_KEY = "mie-fishing-map-backup-meta-v1";
-  const PET_LAST_NO_RECORD_PROMPT_KEY = "mie-fishing-map-pet-no-record-prompt-v146";
-  const PET_LAST_BACKUP_PROMPT_KEY = "mie-fishing-map-pet-backup-prompt-v146";
+  const PET_LAST_NO_RECORD_PROMPT_KEY = "mie-fishing-map-pet-no-record-prompt-v147";
+  const PET_LAST_BACKUP_PROMPT_KEY = "mie-fishing-map-pet-backup-prompt-v147";
 
   function isStandalone() {
     return window.matchMedia?.("(display-mode: standalone)")?.matches || window.navigator.standalone === true;
@@ -101,6 +101,7 @@
       .replaceAll("v143・釣りニャン吹き出し文字内側調整版", STATUS_LABEL)
       .replaceAll("v144・釣りニャン吹き出し文字右寄せ調整版", STATUS_LABEL)
       .replaceAll("v145・釣りニャン吹き出し文字下げ調整版", STATUS_LABEL)
+      .replaceAll("v146・釣りニャン反応モード追加版", STATUS_LABEL)
       .replaceAll("v131-remove-chusei-green-park", APP_VERSION)
       .replaceAll("v133-miyagawa-nanairo-ikehara", APP_VERSION)
       .replaceAll("v134-nanairo-dam-fix", APP_VERSION)
@@ -114,7 +115,8 @@
       .replaceAll("v142-bubble-tail-right", APP_VERSION)
       .replaceAll("v143-bubble-text-inside", APP_VERSION)
       .replaceAll("v144-bubble-text-right", APP_VERSION)
-      .replaceAll("v145-bubble-text-lower", APP_VERSION);
+      .replaceAll("v145-bubble-text-lower", APP_VERSION)
+      .replaceAll("v146-pet-reaction-mode", APP_VERSION);
   }
 
   function patchNode(node) {
@@ -531,12 +533,23 @@
     });
     document.getElementById("turiNyanRecord")?.addEventListener("click", (event) => {
       event.stopPropagation();
-      const button = document.querySelector("#addCatchMode");
-      if (button) {
-        button.click();
-        speakPet("釣果を記録するにゃ", 7000, "happy");
+      const openFromPet = window.__MIE_OPEN_CATCH_PANEL_FROM_PET__;
+      if (typeof openFromPet === "function" && openFromPet()) {
+        speakPet("釣果記録を開いたにゃ", 5200, "happy");
+        return;
+      }
+      const currentLocationButton = document.querySelector("#locateCatchButton");
+      if (currentLocationButton) {
+        currentLocationButton.click();
+        speakPet("現在地で記録するにゃ", 6500, "happy");
+        return;
+      }
+      const catchModeButton = document.querySelector("#addCatchMode");
+      if (catchModeButton) {
+        catchModeButton.click();
+        speakPet("地図をタップして記録にゃ", 7000, "happy");
       } else {
-        speakPet("釣果を記録するにゃ", 7000);
+        speakPet("釣果記録を開けなかったにゃ", 7000, "worried");
       }
     });
 

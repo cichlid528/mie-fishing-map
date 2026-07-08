@@ -2,7 +2,7 @@
   "name": "三重県釣りマップ",
   "short_name": "釣りマップ",
   "description": "国土地理院の地理院タイルを使った釣り場・釣果記録アプリ。記録写真の添付・一覧表示に対応。",
-  "start_url": "./index.html?v=v146-pet-reaction-mode",
+  "start_url": "./index.html?v=v147-pet-catch-record-button",
   "scope": "./",
   "display": "standalone",
   "theme_color": "#0f7b63",
@@ -10,19 +10,19 @@
   "orientation": "any",
   "icons": [
     {
-      "src": "icons/icon-192-v103.png",
+      "src": "icons/icon-192-v147-pet-catch-record-button.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "icons/icon-512-v103.png",
+      "src": "icons/icon-512-v147-pet-catch-record-button.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "icons/icon-maskable-512-v103.png",
+      "src": "icons/icon-maskable-512-v147-pet-catch-record-button.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
