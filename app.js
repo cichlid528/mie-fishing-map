@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const PATCH_VERSION = "v141-bubble-text-fit";
-  const PATCH_STATUS_LABEL = "v141・釣りニャン吹き出し文字調整版";
+  const PATCH_VERSION = "v142-bubble-tail-right";
+  const PATCH_STATUS_LABEL = "v142・釣りニャン吹き出し右下しっぽ版";
   const SOURCE_APP_URLS = [
     "https://cdn.jsdelivr.net/gh/cichlid528/mie-fishing-map@486490f1fda171ba9dfdf8ac9a431d4b3b09c530/app.js",
     "https://raw.githubusercontent.com/cichlid528/mie-fishing-map/486490f1fda171ba9dfdf8ac9a431d4b3b09c530/app.js"
@@ -49,7 +49,7 @@
     let patched = source
       .replace('const APP_VERSION = "v131-remove-chusei-green-park";', `const APP_VERSION = "${PATCH_VERSION}";`)
       .replace('const APP_STATUS_LABEL = "v131・中勢グリーンパーク削除版";', `const APP_STATUS_LABEL = "${PATCH_STATUS_LABEL}";`)
-      .replace('// v131: 中勢グリーンパーク池も除いた初期収録。', '// v141: 吹き出し内の文字が収まるように調整。')
+      .replace('// v131: 中勢グリーンパーク池も除いた初期収録。', '// v142: 吹き出しのしっぽを右下に移動。')
       .replace(oldOsugiLine, newOsugiLine)
       .replace(oldNanairoLine, `${newNanairoLine}\n${ikeharaLine}`);
 

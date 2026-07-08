@@ -2,10 +2,10 @@
   "use strict";
   window.__MIE_PWA_INSTALL_MANAGED__ = true;
 
-  const APP_VERSION = "v141-bubble-text-fit";
-  const STATUS_LABEL = "v141・釣りニャン吹き出し文字調整版";
+  const APP_VERSION = "v142-bubble-tail-right";
+  const STATUS_LABEL = "v142・釣りニャン吹き出し右下しっぽ版";
   const PET_NAME = "爆釣にゃん師匠";
-  const PET_BUBBLE_IMAGE_SRC = `assets/turi-nyan-speech-bubble-v140.png?v=${APP_VERSION}`;
+  const PET_BUBBLE_IMAGE_SRC = `assets/turi-nyan-speech-bubble-v142.png?v=${APP_VERSION}`;
   const PET_IMAGE_SRC = `assets/turi-nyan-pose-front-v138.png?v=${APP_VERSION}`;
   const PET_BACK_IMAGE_SRC = `assets/turi-nyan-back-v138.png?v=${APP_VERSION}`;
   const PET_SIDE_IMAGE_SRC = `assets/turi-nyan-side-v138.png?v=${APP_VERSION}`;
@@ -89,6 +89,7 @@
       .replaceAll("v138・釣りニャン丸アイコン撤去・漫画吹き出し版", STATUS_LABEL)
       .replaceAll("v139・釣りニャン口元透過修正版", STATUS_LABEL)
       .replaceAll("v140・釣りニャン指差し吹き出し採用版", STATUS_LABEL)
+      .replaceAll("v141・釣りニャン吹き出し文字調整版", STATUS_LABEL)
       .replaceAll("v131-remove-chusei-green-park", APP_VERSION)
       .replaceAll("v133-miyagawa-nanairo-ikehara", APP_VERSION)
       .replaceAll("v134-nanairo-dam-fix", APP_VERSION)
@@ -97,7 +98,8 @@
       .replaceAll("v137-turi-nyan-motion-sheet", APP_VERSION)
       .replaceAll("v138-turi-nyan-no-circle-bubble", APP_VERSION)
       .replaceAll("v139-turi-nyan-mouth-alpha-fix", APP_VERSION)
-      .replaceAll("v140-speech-pointer-bubble", APP_VERSION);
+      .replaceAll("v140-speech-pointer-bubble", APP_VERSION)
+      .replaceAll("v141-bubble-text-fit", APP_VERSION);
   }
 
   function patchNode(node) {
@@ -157,7 +159,7 @@
         box-sizing: border-box;
         width: min(372px, calc(100vw - 28px));
         min-height: 214px;
-        padding: 46px 46px 68px 68px;
+        padding: 46px 68px 68px 46px;
         border: 0;
         border-radius: 0;
         background-color: transparent;
@@ -242,7 +244,7 @@
           bottom: calc(96px + env(safe-area-inset-bottom));
         }
         #turiNyanPet .pet-button { width: 92px; height: 92px; }
-        #turiNyanPet .pet-bubble { width: min(318px, calc(100vw - 16px)); min-height: 194px; padding: 40px 36px 62px 56px; font-size: .76rem; }
+        #turiNyanPet .pet-bubble { width: min(318px, calc(100vw - 16px)); min-height: 194px; padding: 40px 56px 62px 36px; font-size: .76rem; }
         #turiNyanPet .pet-bubble strong { font-size: .80rem; margin-bottom: 2px; }
         #turiNyanPet #turiNyanMessage { font-size: .68rem; line-height: 1.28; }
         #turiNyanPet .pet-actions { gap: 3px; margin-top: 5px; }

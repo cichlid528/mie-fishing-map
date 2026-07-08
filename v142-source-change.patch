@@ -1,0 +1,114 @@
+--- a/app.js
++++ b/app.js
+@@ -1,8 +1,8 @@
+ (() => {
+   "use strict";
+ 
+-  const PATCH_VERSION = "v141-bubble-text-fit";
+-  const PATCH_STATUS_LABEL = "v141・釣りニャン吹き出し文字調整版";
++  const PATCH_VERSION = "v142-bubble-tail-right";
++  const PATCH_STATUS_LABEL = "v142・釣りニャン吹き出し右下しっぽ版";
+   const SOURCE_APP_URLS = [
+     "https://cdn.jsdelivr.net/gh/cichlid528/mie-fishing-map@486490f1fda171ba9dfdf8ac9a431d4b3b09c530/app.js",
+     "https://raw.githubusercontent.com/cichlid528/mie-fishing-map/486490f1fda171ba9dfdf8ac9a431d4b3b09c530/app.js"
+@@ -49,7 +49,7 @@
+     let patched = source
+       .replace('const APP_VERSION = "v131-remove-chusei-green-park";', `const APP_VERSION = "${PATCH_VERSION}";`)
+       .replace('const APP_STATUS_LABEL = "v131・中勢グリーンパーク削除版";', `const APP_STATUS_LABEL = "${PATCH_STATUS_LABEL}";`)
+-      .replace('// v131: 中勢グリーンパーク池も除いた初期収録。', '// v141: 吹き出し内の文字が収まるように調整。')
++      .replace('// v131: 中勢グリーンパーク池も除いた初期収録。', '// v142: 吹き出しのしっぽを右下に移動。')
+       .replace(oldOsugiLine, newOsugiLine)
+       .replace(oldNanairoLine, `${newNanairoLine}\n${ikeharaLine}`);
+ 
+--- a/pwa-install.js
++++ b/pwa-install.js
+@@ -2,10 +2,10 @@
+   "use strict";
+   window.__MIE_PWA_INSTALL_MANAGED__ = true;
+ 
+-  const APP_VERSION = "v141-bubble-text-fit";
+-  const STATUS_LABEL = "v141・釣りニャン吹き出し文字調整版";
++  const APP_VERSION = "v142-bubble-tail-right";
++  const STATUS_LABEL = "v142・釣りニャン吹き出し右下しっぽ版";
+   const PET_NAME = "爆釣にゃん師匠";
+-  const PET_BUBBLE_IMAGE_SRC = `assets/turi-nyan-speech-bubble-v140.png?v=${APP_VERSION}`;
++  const PET_BUBBLE_IMAGE_SRC = `assets/turi-nyan-speech-bubble-v142.png?v=${APP_VERSION}`;
+   const PET_IMAGE_SRC = `assets/turi-nyan-pose-front-v138.png?v=${APP_VERSION}`;
+   const PET_BACK_IMAGE_SRC = `assets/turi-nyan-back-v138.png?v=${APP_VERSION}`;
+   const PET_SIDE_IMAGE_SRC = `assets/turi-nyan-side-v138.png?v=${APP_VERSION}`;
+@@ -89,6 +89,7 @@
+       .replaceAll("v138・釣りニャン丸アイコン撤去・漫画吹き出し版", STATUS_LABEL)
+       .replaceAll("v139・釣りニャン口元透過修正版", STATUS_LABEL)
+       .replaceAll("v140・釣りニャン指差し吹き出し採用版", STATUS_LABEL)
++      .replaceAll("v141・釣りニャン吹き出し文字調整版", STATUS_LABEL)
+       .replaceAll("v131-remove-chusei-green-park", APP_VERSION)
+       .replaceAll("v133-miyagawa-nanairo-ikehara", APP_VERSION)
+       .replaceAll("v134-nanairo-dam-fix", APP_VERSION)
+@@ -97,7 +98,8 @@
+       .replaceAll("v137-turi-nyan-motion-sheet", APP_VERSION)
+       .replaceAll("v138-turi-nyan-no-circle-bubble", APP_VERSION)
+       .replaceAll("v139-turi-nyan-mouth-alpha-fix", APP_VERSION)
+-      .replaceAll("v140-speech-pointer-bubble", APP_VERSION);
++      .replaceAll("v140-speech-pointer-bubble", APP_VERSION)
++      .replaceAll("v141-bubble-text-fit", APP_VERSION);
+   }
+ 
+   function patchNode(node) {
+@@ -157,7 +159,7 @@
+         box-sizing: border-box;
+         width: min(372px, calc(100vw - 28px));
+         min-height: 214px;
+-        padding: 46px 46px 68px 68px;
++        padding: 46px 68px 68px 46px;
+         border: 0;
+         border-radius: 0;
+         background-color: transparent;
+@@ -242,7 +244,7 @@
+           bottom: calc(96px + env(safe-area-inset-bottom));
+         }
+         #turiNyanPet .pet-button { width: 92px; height: 92px; }
+-        #turiNyanPet .pet-bubble { width: min(318px, calc(100vw - 16px)); min-height: 194px; padding: 40px 36px 62px 56px; font-size: .76rem; }
++        #turiNyanPet .pet-bubble { width: min(318px, calc(100vw - 16px)); min-height: 194px; padding: 40px 56px 62px 36px; font-size: .76rem; }
+         #turiNyanPet .pet-bubble strong { font-size: .80rem; margin-bottom: 2px; }
+         #turiNyanPet #turiNyanMessage { font-size: .68rem; line-height: 1.28; }
+         #turiNyanPet .pet-actions { gap: 3px; margin-top: 5px; }
+--- a/manifest.json
++++ b/manifest.json
+@@ -2,7 +2,7 @@
+   "name": "三重県釣りマップ",
+   "short_name": "釣りマップ",
+   "description": "国土地理院の地理院タイルを使った釣り場・釣果記録アプリ。記録写真の添付・一覧表示に対応。",
+-  "start_url": "./index.html?v=v141-bubble-text-fit",
++  "start_url": "./index.html?v=v142-bubble-tail-right",
+   "scope": "./",
+   "display": "standalone",
+   "theme_color": "#0f7b63",
+--- a/reset-cache.html
++++ b/reset-cache.html
+@@ -24,7 +24,7 @@
+       <p>古い地図や古いService Workerキャッシュが残っている場合、このページでアプリ本体の保存データは残したまま、キャッシュだけを削除します。</p>
+       <p>釣果・追加した釣り場・写真・背景画像などの <code>localStorage</code> データは削除しません。</p>
+       <button id="resetButton" type="button">キャッシュを消して開き直す</button>
+-      <a href="./?v=v141-bubble-text-fit">そのまま開く</a>
++      <a href="./?v=v142-bubble-tail-right">そのまま開く</a>
+       <p id="status" class="status" aria-live="polite">準備できました。</p>
+     </main>
+     <script>
+@@ -46,7 +46,7 @@
+ 
+           say("完了しました。最新版を開き直します…");
+           const url = new URL("./", location.href);
+-          url.searchParams.set("v", "v141-bubble-text-fit");
++          url.searchParams.set("v", "v142-bubble-tail-right");
+           url.searchParams.set("reset", Date.now().toString());
+           setTimeout(() => location.replace(url.toString()), 500);
+         } catch (error) {
+--- a/sw.js
++++ b/sw.js
+@@ -1,5 +1,5 @@
+ const CACHE_PREFIX = "bass-spot-log-";
+-const VERSION = "v141-bubble-text-fit";
++const VERSION = "v142-bubble-tail-right";
+ 
+ self.addEventListener("install", (event) => {
+   event.waitUntil(self.skipWaiting());
