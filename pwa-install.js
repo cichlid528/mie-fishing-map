@@ -2,8 +2,8 @@
   "use strict";
   window.__MIE_PWA_INSTALL_MANAGED__ = true;
 
-  const APP_VERSION = "v140-speech-pointer-bubble";
-  const STATUS_LABEL = "v140・釣りニャン指差し吹き出し採用版";
+  const APP_VERSION = "v141-bubble-text-fit";
+  const STATUS_LABEL = "v141・釣りニャン吹き出し文字調整版";
   const PET_NAME = "爆釣にゃん師匠";
   const PET_BUBBLE_IMAGE_SRC = `assets/turi-nyan-speech-bubble-v140.png?v=${APP_VERSION}`;
   const PET_IMAGE_SRC = `assets/turi-nyan-pose-front-v138.png?v=${APP_VERSION}`;
@@ -88,6 +88,7 @@
       .replaceAll("v137・釣りニャン表情モーション採用版", STATUS_LABEL)
       .replaceAll("v138・釣りニャン丸アイコン撤去・漫画吹き出し版", STATUS_LABEL)
       .replaceAll("v139・釣りニャン口元透過修正版", STATUS_LABEL)
+      .replaceAll("v140・釣りニャン指差し吹き出し採用版", STATUS_LABEL)
       .replaceAll("v131-remove-chusei-green-park", APP_VERSION)
       .replaceAll("v133-miyagawa-nanairo-ikehara", APP_VERSION)
       .replaceAll("v134-nanairo-dam-fix", APP_VERSION)
@@ -95,7 +96,8 @@
       .replaceAll("v136-turi-nyan-motion", APP_VERSION)
       .replaceAll("v137-turi-nyan-motion-sheet", APP_VERSION)
       .replaceAll("v138-turi-nyan-no-circle-bubble", APP_VERSION)
-      .replaceAll("v139-turi-nyan-mouth-alpha-fix", APP_VERSION);
+      .replaceAll("v139-turi-nyan-mouth-alpha-fix", APP_VERSION)
+      .replaceAll("v140-speech-pointer-bubble", APP_VERSION);
   }
 
   function patchNode(node) {
@@ -152,9 +154,10 @@
       #turiNyanPet .pet-bubble {
         display: none;
         position: relative;
-        width: min(330px, calc(100vw - 34px));
-        min-height: 172px;
-        padding: 46px 42px 62px 48px;
+        box-sizing: border-box;
+        width: min(372px, calc(100vw - 28px));
+        min-height: 214px;
+        padding: 46px 46px 68px 68px;
         border: 0;
         border-radius: 0;
         background-color: transparent;
@@ -164,10 +167,13 @@
         background-position: center;
         color: #17120d;
         box-shadow: none;
+        font-size: .82rem;
         font-weight: 900;
-        line-height: 1.48;
+        line-height: 1.34;
+        letter-spacing: -.01em;
         pointer-events: auto;
         text-shadow: none;
+        overflow: hidden;
       }
       #turiNyanPet .pet-bubble::before,
       #turiNyanPet .pet-bubble::after {
@@ -175,15 +181,18 @@
         display: none !important;
       }
       #turiNyanPet.is-speaking .pet-bubble { display: block; }
-      #turiNyanPet .pet-bubble strong { color: #8d321d; font-size: 1.02em; }
-      #turiNyanPet .pet-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+      #turiNyanPet .pet-bubble strong { display: block; color: #8d321d; font-size: .88rem; line-height: 1.12; margin-bottom: 3px; }
+      #turiNyanPet #turiNyanMessage { display: block; max-width: 100%; font-size: .74rem; line-height: 1.32; overflow-wrap: anywhere; word-break: keep-all; }
+      #turiNyanPet .pet-actions { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; max-width: 100%; }
       #turiNyanPet .pet-actions button {
         border: 0;
-        min-height: 30px;
-        padding: 5px 9px;
+        min-height: 24px;
+        padding: 3px 7px;
         border-radius: 999px;
         background: #0f6f5f;
         color: #fff;
+        font-size: .68rem;
+        line-height: 1;
         font-weight: 900;
         box-shadow: 0 5px 12px rgba(15,111,95,.18);
       }
@@ -233,7 +242,11 @@
           bottom: calc(96px + env(safe-area-inset-bottom));
         }
         #turiNyanPet .pet-button { width: 92px; height: 92px; }
-        #turiNyanPet .pet-bubble { width: min(286px, calc(100vw - 28px)); min-height: 150px; padding: 38px 34px 52px 38px; font-size: .82rem; }
+        #turiNyanPet .pet-bubble { width: min(318px, calc(100vw - 16px)); min-height: 194px; padding: 40px 36px 62px 56px; font-size: .76rem; }
+        #turiNyanPet .pet-bubble strong { font-size: .80rem; margin-bottom: 2px; }
+        #turiNyanPet #turiNyanMessage { font-size: .68rem; line-height: 1.28; }
+        #turiNyanPet .pet-actions { gap: 3px; margin-top: 5px; }
+        #turiNyanPet .pet-actions button { min-height: 22px; padding: 3px 5px; font-size: .62rem; }
         body.menu-open #turiNyanPet,
         body.panel-open #turiNyanPet,
         body.position-adjusting #turiNyanPet,
@@ -256,18 +269,18 @@
 
   function expressionMessage(mode) {
     const messages = {
-      smile: "笑顔で案内するにゃ。今日も楽しく安全第一にゃ。",
-      serious: "キリッと確認するにゃ。現地看板とルールは最優先にゃ。",
-      wink: "このポイント、ちょっと気になるにゃ。あとで記録しておくにゃ。",
-      surprise: "おっ、反応ありそうにゃ。水面と風をよく見るにゃ。",
-      thinking: "考え中にゃ。前回の釣果と天気を比べるにゃ。",
-      happy: "やったーにゃ。釣れたらサイズもルアーも残すにゃ。",
-      sad: "残念な日もあるにゃ。次の一匹につながる記録にするにゃ。",
-      angry: "危ない場所や禁止場所はダメにゃ。無理せず撤退にゃ。",
-      shy: "ドヤ顔にゃ。爆釣にゃん師匠、今日も見守るにゃ。",
-      dreamy: "うっとりにゃ。夕まずめの景色も釣りの楽しみだにゃ。",
-      worried: "焦らなくていいにゃ。足場と天気を確認するにゃ。",
-      sleepy: "ねむいにゃ…。でもバックアップだけは忘れないでにゃ。"
+      smile: "笑顔で案内するにゃ。安全第一にゃ。",
+      serious: "キリッと確認にゃ。ルール最優先にゃ。",
+      wink: "このポイント、気になるにゃ。記録するにゃ。",
+      surprise: "反応ありそうにゃ。風と水面を見るにゃ。",
+      thinking: "考え中にゃ。前回の釣果と比べるにゃ。",
+      happy: "やったーにゃ。サイズも残すにゃ。",
+      sad: "残念でも、次につながる記録にゃ。",
+      angry: "危ない場所はダメにゃ。無理せず撤退にゃ。",
+      shy: "ドヤ顔にゃ。今日も見守るにゃ。",
+      dreamy: "うっとりにゃ。夕まずめも最高にゃ。",
+      worried: "焦らず足場と天気を確認にゃ。",
+      sleepy: "ねむいにゃ…。バックアップ忘れずにゃ。"
     };
     return messages[mode] || "今日も釣りをサポートするにゃ。";
   }
@@ -281,13 +294,13 @@
 
   function randomPetMessage() {
     const messages = [
-      "今日も安全第一でいくにゃ。現地看板は必ず確認にゃ。",
-      "釣果を残すと、あとで強いパターンが見えてくるにゃ。",
-      "バックアップ忘れは危ないにゃ。大事な記録は守るにゃ。",
-      "宮川ダム、七色ダム、池原ダムも見られるようにしたにゃ。",
-      "笑顔・ウインク・考え中・焦りまで、表情を切り替えるにゃ。",
-      "海も川も見回り中にゃ。表情モーションも増えたにゃ。",
-      "釣れた場所だけじゃなく、天気と水位もメモすると強いにゃ。"
+      "安全第一にゃ。現地看板も確認にゃ。",
+      "釣果を残すと、次の作戦が見えるにゃ。",
+      "バックアップして記録を守るにゃ。",
+      "宮川・七色・池原も確認できるにゃ。",
+      "表情も切り替えて案内するにゃ。",
+      "海も川も見回り中にゃ。",
+      "天気と水位もメモすると強いにゃ。"
     ];
     return messages[Math.floor(Math.random() * messages.length)];
   }
@@ -326,7 +339,7 @@
   }
 
   function speakLookout() {
-    speakPet("海も川も任せるにゃ。後ろ姿でしっかり見回り中にゃ。", 7600, "lookout");
+    speakPet("海も川も見回り中にゃ。", 7600, "lookout");
   }
 
   function schedulePatrolMotion() {
@@ -334,7 +347,7 @@
     patrolMotionTimer = window.setTimeout(() => {
       const pet = document.getElementById("turiNyanPet");
       if (pet && !pet.classList.contains("is-speaking") && !document.body.classList.contains("menu-open") && !document.body.classList.contains("panel-open")) {
-        speakPet("夕まずめの景色を確認中にゃ。後ろ姿で見回るにゃ。", 5600, "lookout");
+        speakPet("夕まずめを見回り中にゃ。", 5600, "lookout");
       }
       schedulePatrolMotion();
     }, 42000);
@@ -370,7 +383,7 @@
       } else if (pet.classList.contains("is-speaking")) {
         speakLookout();
       } else {
-        speakPet("呼んだかにゃ？ 指定の吹き出しを採用したにゃ。", 8000, "wink");
+        speakPet("呼んだかにゃ？ 吹き出し調整したにゃ。", 8000, "wink");
       }
     });
     document.getElementById("turiNyanClose")?.addEventListener("click", (event) => {
@@ -398,7 +411,7 @@
       }
     });
 
-    window.setTimeout(() => speakPet("爆釣にゃん師匠だにゃ。新しい漫画吹き出しで案内するにゃ。", 7600, "happy"), 1600);
+    window.setTimeout(() => speakPet("爆釣にゃん師匠だにゃ。案内するにゃ。", 7600, "happy"), 1600);
     window.setTimeout(() => speakLookout(), 10500);
     schedulePatrolMotion();
   }

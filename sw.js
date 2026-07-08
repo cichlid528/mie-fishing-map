@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bass-spot-log-";
-const VERSION = "v140-speech-pointer-bubble";
+const VERSION = "v141-bubble-text-fit";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());

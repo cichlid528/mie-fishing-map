@@ -1,0 +1,8 @@
+v141 changes summary:
+- APP_VERSION -> v141-bubble-text-fit
+- STATUS_LABEL -> v141・釣りニャン吹き出し文字調整版
+- Kept v140 supplied speech bubble image.
+- Adjusted .pet-bubble box sizing, width, height, padding, font-size and line-height.
+- Added text-specific sizing for #turiNyanMessage.
+- Reduced pet action button sizes.
+- Shortened long Turi-Nyan messages so they fit inside the bubble.
