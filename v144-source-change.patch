@@ -1,0 +1,4 @@
+v143 -> v144
+- pet-bubble padding changed from 74px 96px 142px 66px to 74px 70px 142px 98px
+- mobile pet-bubble padding changed from 58px 78px 114px 52px to 58px 52px 114px 78px
+- title/message/button font sizes slightly reduced for safer fitting
