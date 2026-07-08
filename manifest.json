@@ -2,7 +2,7 @@
   "name": "三重県釣りマップ",
   "short_name": "釣りマップ",
   "description": "国土地理院の地理院タイルを使った釣り場・釣果記録アプリ。記録写真の添付・一覧表示に対応。",
-  "start_url": "./index.html?v=v137-turi-nyan-motion-sheet",
+  "start_url": "./index.html?v=v138-turi-nyan-no-circle-bubble",
   "scope": "./",
   "display": "standalone",
   "theme_color": "#0f7b63",

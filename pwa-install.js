@@ -2,26 +2,26 @@
   "use strict";
   window.__MIE_PWA_INSTALL_MANAGED__ = true;
 
-  const APP_VERSION = "v137-turi-nyan-motion-sheet";
-  const STATUS_LABEL = "v137・釣りニャン表情モーション採用版";
+  const APP_VERSION = "v138-turi-nyan-no-circle-bubble";
+  const STATUS_LABEL = "v138・釣りニャン丸アイコン撤去・漫画吹き出し版";
   const PET_NAME = "爆釣にゃん師匠";
-  const PET_IMAGE_SRC = `assets/turi-nyan-stand-v137.png?v=${APP_VERSION}`;
-  const PET_BACK_IMAGE_SRC = `assets/turi-nyan-back-v137.png?v=${APP_VERSION}`;
-  const PET_SIDE_IMAGE_SRC = `assets/turi-nyan-side-v137.png?v=${APP_VERSION}`;
-  const PET_SQUAT_IMAGE_SRC = `assets/turi-nyan-squat-front-v137.png?v=${APP_VERSION}`;
+  const PET_IMAGE_SRC = `assets/turi-nyan-pose-front-v138.png?v=${APP_VERSION}`;
+  const PET_BACK_IMAGE_SRC = `assets/turi-nyan-back-v138.png?v=${APP_VERSION}`;
+  const PET_SIDE_IMAGE_SRC = `assets/turi-nyan-side-v138.png?v=${APP_VERSION}`;
+  const PET_SQUAT_IMAGE_SRC = `assets/turi-nyan-squat-front-v138.png?v=${APP_VERSION}`;
   const PET_EXPRESSION_IMAGES = {
-    smile: `assets/turi-nyan-expression-smile-v137.png?v=${APP_VERSION}`,
-    serious: `assets/turi-nyan-expression-serious-v137.png?v=${APP_VERSION}`,
-    wink: `assets/turi-nyan-expression-wink-v137.png?v=${APP_VERSION}`,
-    surprise: `assets/turi-nyan-expression-surprise-v137.png?v=${APP_VERSION}`,
-    thinking: `assets/turi-nyan-expression-thinking-v137.png?v=${APP_VERSION}`,
-    happy: `assets/turi-nyan-expression-happy-v137.png?v=${APP_VERSION}`,
-    sad: `assets/turi-nyan-expression-sad-v137.png?v=${APP_VERSION}`,
-    angry: `assets/turi-nyan-expression-angry-v137.png?v=${APP_VERSION}`,
-    shy: `assets/turi-nyan-expression-shy-v137.png?v=${APP_VERSION}`,
-    dreamy: `assets/turi-nyan-expression-dreamy-v137.png?v=${APP_VERSION}`,
-    worried: `assets/turi-nyan-expression-worried-v137.png?v=${APP_VERSION}`,
-    sleepy: `assets/turi-nyan-expression-sleepy-v137.png?v=${APP_VERSION}`
+    smile: `assets/turi-nyan-expression-smile-v138.png?v=${APP_VERSION}`,
+    serious: `assets/turi-nyan-expression-serious-v138.png?v=${APP_VERSION}`,
+    wink: `assets/turi-nyan-expression-wink-v138.png?v=${APP_VERSION}`,
+    surprise: `assets/turi-nyan-expression-surprise-v138.png?v=${APP_VERSION}`,
+    thinking: `assets/turi-nyan-expression-thinking-v138.png?v=${APP_VERSION}`,
+    happy: `assets/turi-nyan-expression-happy-v138.png?v=${APP_VERSION}`,
+    sad: `assets/turi-nyan-expression-sad-v138.png?v=${APP_VERSION}`,
+    angry: `assets/turi-nyan-expression-angry-v138.png?v=${APP_VERSION}`,
+    shy: `assets/turi-nyan-expression-shy-v138.png?v=${APP_VERSION}`,
+    dreamy: `assets/turi-nyan-expression-dreamy-v138.png?v=${APP_VERSION}`,
+    worried: `assets/turi-nyan-expression-worried-v138.png?v=${APP_VERSION}`,
+    sleepy: `assets/turi-nyan-expression-sleepy-v138.png?v=${APP_VERSION}`
   };
   const PET_MODE_LABELS = {
     front: "立ち姿",
@@ -84,11 +84,13 @@
       .replaceAll("v134・宮川ダム・七色ダム・池原ダム反映版", STATUS_LABEL)
       .replaceAll("v135・釣りニャン追加版", STATUS_LABEL)
       .replaceAll("v136・釣りニャン後ろ姿モーション追加版", STATUS_LABEL)
+      .replaceAll("v137・釣りニャン表情モーション採用版", STATUS_LABEL)
       .replaceAll("v131-remove-chusei-green-park", APP_VERSION)
       .replaceAll("v133-miyagawa-nanairo-ikehara", APP_VERSION)
       .replaceAll("v134-nanairo-dam-fix", APP_VERSION)
       .replaceAll("v135-turi-nyan-pet", APP_VERSION)
-      .replaceAll("v136-turi-nyan-motion", APP_VERSION);
+      .replaceAll("v136-turi-nyan-motion", APP_VERSION)
+      .replaceAll("v137-turi-nyan-motion-sheet", APP_VERSION);
   }
 
   function patchNode(node) {
@@ -144,18 +146,49 @@
       }
       #turiNyanPet .pet-bubble {
         display: none;
-        width: min(238px, calc(100vw - 34px));
-        padding: 10px 12px;
-        border-radius: 18px 18px 6px 18px;
-        background: rgba(255, 255, 255, .98);
-        color: #12352e;
-        box-shadow: 0 14px 38px rgba(0,0,0,.26), inset 0 0 0 1px rgba(15,111,95,.16);
-        font-weight: 850;
-        line-height: 1.45;
+        position: relative;
+        width: min(252px, calc(100vw - 34px));
+        padding: 12px 14px 13px;
+        border: 3px solid #1d1711;
+        border-radius: 22px;
+        background: #fffdf6;
+        color: #17120d;
+        box-shadow: 5px 6px 0 rgba(29,23,17,.22), 0 14px 36px rgba(0,0,0,.20);
+        font-weight: 900;
+        line-height: 1.48;
         pointer-events: auto;
+        text-shadow: none;
+      }
+      #turiNyanPet .pet-bubble::before {
+        content: "";
+        position: absolute;
+        right: 28px;
+        bottom: -18px;
+        width: 28px;
+        height: 24px;
+        background: #fffdf6;
+        border-right: 3px solid #1d1711;
+        border-bottom: 3px solid #1d1711;
+        transform: skew(22deg) rotate(22deg);
+        transform-origin: top left;
+        box-shadow: 5px 5px 0 rgba(29,23,17,.18);
+      }
+      #turiNyanPet .pet-bubble::after {
+        content: "にゃ！";
+        position: absolute;
+        top: -15px;
+        left: 16px;
+        padding: 2px 9px;
+        border: 2px solid #1d1711;
+        border-radius: 999px;
+        background: #ffe48a;
+        color: #7b3215;
+        font-size: .78rem;
+        font-weight: 1000;
+        transform: rotate(-4deg);
       }
       #turiNyanPet.is-speaking .pet-bubble { display: block; }
-      #turiNyanPet .pet-bubble strong { color: #0f6f5f; }
+      #turiNyanPet .pet-bubble strong { color: #8d321d; font-size: 1.02em; }
       #turiNyanPet .pet-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
       #turiNyanPet .pet-actions button {
         border: 0;
@@ -170,14 +203,14 @@
       #turiNyanPet .pet-actions button.pet-secondary { background: rgba(15,111,95,.10); color: #0d5f52; }
       #turiNyanPet .pet-actions button.pet-lookout { background: rgba(201,79,39,.12); color: #8d321d; }
       #turiNyanPet .pet-button {
-        width: 84px;
-        height: 84px;
+        width: 112px;
+        height: 112px;
         border: 0;
-        border-radius: 999px;
+        border-radius: 0;
         padding: 0;
-        background: rgba(255,255,255,.96);
-        box-shadow: 0 12px 34px rgba(0,0,0,.28), 0 0 0 3px rgba(255,255,255,.72);
-        overflow: hidden;
+        background: transparent;
+        box-shadow: none;
+        overflow: visible;
         cursor: pointer;
         pointer-events: auto;
         animation: turiNyanBob 3.2s ease-in-out infinite;
@@ -187,13 +220,14 @@
         width: 100%;
         height: 100%;
         display: block;
-        object-fit: cover;
+        object-fit: contain;
+        filter: drop-shadow(0 12px 14px rgba(0,0,0,.30));
         transition: transform .35s ease, opacity .25s ease;
       }
       #turiNyanPet.is-speaking .pet-button { animation-duration: 1.6s; }
       #turiNyanPet.is-lookout .pet-button {
         animation: turiNyanLookout 4.8s ease-in-out infinite;
-        box-shadow: 0 12px 34px rgba(0,0,0,.30), 0 0 0 3px rgba(255,244,210,.84);
+        box-shadow: none;
       }
       #turiNyanPet.is-lookout .pet-button img {
         transform: scale(1.04);
@@ -211,7 +245,7 @@
           right: calc(10px + env(safe-area-inset-right));
           bottom: calc(96px + env(safe-area-inset-bottom));
         }
-        #turiNyanPet .pet-button { width: 72px; height: 72px; }
+        #turiNyanPet .pet-button { width: 92px; height: 92px; }
         #turiNyanPet .pet-bubble { width: min(220px, calc(100vw - 28px)); font-size: .84rem; }
         body.menu-open #turiNyanPet,
         body.panel-open #turiNyanPet,
@@ -348,7 +382,7 @@
       } else if (pet.classList.contains("is-speaking")) {
         speakLookout();
       } else {
-        speakPet("呼んだかにゃ？ 表情モーションも採用されたにゃ。", 8000, "wink");
+        speakPet("呼んだかにゃ？ 漫画みたいな吹き出しに変えたにゃ。", 8000, "wink");
       }
     });
     document.getElementById("turiNyanClose")?.addEventListener("click", (event) => {
@@ -376,7 +410,7 @@
       }
     });
 
-    window.setTimeout(() => speakPet("爆釣にゃん師匠だにゃ。表情バリエーションも採用したにゃ。", 7600, "happy"), 1600);
+    window.setTimeout(() => speakPet("爆釣にゃん師匠だにゃ。丸アイコンなしで登場するにゃ。", 7600, "happy"), 1600);
     window.setTimeout(() => speakLookout(), 10500);
     schedulePatrolMotion();
   }

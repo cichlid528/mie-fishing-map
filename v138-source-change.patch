@@ -1,0 +1,5 @@
+v138 changes:
+- remove circular pet icon frame by making .pet-button transparent and borderless
+- switch pet image rendering to contain + drop-shadow
+- convert pet assets to transparent-background PNGs
+- change speech bubble to manga-style bordered balloon with tail

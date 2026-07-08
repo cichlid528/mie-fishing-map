@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const PATCH_VERSION = "v137-turi-nyan-motion-sheet";
-  const PATCH_STATUS_LABEL = "v137・釣りニャン表情モーション採用版";
+  const PATCH_VERSION = "v138-turi-nyan-no-circle-bubble";
+  const PATCH_STATUS_LABEL = "v138・釣りニャン丸アイコン撤去・漫画吹き出し版";
   const SOURCE_APP_URLS = [
     "https://cdn.jsdelivr.net/gh/cichlid528/mie-fishing-map@486490f1fda171ba9dfdf8ac9a431d4b3b09c530/app.js",
     "https://raw.githubusercontent.com/cichlid528/mie-fishing-map/486490f1fda171ba9dfdf8ac9a431d4b3b09c530/app.js"
@@ -49,7 +49,7 @@
     let patched = source
       .replace('const APP_VERSION = "v131-remove-chusei-green-park";', `const APP_VERSION = "${PATCH_VERSION}";`)
       .replace('const APP_STATUS_LABEL = "v131・中勢グリーンパーク削除版";', `const APP_STATUS_LABEL = "${PATCH_STATUS_LABEL}";`)
-      .replace('// v131: 中勢グリーンパーク池も除いた初期収録。', '// v137: 宮川ダム・七色ダム・池原ダム反映に加えて、釣りニャン表情モーションを追加。')
+      .replace('// v131: 中勢グリーンパーク池も除いた初期収録。', '// v138: 釣りニャンの丸アイコンを撤去し、漫画風吹き出しに変更。')
       .replace(oldOsugiLine, newOsugiLine)
       .replace(oldNanairoLine, `${newNanairoLine}\n${ikeharaLine}`);
 

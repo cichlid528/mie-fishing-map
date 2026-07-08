@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bass-spot-log-";
-const VERSION = "v137-turi-nyan-motion-sheet";
+const VERSION = "v138-turi-nyan-no-circle-bubble";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());
