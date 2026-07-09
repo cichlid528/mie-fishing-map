@@ -2,12 +2,12 @@
   "use strict";
   window.__MIE_PWA_INSTALL_MANAGED__ = true;
 
-  const APP_VERSION = "v156-menu-bg-map-fix";
-  const STATUS_LABEL = "v156・メニュー背景と地図反映修正版";
+  const APP_VERSION = "v157-comic-bubble-menu-bg";
+  const STATUS_LABEL = "v157・漫画風吹き出しとメニュー背景修正版";
   const PET_NAME = "爆釣にゃん師匠";
   const PET_IMAGE_SRC = `assets/turi-nyan-pose-front-v149.png?v=${APP_VERSION}`;
   const PET_BACK_IMAGE_SRC = `assets/turi-nyan-back-v149.png?v=${APP_VERSION}`;
-  const PET_BUBBLE_IMAGE_SRC = `assets/turi-nyan-speech-bubble-v149.png?v=${APP_VERSION}`;
+  const PET_BUBBLE_IMAGE_SRC = `assets/turi-nyan-speech-bubble-comic-v157.png?v=${APP_VERSION}`;
 
   let deferredInstallPrompt = null;
   let petHideTimer = null;
@@ -18,8 +18,10 @@
       .replaceAll("爆調ツインニャンコ", "爆釣ツインニャンコ")
       .replaceAll("v131・中勢グリーンパーク削除版", STATUS_LABEL)
       .replaceAll("v155・釣りニャン初期背景強制反映版", STATUS_LABEL)
+      .replaceAll("v156・メニュー背景と地図反映修正版", STATUS_LABEL)
       .replaceAll("v131-remove-chusei-green-park", APP_VERSION)
-      .replaceAll("v155-default-background-force", APP_VERSION);
+      .replaceAll("v155-default-background-force", APP_VERSION)
+      .replaceAll("v156-menu-bg-map-fix", APP_VERSION);
   }
 
   function patchNode(root = document.body) {
@@ -68,22 +70,30 @@
         display: none;
         position: relative;
         box-sizing: border-box;
-        width: min(330px, calc(100vw - 24px));
-        min-height: 112px;
-        padding: 18px 18px 16px;
-        border-radius: 22px;
-        background: rgba(255,255,255,.96);
+        width: min(352px, calc(100vw - 18px));
+        aspect-ratio: 1 / 1;
+        min-height: 0;
+        padding: 94px 58px 108px 96px;
+        border: 0;
+        border-radius: 0;
+        background-color: transparent;
+        background-image: var(--turi-nyan-bubble-image);
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+        background-position: center;
         color: #17120d;
-        box-shadow: 0 14px 36px rgba(0,0,0,.24);
-        font-size: .82rem;
-        font-weight: 850;
-        line-height: 1.35;
+        box-shadow: none;
+        font-size: .72rem;
+        font-weight: 900;
+        line-height: 1.18;
         pointer-events: auto;
         text-shadow: none;
+        overflow: hidden;
       }
       #turiNyanPet.is-speaking .pet-bubble { display: block; }
-      #turiNyanPet .pet-bubble strong { display: block; color: #8d321d; font-size: .88rem; margin-bottom: 4px; }
-      #turiNyanPet .pet-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; margin-top: 8px; }
+      #turiNyanPet .pet-bubble strong { display: block; color: #8d321d; font-size: .72rem; line-height: 1.05; margin-bottom: 3px; white-space: nowrap; }
+      #turiNyanPet #turiNyanMessage { display: block; max-height: 3.5em; overflow: hidden; overflow-wrap: anywhere; }
+      #turiNyanPet .pet-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; margin-top: 6px; }
       #turiNyanPet .pet-actions button {
         border: 0;
         min-height: 28px;
@@ -130,7 +140,7 @@
         #turiNyanPet .pet-button { width: 118px !important; height: 118px !important; }
         #turiNyanPet .pet-button img { transform: scale(1.12) !important; transform-origin: center bottom !important; }
         #turiNyanPet.is-lookout .pet-button img { transform: scale(1.16) !important; }
-        #turiNyanPet .pet-bubble { width: min(318px, calc(100vw - 14px)) !important; }
+        #turiNyanPet .pet-bubble { width: min(338px, calc(100vw - 10px)) !important; padding: 90px 52px 102px 92px !important; }
         body.menu-open #turiNyanPet,
         body.panel-open #turiNyanPet,
         body.position-adjusting #turiNyanPet,

@@ -15,7 +15,8 @@ reset-cache.html
 4. `assets` フォルダに下記画像を追加します。
 
 ```text
-assets/menu-bg-bakucho-twin-nyanko-v156.jpg
+assets/menu-bg-bakucho-nyanko-sensei-v157.png
+assets/turi-nyan-speech-bubble-comic-v157.png
 ```
 
 5. `index.html` を開いて、`INDEX_HTML_FIX.md` の通りに置換します。
@@ -23,7 +24,7 @@ assets/menu-bg-bakucho-twin-nyanko-v156.jpg
 6. コミット名はこれでOKです。
 
 ```text
-メニュー背景と地図反映不具合を修正
+漫画風吹き出しとメニュー背景を修正
 ```
 
 7. 反映後、まず下記を開きます。
@@ -35,5 +36,5 @@ https://cichlid528.github.io/mie-fishing-map/reset-cache.html?auto=1
 8. そのあと下記で確認します。
 
 ```text
-https://cichlid528.github.io/mie-fishing-map/?v=v156-menu-bg-map-fix
+https://cichlid528.github.io/mie-fishing-map/?v=v157-comic-bubble-menu-bg
 ```

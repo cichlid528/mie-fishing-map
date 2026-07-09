@@ -14,7 +14,7 @@ v131-remove-chusei-green-park
 を
 
 ```text
-v156-menu-bg-map-fix
+v157-comic-bubble-menu-bg
 ```
 
 へ変更。
@@ -26,7 +26,7 @@ v131・中勢グリーンパーク削除版
 を
 
 ```text
-v156・メニュー背景と地図反映修正版
+v157・漫画風吹き出しとメニュー背景修正版
 ```
 
 へ変更。
@@ -40,7 +40,7 @@ v155-default-background-force
 を
 
 ```text
-v156-menu-bg-map-fix
+v157-comic-bubble-menu-bg
 ```
 
 へ変更。
@@ -52,7 +52,7 @@ v155・釣りニャン初期背景強制反映版
 を
 
 ```text
-v156・メニュー背景と地図反映修正版
+v157・漫画風吹き出しとメニュー背景修正版
 ```
 
 へ変更。
@@ -63,7 +63,7 @@ v156・メニュー背景と地図反映修正版
 
 ```css
 :root {
-  --menu-bg-image: url("assets/menu-bg-bakucho-twin-nyanko-v156.jpg?v=v156-menu-bg-map-fix");
+  --menu-bg-image: url("assets/menu-bg-bakucho-nyanko-sensei-v157.png?v=v157-comic-bubble-menu-bg");
 }
 ```
 
