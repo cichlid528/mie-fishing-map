@@ -4,7 +4,7 @@
   const PATCH_VERSION = "v156-menu-bg-map-fix";
   const PATCH_STATUS_LABEL = "v156・メニュー背景と地図反映修正版";
   const MENU_BACKGROUND_URL = `assets/menu-bg-bakucho-twin-nyanko-v156.jpg?v=${PATCH_VERSION}`;
-  const SOURCE_APP_URL = "https://cdn.jsdelivr.net/gh/cichlid528/mie-fishing-map@486490f1fda171ba9dfdf8ac9a431d4b3b09c530/app.js";
+  const SOURCE_APP_URL = "https://rawcdn.githack.com/cichlid528/mie-fishing-map/486490f1fda171ba9dfdf8ac9a431d4b3b09c530/app.js";
   const BACKGROUND_STORAGE_KEY = "mie-fishing-map-sidebar-background-v1";
   const MENU_BACKGROUND_FORCE_KEY = "mie-fishing-map-v156-menu-bg-installed";
   const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
