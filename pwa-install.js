@@ -2,15 +2,49 @@
   "use strict";
   window.__MIE_PWA_INSTALL_MANAGED__ = true;
 
-  const APP_VERSION = "v161-menu-bg-reapply";
-  const STATUS_LABEL = "v161・メニュー背景再反映版";
+  const APP_VERSION = "v162-start-screen-map-fix";
+  const STATUS_LABEL = "v162・起動画面と地図表示修正版";
   const PET_NAME = "爆釣にゃん師匠";
   const PET_IMAGE_SRC = `assets/turi-nyan-pose-front-v149.png?v=${APP_VERSION}`;
   const PET_BACK_IMAGE_SRC = `assets/turi-nyan-back-v149.png?v=${APP_VERSION}`;
-  const PET_BUBBLE_IMAGE_SRC = `assets/turi-nyan-speech-bubble-comic-transparent-v161.png?v=${APP_VERSION}`;
+  const PET_BUBBLE_IMAGE_SRC = `assets/turi-nyan-speech-bubble-comic-transparent-v162.png?v=${APP_VERSION}`;
 
   let deferredInstallPrompt = null;
   let petHideTimer = null;
+
+
+  // v162: 「地図を開く」が反応しない時も起動画面を閉じる保険。
+  function installPwaStartScreenFallback() {
+    const forceOpen = () => {
+      const screen = document.getElementById("appStartScreen");
+      if (screen) {
+        screen.classList.add("is-hidden", "is-closing");
+        screen.setAttribute("aria-hidden", "true");
+        screen.style.setProperty("display", "none", "important");
+        screen.style.setProperty("pointer-events", "none", "important");
+      }
+      document.body?.classList?.remove("start-screen-active", "start-screen-launching");
+      document.body?.classList?.add("start-screen-done");
+      [80, 250, 600, 1200].forEach((ms) => window.setTimeout(() => {
+        try { window.dispatchEvent(new Event("resize")); } catch (error) {}
+      }, ms));
+      try { window.__MIE_FORCE_OPEN_MAP__?.("pwa"); } catch (error) {}
+    };
+    const bind = () => {
+      const button = document.getElementById("startScreenSkip");
+      if (!button || button.dataset.pwaStartFix === "1") return;
+      button.dataset.pwaStartFix = "1";
+      button.disabled = false;
+      button.addEventListener("click", forceOpen, { capture: true });
+      button.addEventListener("pointerup", forceOpen, { capture: true });
+      button.addEventListener("touchend", (event) => { event.preventDefault(); forceOpen(); }, { passive: false, capture: true });
+    };
+    bind();
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bind, { once: true });
+    window.addEventListener("load", bind);
+  }
+  installPwaStartScreenFallback();
+
 
   function patchText(value) {
     if (typeof value !== "string") return value;
@@ -20,12 +54,12 @@
       .replaceAll("v155・釣りニャン初期背景強制反映版", STATUS_LABEL)
       .replaceAll("v156・メニュー背景と地図反映修正版", STATUS_LABEL)
       .replaceAll("v157・漫画風吹き出しとメニュー背景修正版", STATUS_LABEL)
-      .replaceAll("v161・メニュー背景再反映版", STATUS_LABEL)
+      .replaceAll("v162・起動画面と地図表示修正版", STATUS_LABEL)
       .replaceAll("v131-remove-chusei-green-park", APP_VERSION)
       .replaceAll("v155-default-background-force", APP_VERSION)
-      .replaceAll("v161-menu-bg-reapply", APP_VERSION)
-      .replaceAll("v161-menu-bg-reapply", APP_VERSION)
-      .replaceAll("v161-menu-bg-reapply", APP_VERSION);
+      .replaceAll("v162-start-screen-map-fix", APP_VERSION)
+      .replaceAll("v162-start-screen-map-fix", APP_VERSION)
+      .replaceAll("v162-start-screen-map-fix", APP_VERSION);
   }
 
   function patchNode(root = document.body) {
@@ -59,6 +93,8 @@
     const style = document.createElement("style");
     style.id = "turiNyanPetStyles";
     style.textContent = `
+      #appStartScreen.is-hidden, body.start-screen-done #appStartScreen { display: none !important; pointer-events: none !important; visibility: hidden !important; opacity: 0 !important; }
+      #startScreenSkip { pointer-events: auto !important; touch-action: manipulation !important; }
       #turiNyanPet {
         position: fixed;
         right: calc(14px + env(safe-area-inset-right));
@@ -136,7 +172,9 @@
         50% { transform: translateY(-5px) rotate(1deg); }
       }
       @media (max-width: 920px) {
-        #turiNyanPet {
+        #appStartScreen.is-hidden, body.start-screen-done #appStartScreen { display: none !important; pointer-events: none !important; visibility: hidden !important; opacity: 0 !important; }
+      #startScreenSkip { pointer-events: auto !important; touch-action: manipulation !important; }
+      #turiNyanPet {
           right: calc(6px + env(safe-area-inset-right));
           bottom: calc(76px + env(safe-area-inset-bottom));
           max-width: calc(100vw - 12px);

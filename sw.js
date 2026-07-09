@@ -1,10 +1,6 @@
 const CACHE_PREFIX = "bass-spot-log-";
-const VERSION = "v161-menu-bg-reapply";
-
-self.addEventListener("install", (event) => {
-  event.waitUntil(self.skipWaiting());
-});
-
+const VERSION = "v162-start-screen-map-fix";
+self.addEventListener("install", (event) => { event.waitUntil(self.skipWaiting()); });
 self.addEventListener("activate", (event) => {
   event.waitUntil((async () => {
     if (self.caches) {
@@ -15,7 +11,6 @@ self.addEventListener("activate", (event) => {
     await self.registration.unregister();
   })());
 });
-
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
   event.respondWith(fetch(event.request));

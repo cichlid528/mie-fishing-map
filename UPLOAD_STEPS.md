@@ -1,26 +1,14 @@
 # アップロード手順
 
-1. このZIPを解凍します。
-2. GitHub の `mie-fishing-map` リポジトリを開きます。
-3. 中のファイルを同じ場所へアップロードして上書きします。
-4. `assets/menu-bg-bakucho-nyanko-sensei-v161.png` が 0 bytes ではなく、約4MBで入っていることを確認します。
-5. `INDEX_HTML_FIX.md` の通り、index.html の読み込みクエリを v161 に変更します。
-6. コミットします。
+1. ZIPを解凍します。
+2. 中のファイルを GitHub の `mie-fishing-map` リポジトリ直下へ同じ階層でアップロードします。
+3. `assets` フォルダ内の画像も必ずアップロードします。
+4. `index.html` は `INDEX_HTML_FIX.md` の通りに置換してください。
+5. コミット名は `起動画面と地図表示不具合を修正` にしてください。
+6. 反映後、次を開いてキャッシュ削除します。
 
-コミット名：
-
-```text
-指定メニュー背景を再反映
-```
-
-確認URL：
-
-```text
 https://cichlid528.github.io/mie-fishing-map/reset-cache.html?auto=1
-```
 
-その後：
+7. そのあと次で確認します。
 
-```text
-https://cichlid528.github.io/mie-fishing-map/?v=v161-menu-bg-reapply
-```
+https://cichlid528.github.io/mie-fishing-map/?v=v162-start-screen-map-fix

@@ -1,16 +1,16 @@
 (() => {
   "use strict";
 
-  const PATCH_VERSION = "v161-menu-bg-reapply";
-  const PATCH_STATUS_LABEL = "v161・メニュー背景再反映版";
-  const MENU_BACKGROUND_URL = `assets/menu-bg-bakucho-nyanko-sensei-v161.png?v=${PATCH_VERSION}`;
+  const PATCH_VERSION = "v162-start-screen-map-fix";
+  const PATCH_STATUS_LABEL = "v162・起動画面と地図表示修正版";
+  const MENU_BACKGROUND_URL = `assets/menu-bg-bakucho-nyanko-sensei-v162.png?v=${PATCH_VERSION}`;
   const BACKGROUND_STORAGE_KEY = "mie-fishing-map-sidebar-background-v1";
-  const MENU_BACKGROUND_FORCE_KEY = "mie-fishing-map-v161-menu-bg-reapply-installed";
+  const MENU_BACKGROUND_FORCE_KEY = "mie-fishing-map-v162-start-screen-map-fix-installed";
   const SOURCE_APP_URLS = [
     "https://cdn.jsdelivr.net/gh/cichlid528/mie-fishing-map@486490f1fda171ba9dfdf8ac9a431d4b3b09c530/app.js",
     "https://raw.githubusercontent.com/cichlid528/mie-fishing-map/486490f1fda171ba9dfdf8ac9a431d4b3b09c530/app.js"
   ];
-  const SOURCE_CACHE_KEY = "mie-fishing-map-source-cache-486490f1-v161-menu-bg-reapply";
+  const SOURCE_CACHE_KEY = "mie-fishing-map-source-cache-486490f1-v162-start-screen-map-fix";
 
   const oldOsugiLine = '    { id: "lake-osugi", name: "大杉湖", type: "ダム", area: "多気郡大台町", lat: 34.286385, lng: 136.19336, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },';
   const newOsugiLine = '    { id: "lake-osugi", name: "宮川ダム", type: "ダム", area: "多気郡大台町", lat: 34.286385, lng: 136.19336, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },';
@@ -49,12 +49,12 @@
       .replaceAll("v155・釣りニャン初期背景強制反映版", PATCH_STATUS_LABEL)
       .replaceAll("v156・メニュー背景と地図反映修正版", PATCH_STATUS_LABEL)
       .replaceAll("v157・漫画風吹き出しとメニュー背景修正版", PATCH_STATUS_LABEL)
-      .replaceAll("v161・メニュー背景再反映版", PATCH_STATUS_LABEL)
+      .replaceAll("v162・起動画面と地図表示修正版", PATCH_STATUS_LABEL)
       .replaceAll("v131-remove-chusei-green-park", PATCH_VERSION)
       .replaceAll("v155-default-background-force", PATCH_VERSION)
-      .replaceAll("v161-menu-bg-reapply", PATCH_VERSION)
-      .replaceAll("v161-menu-bg-reapply", PATCH_VERSION)
-      .replaceAll("v161-menu-bg-reapply", PATCH_VERSION);
+      .replaceAll("v162-start-screen-map-fix", PATCH_VERSION)
+      .replaceAll("v162-start-screen-map-fix", PATCH_VERSION)
+      .replaceAll("v162-start-screen-map-fix", PATCH_VERSION);
   }
 
   function installImmediateFixes() {
@@ -82,9 +82,9 @@
       });
     };
 
-    if (!document.getElementById("v160MenuBgForceFix")) {
+    if (!document.getElementById("v162StartScreenMapFix")) {
       const style = document.createElement("style");
-      style.id = "v160MenuBgForceFix";
+      style.id = "v162StartScreenMapFix";
       style.textContent = `
         :root { --menu-bg-image: ${menuCssValue}; --sidebar-bg-image: ${menuCssValue}; }
         .sidebar, #mobileMenu.sidebar {
@@ -98,7 +98,9 @@
         .sidebar::before, #mobileMenu.sidebar::before { background: transparent !important; opacity: 0 !important; }
         .map-pane, #map, #map.leaflet-container, .leaflet-container { background: #cfded8 !important; }
         .leaflet-tile-pane, .leaflet-layer, .leaflet-tile-container, .leaflet-tile { background: transparent !important; }
-        /* v160: force exact uploaded menu background and transparent comic bubble override */
+        #appStartScreen.is-hidden, body.start-screen-done #appStartScreen { display: none !important; pointer-events: none !important; visibility: hidden !important; opacity: 0 !important; }
+        #startScreenSkip { pointer-events: auto !important; touch-action: manipulation !important; }
+        /* v162: force menu background, transparent bubble, and start screen map fallback */
         #turiNyanPet .pet-bubble {
           width: min(304px, calc(100vw - 18px)) !important;
           padding: 78px 68px 88px 62px !important;
@@ -170,10 +172,84 @@
     } catch (error) {}
   }
 
+
+  // v162: 起動画面が閉じない時の緊急回避。アプリ本体の読込失敗時でも「地図を開く」で地図画面へ進める。
+  function forceOpenStartScreenMap(reason = "manual") {
+    try {
+      const screen = document.getElementById("appStartScreen");
+      if (screen) {
+        screen.classList.add("is-hidden", "is-closing");
+        screen.setAttribute("aria-hidden", "true");
+        screen.removeAttribute("aria-busy");
+        screen.style.setProperty("display", "none", "important");
+        screen.style.setProperty("pointer-events", "none", "important");
+      }
+      document.body?.classList?.remove("start-screen-active", "start-screen-launching");
+      document.body?.classList?.add("start-screen-done");
+      const status = document.getElementById("dataStatus");
+      if (status && reason !== "normal") status.textContent = "地図画面を開きました。表示が崩れる場合はキャッシュ削除後に再読み込みしてください。";
+      try { window.dispatchEvent(new Event("resize")); } catch (error) {}
+      [80, 250, 600, 1200].forEach((ms) => window.setTimeout(() => {
+        try { window.dispatchEvent(new Event("resize")); } catch (error) {}
+        try { window.__MIE_FALLBACK_MAP__?.invalidateSize?.({ animate: false }); } catch (error) {}
+      }, ms));
+      ensureFallbackMap();
+    } catch (error) {
+      console.warn("start screen force open failed", error);
+    }
+  }
+
+  function ensureFallbackMap() {
+    try {
+      const mapElement = document.getElementById("map");
+      if (!mapElement || typeof L === "undefined") return;
+      if (window.__MIE_FALLBACK_MAP__ || mapElement.querySelector(".leaflet-tile-pane")) return;
+      window.__MIE_FALLBACK_MAP__ = L.map("map", {
+        zoomControl: true,
+        touchZoom: true,
+        scrollWheelZoom: true,
+        doubleClickZoom: true
+      }).setView([34.55, 136.48], 9);
+      L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png", {
+        maxZoom: 18,
+        attribution: '地図出典：<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noopener">国土地理院（地理院タイル）</a>'
+      }).addTo(window.__MIE_FALLBACK_MAP__);
+      window.setTimeout(() => window.__MIE_FALLBACK_MAP__?.invalidateSize?.({ animate: false }), 120);
+    } catch (error) {
+      console.warn("fallback map failed", error);
+    }
+  }
+
+  function installStartScreenFallback() {
+    const bind = () => {
+      const button = document.getElementById("startScreenSkip");
+      const screen = document.getElementById("appStartScreen");
+      if (!button || button.dataset.v162StartFix === "1") return;
+      button.dataset.v162StartFix = "1";
+      button.disabled = false;
+      button.style.setProperty("pointer-events", "auto", "important");
+      const handler = (event) => {
+        try { event.preventDefault(); } catch (error) {}
+        try { event.stopPropagation(); } catch (error) {}
+        forceOpenStartScreenMap("button");
+      };
+      button.addEventListener("click", handler, { capture: true });
+      button.addEventListener("pointerup", handler, { capture: true });
+      button.addEventListener("touchend", handler, { passive: false, capture: true });
+      if (screen) screen.style.setProperty("pointer-events", "auto", "important");
+    };
+    bind();
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bind, { once: true });
+    window.addEventListener("load", bind);
+    window.__MIE_FORCE_OPEN_MAP__ = forceOpenStartScreenMap;
+  }
+
+
+  installStartScreenFallback();
   installImmediateFixes();
 
   function showLoadError(error) {
-    console.error("Mie Fishing Map v160 menu background force loader failed", error);
+    console.error("Mie Fishing Map v162 start screen map fix loader failed", error);
     const message = "アプリ本体の読み込みに失敗しました。通信状況を確認して、reset-cache.html?auto=1 を開き直してください。";
     const target = document.querySelector("#dataStatus") || document.body;
     if (!target) return;

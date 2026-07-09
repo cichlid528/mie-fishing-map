@@ -1,22 +1,16 @@
-# v161 メニュー背景再反映版
+# 三重県釣りマップ v162-start-screen-map-fix
 
-指定された猫の画像を、メニュー画面の初期背景として再反映する修正版です。
+起動画面で「地図を開く」を押しても進まない問題を修正する版です。
 
-重要：GitHub上で `assets/menu-bg-bakucho-nyanko-sensei-v160.png` が空ファイルになっていたため、今回は `assets/menu-bg-bakucho-nyanko-sensei-v161.png` として入れ直しています。
+## 修正内容
 
-## アップロードするファイル
+- 起動画面の「地図を開く」ボタンに緊急フォールバックを追加
+- アプリ本体の読み込みが遅い/失敗した場合でも起動画面を閉じる
+- 必要時は国土地理院タイルの簡易地図を表示
+- メニュー背景画像は `assets/menu-bg-bakucho-nyanko-sensei-v162.png` を使用
+- 透明漫画吹き出しは `assets/turi-nyan-speech-bubble-comic-transparent-v162.png` を使用
 
-- app.js
-- app-v156-loader-fixed.js
-- pwa-install.js
-- manifest.json
-- sw.js
-- reset-cache.html
-- assets/menu-bg-bakucho-nyanko-sensei-v161.png
-- assets/turi-nyan-speech-bubble-comic-transparent-v161.png
+## バージョン
 
-加えて、INDEX_HTML_FIX.md の通り index.html のクエリを v161 に変更してください。
-
-## コミット名
-
-指定メニュー背景を再反映
+v162-start-screen-map-fix
+v162・起動画面と地図表示修正版

@@ -1,40 +1,24 @@
-# index.html 必須修正
+# index.html 修正
 
-今回の反映漏れの原因は、index.html がまだ古い v156 の読み込み指定を持っていることです。
-GitHub の index.html を開いて、以下を必ず置換してください。
+`index.html` に古い v156 が残っていると、また古いファイルを読みます。
+以下を必ず置換してください。
 
-## 置換1
+## 置換前
+
 ```html
 <link rel="manifest" href="manifest.json?v=v156-menu-bg-map-fix">
-```
-を
-```html
-<link rel="manifest" href="manifest.json?v=v161-menu-bg-reapply">
-```
-へ。
-
-## 置換2
-```html
 <link rel="stylesheet" href="style.css?v=v156-menu-bg-map-fix">
-```
-を
-```html
-<link rel="stylesheet" href="style.css?v=v161-menu-bg-reapply">
-```
-へ。
-
-## 置換3
-```html
 <script src="pwa-install.js?v=v156-menu-bg-map-fix"></script>
 <script src="app-v156-loader-fixed.js?v=v156-menu-bg-map-fix"></script>
 ```
-を
-```html
-<script src="pwa-install.js?v=v161-menu-bg-reapply"></script>
-<script src="app-v156-loader-fixed.js?v=v161-menu-bg-reapply"></script>
-```
-へ。
 
-## 置換4
-画面内に残る `v156・メニュー背景と地図反映修正版` などの古い表示を、
-`v161・メニュー背景再反映版` に置換してください。
+## 置換後
+
+```html
+<link rel="manifest" href="manifest.json?v=v162-start-screen-map-fix">
+<link rel="stylesheet" href="style.css?v=v162-start-screen-map-fix">
+<script src="pwa-install.js?v=v162-start-screen-map-fix"></script>
+<script src="app-v156-loader-fixed.js?v=v162-start-screen-map-fix"></script>
+```
+
+画面内のバージョン表記も `v162・起動画面と地図表示修正版` に変えてください。

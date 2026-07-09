@@ -21,10 +21,9 @@
   <body>
     <main>
       <h1>釣りマップをリセットします</h1>
-      <p>古い地図や古いService Workerキャッシュが残っている場合、このページでアプリ本体の保存データは残したまま、キャッシュだけを削除します。</p>
-      <p>釣果・追加した釣り場・写真などの <code>localStorage</code> データは削除しません。v161-menu-bg-reapplyでは吹き出しを漫画風の丸い画像に戻し、メニュー画面の背景画像も指定画像に更新します。</p>
+      <p>古いService Worker、古いCSS、古いJS、古い画像キャッシュを削除します。釣果・追加した釣り場・写真などの保存データは削除しません。</p>
       <button id="resetButton" type="button">キャッシュを消して開き直す</button>
-      <a href="./?v=v161-menu-bg-reapply">そのまま開く</a>
+      <a href="./?v=v162-start-screen-map-fix">そのまま開く</a>
       <p id="status" class="status" aria-live="polite">準備できました。</p>
     </main>
     <script>
@@ -44,7 +43,7 @@
           }
           say("完了しました。最新版を開き直します…");
           const url = new URL("./", location.href);
-          url.searchParams.set("v", "v161-menu-bg-reapply");
+          url.searchParams.set("v", "v162-start-screen-map-fix");
           url.searchParams.set("reset", Date.now().toString());
           setTimeout(() => location.replace(url.toString()), 500);
         } catch (error) {
@@ -52,9 +51,7 @@
         }
       }
       document.getElementById("resetButton").addEventListener("click", resetFishingMap);
-      window.addEventListener("load", () => {
-        if (location.search.includes("auto=1")) resetFishingMap();
-      });
+      window.addEventListener("load", () => { if (location.search.includes("auto=1")) resetFishingMap(); });
     </script>
   </body>
 </html>
