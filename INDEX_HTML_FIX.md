@@ -1,58 +1,48 @@
-# index.html の修正
+# index.html 修正指示
 
-`index.html` 内に残っている古いバージョン文字列をすべて置換してください。
+現在の `index.html` はまだ `v156-menu-bg-map-fix` を読み込んでいます。
+背景が変わらない原因になります。
 
-## 置換前
+以下を置換してください。
 
-```text
-v131-remove-chusei-green-park
-v155-default-background-force
-v156-menu-bg-map-fix
-v157-comic-bubble-menu-bg
-v158-bubble-size-menu-bg-fix
+## 1. バージョン文字列の置換
+`v156-menu-bg-map-fix`
+をすべて
+`v160-menu-bg-force`
+に置換してください。
+
+## 2. app読み込みの修正
+現在：
+```html
+<script src="app-v156-loader-fixed.js?v=v156-menu-bg-map-fix"></script>
 ```
 
-## 置換後
-
-```text
-v159-menu-bg-transparent-bubble
+推奨：
+```html
+<script src="app-v156-loader-fixed.js?v=v160-menu-bg-force"></script>
 ```
 
-## 表示ラベルの置換
-
-古い表示ラベルをすべて次に置換してください。
-
-```text
-v159・メニュー背景と透明吹き出し修正版
+または：
+```html
+<script src="app.js?v=v160-menu-bg-force"></script>
 ```
 
-## 追加するCSS変数
-
-`<style>` 内、または既存の `:root` に次を追加してください。
+## 3. CSSにメニュー背景変数を追加
+`<style>` 内の先頭付近に以下を追加してください。
 
 ```css
 :root {
-  --menu-bg-image: url("assets/menu-bg-bakucho-nyanko-sensei-v159.png?v=v159-menu-bg-transparent-bubble");
+  --menu-bg-image: url("assets/menu-bg-bakucho-nyanko-sensei-v160.png?v=v160-menu-bg-force");
+  --sidebar-bg-image: url("assets/menu-bg-bakucho-nyanko-sensei-v160.png?v=v160-menu-bg-force");
 }
-```
-
-## 注意
-
-背景画像を当てるのはメニューだけです。
-
-```css
-.sidebar,
-#mobileMenu.sidebar
-```
-
-以下には背景画像を当てないでください。
-
-```css
-body
-.app-shell
-.map-pane
-#map
-.leaflet-container
-.leaflet-tile-pane
-.leaflet-layer
+.sidebar, #mobileMenu.sidebar {
+  background: linear-gradient(180deg, rgba(5,30,25,.08), rgba(5,44,36,.02)), var(--menu-bg-image) !important;
+  background-size: cover !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+}
+.sidebar::before, #mobileMenu.sidebar::before {
+  background: transparent !important;
+  opacity: 0 !important;
+}
 ```

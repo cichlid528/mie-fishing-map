@@ -1,16 +1,16 @@
 (() => {
   "use strict";
 
-  const PATCH_VERSION = "v159-menu-bg-transparent-bubble";
-  const PATCH_STATUS_LABEL = "v159・メニュー背景と透明吹き出し修正版";
-  const MENU_BACKGROUND_URL = `assets/menu-bg-bakucho-nyanko-sensei-v159.png?v=${PATCH_VERSION}`;
+  const PATCH_VERSION = "v160-menu-bg-force";
+  const PATCH_STATUS_LABEL = "v160・指定メニュー背景強制反映版";
+  const MENU_BACKGROUND_URL = `assets/menu-bg-bakucho-nyanko-sensei-v160.png?v=${PATCH_VERSION}`;
   const BACKGROUND_STORAGE_KEY = "mie-fishing-map-sidebar-background-v1";
-  const MENU_BACKGROUND_FORCE_KEY = "mie-fishing-map-v159-menu-bg-transparent-bubble-installed";
+  const MENU_BACKGROUND_FORCE_KEY = "mie-fishing-map-v160-menu-bg-force-installed";
   const SOURCE_APP_URLS = [
     "https://cdn.jsdelivr.net/gh/cichlid528/mie-fishing-map@486490f1fda171ba9dfdf8ac9a431d4b3b09c530/app.js",
     "https://raw.githubusercontent.com/cichlid528/mie-fishing-map/486490f1fda171ba9dfdf8ac9a431d4b3b09c530/app.js"
   ];
-  const SOURCE_CACHE_KEY = "mie-fishing-map-source-cache-486490f1-v159-menu-bg-transparent-bubble";
+  const SOURCE_CACHE_KEY = "mie-fishing-map-source-cache-486490f1-v160-menu-bg-force";
 
   const oldOsugiLine = '    { id: "lake-osugi", name: "大杉湖", type: "ダム", area: "多気郡大台町", lat: 34.286385, lng: 136.19336, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },';
   const newOsugiLine = '    { id: "lake-osugi", name: "宮川ダム", type: "ダム", area: "多気郡大台町", lat: 34.286385, lng: 136.19336, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },';
@@ -49,11 +49,12 @@
       .replaceAll("v155・釣りニャン初期背景強制反映版", PATCH_STATUS_LABEL)
       .replaceAll("v156・メニュー背景と地図反映修正版", PATCH_STATUS_LABEL)
       .replaceAll("v157・漫画風吹き出しとメニュー背景修正版", PATCH_STATUS_LABEL)
+      .replaceAll("v159・メニュー背景と透明吹き出し修正版", PATCH_STATUS_LABEL)
       .replaceAll("v131-remove-chusei-green-park", PATCH_VERSION)
       .replaceAll("v155-default-background-force", PATCH_VERSION)
-      .replaceAll("v156-menu-bg-map-fix", PATCH_VERSION)
-      .replaceAll("v157-comic-bubble-menu-bg", PATCH_VERSION)
-      .replaceAll("v158-bubble-size-menu-bg-fix", PATCH_VERSION);
+      .replaceAll("v160-menu-bg-force", PATCH_VERSION)
+      .replaceAll("v160-menu-bg-force", PATCH_VERSION)
+      .replaceAll("v160-menu-bg-force", PATCH_VERSION);
   }
 
   function installImmediateFixes() {
@@ -73,24 +74,31 @@
       document.querySelectorAll(".sidebar, #mobileMenu.sidebar").forEach((sidebar) => {
         sidebar.style.setProperty("--menu-bg-image", menuCssValue);
         sidebar.style.setProperty("--sidebar-bg-image", menuCssValue);
+        sidebar.style.setProperty("background", `linear-gradient(180deg, rgba(5,30,25,.08), rgba(5,44,36,.02)), ${menuCssValue}`, "important");
+        sidebar.style.setProperty("background-image", `linear-gradient(180deg, rgba(5,30,25,.08), rgba(5,44,36,.02)), ${menuCssValue}`, "important");
+        sidebar.style.setProperty("background-size", "cover", "important");
+        sidebar.style.setProperty("background-position", "center center", "important");
+        sidebar.style.setProperty("background-repeat", "no-repeat", "important");
       });
     };
 
-    if (!document.getElementById("v159MenuBgTransparentBubbleFix")) {
+    if (!document.getElementById("v160MenuBgForceFix")) {
       const style = document.createElement("style");
-      style.id = "v159MenuBgTransparentBubbleFix";
+      style.id = "v160MenuBgForceFix";
       style.textContent = `
         :root { --menu-bg-image: ${menuCssValue}; --sidebar-bg-image: ${menuCssValue}; }
         .sidebar, #mobileMenu.sidebar {
-          background-image: var(--menu-bg-image) !important;
+          background: linear-gradient(180deg, rgba(5,30,25,.08), rgba(5,44,36,.02)), var(--menu-bg-image) !important;
+          background-image: linear-gradient(180deg, rgba(5,30,25,.08), rgba(5,44,36,.02)), var(--menu-bg-image) !important;
           background-size: cover !important;
-          background-position: center !important;
+          background-position: center center !important;
           background-repeat: no-repeat !important;
           color: #fff !important;
         }
+        .sidebar::before, #mobileMenu.sidebar::before { background: transparent !important; opacity: 0 !important; }
         .map-pane, #map, #map.leaflet-container, .leaflet-container { background: #cfded8 !important; }
         .leaflet-tile-pane, .leaflet-layer, .leaflet-tile-container, .leaflet-tile { background: transparent !important; }
-        /* v159: menu background and transparent comic bubble override */
+        /* v160: force exact uploaded menu background and transparent comic bubble override */
         #turiNyanPet .pet-bubble {
           width: min(304px, calc(100vw - 18px)) !important;
           padding: 78px 68px 88px 62px !important;
@@ -165,7 +173,7 @@
   installImmediateFixes();
 
   function showLoadError(error) {
-    console.error("Mie Fishing Map v159 menu background transparent bubble loader failed", error);
+    console.error("Mie Fishing Map v160 menu background force loader failed", error);
     const message = "アプリ本体の読み込みに失敗しました。通信状況を確認して、reset-cache.html?auto=1 を開き直してください。";
     const target = document.querySelector("#dataStatus") || document.body;
     if (!target) return;

@@ -1,20 +1,26 @@
-# 三重県釣りマップ v159 修正版
+# 三重県釣りマップ v160 指定メニュー背景強制反映版
 
-## 修正内容
+このZIPは、ユーザー指定の猫画像をメニュー画面の初期背景に強制設定する修正版です。
 
-- メニュー画面の初期背景を、ユーザー指定の「釣り最高！」猫画像に変更しました。
-- 背景画像は `.sidebar` / `#mobileMenu.sidebar` のメニュー画面だけに適用します。
-- 地図本体、Leaflet タイル、地図背景には画像を適用しません。
-- 爆釣にゃん師匠の吹き出し画像の外側を透明化しました。
-- 吹き出しサイズを少し小さくし、文字を左寄りに調整しました。
-- バージョンを `v159-menu-bg-transparent-bubble` に統一しました。
+## 重要
+GitHub上で `assets/menu-bg-bakucho-nyanko-sensei-v159.png` が空ファイルになっている可能性が高いです。
+そのため、今回は新しい画像名で `assets/menu-bg-bakucho-nyanko-sensei-v160.png` を入れ直しています。
 
-## 反映後の確認URL
+## バージョン
+`v160-menu-bg-force`
 
-1. キャッシュ削除
+## 表示ラベル
+`v160・指定メニュー背景強制反映版`
 
-https://cichlid528.github.io/mie-fishing-map/reset-cache.html?auto=1
+## 変更点
+- メニュー画面背景を `assets/menu-bg-bakucho-nyanko-sensei-v160.png` に変更
+- `.sidebar` と `#mobileMenu.sidebar` にだけ背景画像を適用
+- 地図本体には背景画像を適用しない
+- `index.html` が古い `app-v156-loader-fixed.js` を読んでいても効くように、同名ファイルも同梱
+- 吹き出し外側は透明のまま維持
 
-2. アプリ確認
+## 確認URL
+`https://cichlid528.github.io/mie-fishing-map/reset-cache.html?auto=1`
 
-https://cichlid528.github.io/mie-fishing-map/?v=v159-menu-bg-transparent-bubble
+その後：
+`https://cichlid528.github.io/mie-fishing-map/?v=v160-menu-bg-force`
