@@ -1,19 +1,149 @@
 (() => {
   "use strict";
 
-  const PATCH_VERSION = "v156-map-open-background-fix";
-  const PATCH_STATUS_LABEL = "v156・地図表示と初期背景修正版";
+  const PATCH_VERSION = "v156-menu-bg-map-fix";
+  const PATCH_STATUS_LABEL = "v156・メニュー背景と地図反映修正版";
+  const MENU_BACKGROUND_URL = `assets/menu-bg-bakucho-twin-nyanko-v156.jpg?v=${PATCH_VERSION}`;
+  const BACKGROUND_STORAGE_KEY = "mie-fishing-map-sidebar-background-v1";
+  const MENU_BACKGROUND_FORCE_KEY = "mie-fishing-map-v156-menu-bg-installed";
   const SOURCE_APP_URLS = [
     "https://cdn.jsdelivr.net/gh/cichlid528/mie-fishing-map@486490f1fda171ba9dfdf8ac9a431d4b3b09c530/app.js",
     "https://raw.githubusercontent.com/cichlid528/mie-fishing-map/486490f1fda171ba9dfdf8ac9a431d4b3b09c530/app.js"
   ];
-  const SOURCE_CACHE_KEY = "mie-fishing-map-source-cache-486490f1-v156";
+  const SOURCE_CACHE_KEY = "mie-fishing-map-source-cache-486490f1-v156-menu";
 
   const oldOsugiLine = '    { id: "lake-osugi", name: "大杉湖", type: "ダム", area: "多気郡大台町", lat: 34.286385, lng: 136.19336, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },';
   const newOsugiLine = '    { id: "lake-osugi", name: "宮川ダム", type: "ダム", area: "多気郡大台町", lat: 34.286385, lng: 136.19336, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },';
   const oldNanairoLine = '    { id: "reservoir-nanairo", name: "七色貯水池", type: "ダム", area: "熊野市・紀和町周辺", lat: 33.991304, lng: 136.004799, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },';
   const newNanairoLine = '    { id: "reservoir-nanairo", name: "七色ダム", type: "ダム", area: "熊野市・紀和町周辺", lat: 33.991304, lng: 136.004799, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },';
   const ikeharaLine = '    { id: "dam-ikehara", name: "池原ダム", type: "ダム", area: "奈良県吉野郡下北山村", lat: 34.04694, lng: 135.97111, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },';
+
+  function patchVisibleText(value) {
+    return String(value || "")
+      .replaceAll("爆調ニャンコ視聴", "爆釣ツインニャンコ")
+      .replaceAll("爆調ツインニャンコ", "爆釣ツインニャンコ")
+      .replaceAll("爆釣ニャンコ師匠", "爆釣にゃん師匠")
+      .replaceAll("v131・中勢グリーンパーク削除版", PATCH_STATUS_LABEL)
+      .replaceAll("v133・宮川ダム・七色ダム・池原ダム追加版", PATCH_STATUS_LABEL)
+      .replaceAll("v134・宮川ダム・七色ダム・池原ダム反映版", PATCH_STATUS_LABEL)
+      .replaceAll("v135・釣りニャン追加版", PATCH_STATUS_LABEL)
+      .replaceAll("v136・釣りニャン後ろ姿モーション追加版", PATCH_STATUS_LABEL)
+      .replaceAll("v137・釣りニャン表情モーション採用版", PATCH_STATUS_LABEL)
+      .replaceAll("v138・釣りニャン丸アイコン撤去・漫画吹き出し版", PATCH_STATUS_LABEL)
+      .replaceAll("v139・釣りニャン口元透過修正版", PATCH_STATUS_LABEL)
+      .replaceAll("v140・釣りニャン指差し吹き出し採用版", PATCH_STATUS_LABEL)
+      .replaceAll("v141・釣りニャン吹き出し文字調整版", PATCH_STATUS_LABEL)
+      .replaceAll("v142・釣りニャン吹き出し右下しっぽ版", PATCH_STATUS_LABEL)
+      .replaceAll("v143・釣りニャン吹き出し文字内側調整版", PATCH_STATUS_LABEL)
+      .replaceAll("v144・釣りニャン吹き出し文字右寄せ調整版", PATCH_STATUS_LABEL)
+      .replaceAll("v145・釣りニャン吹き出し文字下げ調整版", PATCH_STATUS_LABEL)
+      .replaceAll("v146・釣りニャン反応モード追加版", PATCH_STATUS_LABEL)
+      .replaceAll("v147・釣りニャン釣果記録ボタン連動版", PATCH_STATUS_LABEL)
+      .replaceAll("v148・釣りニャン釣果記録高速化版", PATCH_STATUS_LABEL)
+      .replaceAll("v149・釣りニャン高速化・軽量化版", PATCH_STATUS_LABEL)
+      .replaceAll("v150・釣りニャン軽量ふわふわ復活版", PATCH_STATUS_LABEL)
+      .replaceAll("v151・釣りニャンスマホ表示少し大きめ版", PATCH_STATUS_LABEL)
+      .replaceAll("v152・釣りニャンスマホ表示さらに大きめ版", PATCH_STATUS_LABEL)
+      .replaceAll("v153・釣りニャンスマホ表示ほぼ倍サイズ版", PATCH_STATUS_LABEL)
+      .replaceAll("v154・釣りニャン初期背景採用版", PATCH_STATUS_LABEL)
+      .replaceAll("v155・釣りニャン初期背景強制反映版", PATCH_STATUS_LABEL)
+      .replaceAll("v131-remove-chusei-green-park", PATCH_VERSION)
+      .replaceAll("v155-default-background-force", PATCH_VERSION);
+  }
+
+  function installImmediateFixes() {
+    const menuCssValue = `url("${MENU_BACKGROUND_URL}")`;
+    try {
+      if (localStorage.getItem(MENU_BACKGROUND_FORCE_KEY) !== "1") {
+        localStorage.removeItem(BACKGROUND_STORAGE_KEY);
+        localStorage.setItem(MENU_BACKGROUND_FORCE_KEY, "1");
+      }
+    } catch (error) {}
+
+    const applyMenuBackground = () => {
+      try {
+        document.documentElement.style.setProperty("--menu-bg-image", menuCssValue);
+        document.documentElement.style.setProperty("--sidebar-bg-image", menuCssValue);
+      } catch (error) {}
+      document.querySelectorAll(".sidebar, #mobileMenu.sidebar").forEach((sidebar) => {
+        sidebar.style.setProperty("--menu-bg-image", menuCssValue);
+        sidebar.style.setProperty("--sidebar-bg-image", menuCssValue);
+      });
+    };
+
+    if (!document.getElementById("v156MenuBgMapFix")) {
+      const style = document.createElement("style");
+      style.id = "v156MenuBgMapFix";
+      style.textContent = `
+        :root { --menu-bg-image: ${menuCssValue}; --sidebar-bg-image: ${menuCssValue}; }
+        .sidebar, #mobileMenu.sidebar {
+          background-image: linear-gradient(180deg, rgba(5,30,25,.22), rgba(5,44,36,.10)), var(--menu-bg-image) !important;
+          background-size: cover !important;
+          background-position: center !important;
+          background-repeat: no-repeat !important;
+          color: #fff !important;
+        }
+        .map-pane, #map, #map.leaflet-container, .leaflet-container { background: #cfded8 !important; }
+        .leaflet-tile-pane, .leaflet-layer, .leaflet-tile-container, .leaflet-tile { background: transparent !important; }
+        @media (max-width: 920px) {
+          #turiNyanPet {
+            right: calc(6px + env(safe-area-inset-right)) !important;
+            bottom: calc(76px + env(safe-area-inset-bottom)) !important;
+            max-width: calc(100vw - 12px) !important;
+          }
+          #turiNyanPet .pet-button { width: 118px !important; height: 118px !important; }
+          #turiNyanPet .pet-button img { transform: scale(1.12) !important; transform-origin: center bottom !important; }
+          #turiNyanPet.is-lookout .pet-button img { transform: scale(1.16) !important; }
+          #turiNyanPet .pet-bubble { width: min(318px, calc(100vw - 14px)) !important; padding: 88px 50px 98px 88px !important; }
+          body.menu-open #turiNyanPet,
+          body.panel-open #turiNyanPet,
+          body.position-adjusting #turiNyanPet,
+          body.map-popup-open #turiNyanPet,
+          body.record-popup-open #turiNyanPet,
+          body.spot-card-open #turiNyanPet { display: none !important; }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    const patchNodeText = (root = document.body) => {
+      if (!root) return;
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
+      let node = walker.currentNode;
+      while (node) {
+        if (node.nodeType === Node.TEXT_NODE) {
+          const next = patchVisibleText(node.nodeValue);
+          if (next !== node.nodeValue) node.nodeValue = next;
+        } else if (node.nodeType === Node.ELEMENT_NODE && node.attributes) {
+          for (const attr of Array.from(node.attributes)) {
+            const next = patchVisibleText(attr.value);
+            if (next !== attr.value) node.setAttribute(attr.name, next);
+          }
+        }
+        node = walker.nextNode();
+      }
+    };
+
+    const refreshMapLayout = () => {
+      try { window.dispatchEvent(new Event("resize")); } catch (error) {}
+    };
+    const run = () => {
+      applyMenuBackground();
+      patchNodeText(document.body);
+      [80, 250, 600, 1200].forEach((ms) => window.setTimeout(refreshMapLayout, ms));
+    };
+
+    run();
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", run, { once: true });
+    window.addEventListener("load", run);
+    try {
+      const observer = new MutationObserver(() => window.requestAnimationFrame?.(run) || window.setTimeout(run, 30));
+      if (document.body) observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+      else document.addEventListener("DOMContentLoaded", () => observer.observe(document.body, { childList: true, subtree: true, characterData: true }), { once: true });
+    } catch (error) {}
+  }
+
+  installImmediateFixes();
 
   function showLoadError(error) {
     console.error("Mie Fishing Map v156 loader failed", error);
@@ -30,32 +160,15 @@
     }
   }
 
-  function cachedSourceApp() {
-    const keys = [
-      SOURCE_CACHE_KEY,
-      "mie-fishing-map-source-cache-486490f1-v155",
-      "mie-fishing-map-source-cache-486490f1-v154",
-      "mie-fishing-map-source-cache-486490f1-v153",
-      "mie-fishing-map-source-cache-486490f1-v152",
-      "mie-fishing-map-source-cache-486490f1-v151",
-      "mie-fishing-map-source-cache-486490f1-v150",
-      "mie-fishing-map-source-cache-486490f1-v149"
-    ];
-    for (const key of keys) {
-      try {
-        const cached = localStorage.getItem(key) || "";
-        if (cached.includes('const seedSpots = [')) return cached;
-      } catch (error) {}
-    }
-    return "";
-  }
-
   async function fetchSourceApp() {
-    const cached = cachedSourceApp();
+    try {
+      const cached = localStorage.getItem(SOURCE_CACHE_KEY) || "";
+      if (cached.includes('const seedSpots = [')) return cached;
+    } catch (error) {}
     let lastError = null;
     for (const url of SOURCE_APP_URLS) {
       try {
-        const response = await fetch(`${url}?v=${PATCH_VERSION}&t=${Date.now()}`, { cache: "no-store" });
+        const response = await fetch(`${url}?v=${PATCH_VERSION}`, { cache: "reload" });
         if (!response.ok) throw new Error(`HTTP ${response.status}: ${url}`);
         const source = await response.text();
         if (!source.includes('const seedSpots = [')) throw new Error(`Unexpected app source: ${url}`);
@@ -65,7 +178,6 @@
         lastError = error;
       }
     }
-    if (cached) return cached;
     throw lastError || new Error("Source app could not be loaded.");
   }
 
@@ -73,7 +185,7 @@
     let patched = source
       .replace('const APP_VERSION = "v131-remove-chusei-green-park";', `const APP_VERSION = "${PATCH_VERSION}";`)
       .replace('const APP_STATUS_LABEL = "v131・中勢グリーンパーク削除版";', `const APP_STATUS_LABEL = "${PATCH_STATUS_LABEL}";`)
-      .replace('// v131: 中勢グリーンパーク池も除いた初期収録。', '// v156: 地図表示の復帰と指定画像の初期背景を修正。')
+      .replace('// v131: 中勢グリーンパーク池も除いた初期収録。', '// v156: メニュー背景と地図反映を修正。')
       .replace(oldOsugiLine, newOsugiLine)
       .replace(oldNanairoLine, `${newNanairoLine}\n${ikeharaLine}`);
 
@@ -90,7 +202,7 @@
     }
 
     const petCatchBridge = `
-  // v153: 釣りニャンの「釣果記録」ボタンから、アプリ本体の釣果記録画面をすぐ開くための橋渡し。
+  // v156: 釣りニャンの「釣果記録」ボタンから、アプリ本体の釣果記録画面をすぐ開くための橋渡し。
   window.__MIE_OPEN_CATCH_PANEL_FROM_PET__ = function openCatchPanelFromPet() {
     try {
       state.positionAdjustSpotId = null;
@@ -100,7 +212,6 @@
       try { hideSpotCard(); } catch (error) {}
       try { map?.closePopup?.(); } catch (error) {}
       document.body.classList.remove("map-popup-open", "record-popup-open", "spot-card-open");
-
       let lat = MIE_CENTER[0];
       let lng = MIE_CENTER[1];
       const center = map?.getCenter?.();
@@ -126,27 +237,38 @@
       patched = patched.replace("  function closeCatchPanel() {", `${petCatchBridge}\n  function closeCatchPanel() {`);
     }
 
-
-    // v156: 指定画像を初期背景にする。メニュー背景と起動画面の両方へ反映し、古い保存背景は一度だけ解除する。
     const defaultBackgroundFunctionV156 = `  function applySidebarBackground(value) {
     const source = String(value || "").trim();
-    const defaultBackground = "assets/default-app-background-turi-nyan-v156.jpg?v=v156-map-open-background-fix";
+    const defaultBackground = "${MENU_BACKGROUND_URL}";
     const background = source || defaultBackground;
     const cssValue = "url(\"" + background + "\")";
     try {
+      document.documentElement.style.setProperty("--menu-bg-image", cssValue);
       document.documentElement.style.setProperty("--sidebar-bg-image", cssValue);
-      document.documentElement.style.setProperty("--app-default-background-image", cssValue);
     } catch (error) {}
-    document.querySelectorAll(".sidebar, #mobileMenu.sidebar, .app-start-screen").forEach((target) => {
-      target.style.setProperty("--sidebar-bg-image", cssValue);
-      target.style.setProperty("--app-default-background-image", cssValue);
+    document.querySelectorAll(".sidebar, #mobileMenu.sidebar").forEach((sidebar) => {
+      sidebar.style.setProperty("--menu-bg-image", cssValue);
+      sidebar.style.setProperty("--sidebar-bg-image", cssValue);
     });
   }`;
     patched = patched.replace(/  function applySidebarBackground\(value\) \{[\s\S]*?\n  \}\n\n  async function handleBackgroundFile/, `${defaultBackgroundFunctionV156}\n\n  async function handleBackgroundFile`);
 
     patched = patched.replace(
       '    applySidebarBackground(localStorage.getItem(BACKGROUND_STORAGE_KEY) || "");',
-      `    // v156: 既存端末の古い背景保存を一度だけ解除し、指定画像を初期背景として確実に反映する。\n    try {\n      const defaultBackgroundForceKey = "mie-fishing-map-v156-default-background-installed";\n      if (localStorage.getItem(defaultBackgroundForceKey) !== "1") {\n        localStorage.removeItem(BACKGROUND_STORAGE_KEY);\n        localStorage.setItem(defaultBackgroundForceKey, "1");\n      }\n    } catch (error) {}\n    applySidebarBackground(localStorage.getItem(BACKGROUND_STORAGE_KEY) || "");`
+      `    // v156: メニュー背景だけを爆釣ツインニャンコに戻す。地図側には適用しない。
+    try {
+      const menuBackgroundForceKey = "${MENU_BACKGROUND_FORCE_KEY}";
+      if (localStorage.getItem(menuBackgroundForceKey) !== "1") {
+        localStorage.removeItem(BACKGROUND_STORAGE_KEY);
+        localStorage.setItem(menuBackgroundForceKey, "1");
+      }
+    } catch (error) {}
+    applySidebarBackground(localStorage.getItem(BACKGROUND_STORAGE_KEY) || "");`
+    );
+
+    patched = patched.replace(
+      '    window.addEventListener("resize", () => invalidateMapSize(120));',
+      '    window.addEventListener("resize", () => invalidateMapSize(120));\n    [80, 250, 600, 1200].forEach((ms) => invalidateMapSize(ms));'
     );
 
     return patched;
@@ -157,6 +279,7 @@
       const patchedSource = patchSource(source);
       const runPatchedApp = new Function(patchedSource);
       runPatchedApp();
+      installImmediateFixes();
     })
     .catch(showLoadError);
 })();

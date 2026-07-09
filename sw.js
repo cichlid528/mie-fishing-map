@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bass-spot-log-";
-const VERSION = "v156-map-open-background-fix";
+const VERSION = "v156-menu-bg-map-fix";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());

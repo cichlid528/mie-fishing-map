@@ -22,9 +22,9 @@
     <main>
       <h1>釣りマップをリセットします</h1>
       <p>古い地図や古いService Workerキャッシュが残っている場合、このページでアプリ本体の保存データは残したまま、キャッシュだけを削除します。</p>
-      <p>釣果・追加した釣り場・写真などの <code>localStorage</code> データは削除しません。背景画像だけは、v155で指定の初期背景へ一度戻します。</p>
+      <p>釣果・追加した釣り場・写真などの <code>localStorage</code> データは削除しません。v156ではメニュー画面の背景だけを爆釣ツインニャンコに戻します。</p>
       <button id="resetButton" type="button">キャッシュを消して開き直す</button>
-      <a href="./?v=v156-map-open-background-fix">そのまま開く</a>
+      <a href="./?v=v156-menu-bg-map-fix">そのまま開く</a>
       <p id="status" class="status" aria-live="polite">準備できました。</p>
     </main>
     <script>
@@ -37,16 +37,14 @@
             const registrations = await navigator.serviceWorker.getRegistrations();
             await Promise.all(registrations.map((registration) => registration.unregister()));
           }
-
           say("古いキャッシュを削除しています…");
           if ("caches" in window) {
             const keys = await caches.keys();
             await Promise.all(keys.map((key) => caches.delete(key)));
           }
-
           say("完了しました。最新版を開き直します…");
           const url = new URL("./", location.href);
-          url.searchParams.set("v", "v156-map-open-background-fix");
+          url.searchParams.set("v", "v156-menu-bg-map-fix");
           url.searchParams.set("reset", Date.now().toString());
           setTimeout(() => location.replace(url.toString()), 500);
         } catch (error) {
