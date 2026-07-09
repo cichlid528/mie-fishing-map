@@ -1,20 +1,21 @@
 (() => {
   "use strict";
   window.__MIE_PWA_INSTALL_MANAGED__ = true;
-  const APP_VERSION = "v173-motion-nyan-sensei";
+  const APP_VERSION = "v175-species-condition-fix";
   const PET_NAME = "爆釣にゃん師匠";
   const PET_MOTION_IMAGES = [
-    `assets/turi-nyan-motion-idle-v173.png?v=${APP_VERSION}`,
-    `assets/turi-nyan-motion-kiriri-v173.png?v=${APP_VERSION}`,
-    `assets/turi-nyan-motion-wink-v173.png?v=${APP_VERSION}`,
-    `assets/turi-nyan-motion-happy-v173.png?v=${APP_VERSION}`,
-    `assets/turi-nyan-motion-surprise-v173.png?v=${APP_VERSION}`,
-    `assets/turi-nyan-motion-think-v173.png?v=${APP_VERSION}`,
-    `assets/turi-nyan-motion-angry-v173.png?v=${APP_VERSION}`,
-    `assets/turi-nyan-motion-sleepy-v173.png?v=${APP_VERSION}`
+    `assets/turi-nyan-motion-idle-v175.png?v=${APP_VERSION}`,
+    `assets/turi-nyan-motion-kiriri-v175.png?v=${APP_VERSION}`,
+    `assets/turi-nyan-motion-wink-v175.png?v=${APP_VERSION}`,
+    `assets/turi-nyan-motion-happy-v175.png?v=${APP_VERSION}`,
+    `assets/turi-nyan-motion-surprise-v175.png?v=${APP_VERSION}`,
+    `assets/turi-nyan-motion-think-v175.png?v=${APP_VERSION}`,
+    `assets/turi-nyan-motion-angry-v175.png?v=${APP_VERSION}`,
+    `assets/turi-nyan-motion-sleepy-v175.png?v=${APP_VERSION}`
   ];
-  const PET_IMAGE_SRC = PET_MOTION_IMAGES[0];
-  const PET_BUBBLE_IMAGE_SRC = `assets/turi-nyan-speech-bubble-comic-transparent-v173.png?v=${APP_VERSION}`;
+  const PET_IMAGE_SRC = `assets/turi-nyan-motion-animated-v175.webp?v=${APP_VERSION}`;
+  const PET_IMAGE_FALLBACK_SRC = PET_MOTION_IMAGES[0];
+  const PET_BUBBLE_IMAGE_SRC = `assets/turi-nyan-speech-bubble-comic-transparent-v175.png?v=${APP_VERSION}`;
 
   function patchText(value) {
     if (typeof value !== "string") return value;
@@ -23,7 +24,8 @@
       .replaceAll("爆調ツインニャンコ", "爆釣ツインニャンコ")
       .replaceAll("v156-menu-bg-map-fix", APP_VERSION)
       .replaceAll("v163-menu-points-fix", APP_VERSION)
-      .replaceAll("v172-spot-checklist-restore", APP_VERSION);
+      .replaceAll("v172-spot-checklist-restore", APP_VERSION)
+      .replaceAll("v173-motion-nyan-sensei", APP_VERSION);
   }
 
   function patchNode(root = document.body) {
@@ -58,7 +60,7 @@
       #turiNyanPet .pet-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px; margin-top: 4px; }
       #turiNyanPet .pet-actions button { min-height: 19px; padding: 2px 4px; border-radius: 999px; font-size: .46rem; font-weight: 900; pointer-events: auto; }
       #turiNyanPet .pet-button { width: 124px; height: 124px; padding: 0; border: 0; border-radius: 999px; background: transparent; pointer-events: auto; filter: drop-shadow(0 10px 18px rgba(0,0,0,.20)); }
-      #turiNyanPet .pet-button img { width: 100%; height: 100%; object-fit: contain; transform: scale(1.10); transform-origin: center bottom; transition: opacity .16s ease, transform .22s ease; animation: turiNyanFloat 3.2s ease-in-out infinite; will-change: transform, opacity; }
+      #turiNyanPet .pet-button img { width: 100%; height: 100%; object-fit: contain; transform: scale(1.10); transform-origin: center bottom; transition: opacity .12s ease, transform .18s ease; animation: turiNyanFloat 1.9s ease-in-out infinite; will-change: transform, opacity; }
       #turiNyanPet.is-motioning .pet-button img { transform: scale(1.18) translateY(-4px) rotate(-2deg); }
       #turiNyanPet.is-speaking .pet-button img { animation-duration: 2.2s; }
       @keyframes turiNyanFloat {
@@ -85,7 +87,7 @@
     preloadMotionImages();
     const pet = document.createElement("aside");
     pet.id = "turiNyanPet";
-    pet.innerHTML = `<div class="pet-bubble"><strong>${PET_NAME}</strong><span id="turiNyanMessage">表情が動くようになったにゃ。</span><div class="pet-actions"><button type="button" data-pet-close>閉じる</button><button type="button" data-pet-map>地図</button></div></div><button class="pet-button" type="button" aria-label="${PET_NAME}"><img id="turiNyanPetImage" src="${PET_IMAGE_SRC}" alt="${PET_NAME}"></button>`;
+    pet.innerHTML = `<div class="pet-bubble"><strong>${PET_NAME}</strong><span id="turiNyanMessage">魚種と釣況も選べるにゃ。</span><div class="pet-actions"><button type="button" data-pet-close>閉じる</button><button type="button" data-pet-map>地図</button></div></div><button class="pet-button" type="button" aria-label="${PET_NAME}"><img id="turiNyanPetImage" src="${PET_IMAGE_SRC}" alt="${PET_NAME}" data-motion-animated="1"></button>`;
     document.body.appendChild(pet);
 
     const petButton = pet.querySelector(".pet-button");
@@ -93,12 +95,18 @@
     let motionIndex = 0;
     let motionTimer = null;
     let lastManualMotionAt = 0;
+    petImage?.addEventListener("error", () => {
+      if (petImage.dataset.motionAnimated === "1") {
+        petImage.dataset.motionAnimated = "0";
+        petImage.src = PET_IMAGE_FALLBACK_SRC;
+      }
+    }, { once: true });
 
     const setMotionFrame = (index, lively = true) => {
       if (!petImage) return;
       motionIndex = ((index % PET_MOTION_IMAGES.length) + PET_MOTION_IMAGES.length) % PET_MOTION_IMAGES.length;
       const nextSrc = PET_MOTION_IMAGES[motionIndex];
-      if (petImage.getAttribute("src") !== nextSrc) petImage.setAttribute("src", nextSrc);
+      if (petImage.dataset.motionAnimated !== "1" && petImage.getAttribute("src") !== nextSrc) petImage.setAttribute("src", nextSrc);
       if (lively) {
         pet.classList.add("is-motioning");
         window.setTimeout(() => pet.classList.remove("is-motioning"), 360);
@@ -110,7 +118,7 @@
       setMotionFrame(motionIndex + 1, true);
     };
 
-    motionTimer = window.setInterval(() => advanceMotion(false), 2600);
+    motionTimer = window.setInterval(() => advanceMotion(false), 900);
     window.addEventListener("pagehide", () => { if (motionTimer) window.clearInterval(motionTimer); }, { once: true });
 
     petButton?.addEventListener("click", () => {

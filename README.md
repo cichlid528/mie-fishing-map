@@ -1,36 +1,38 @@
-# v173・爆釣にゃん師匠モーション版
+# v175 魚種選択と釣況入力の復旧
 
-爆釣にゃん師匠のモーション表示を追加した修正版です。
+この修正版は、釣果記録フォームの魚種選択と、釣った状況の入力欄を復旧します。
 
 ## 修正内容
 
-- 添付されたキャラクターシートから表情画像を切り出し
-- 爆釣にゃん師匠が数秒ごとに表情を変えるように修正
-- タップ時にも表情が変わるように修正
-- 軽い上下アニメーションを追加
-- 既存の釣り場ポイント、チェック欄、釣果記録、写真、追加ポイントは削除しません
+- 魚種の複数選択を復旧
+- 魚種カテゴリ切り替えを復旧
+  - よく使う
+  - 淡水
+  - 海
+  - イカ・タコ・エビ
+  - すべて
+- 魚種検索を復旧
+- 超かんたん / かんたん記録 / 詳細入力 の切り替えを復旧
+- 初期表示を詳細入力にして、釣況項目を見える状態に修正
+- カバー・地形の選択肢を追加
+  - アシ
+  - 沈み木
+  - 沈み石
+  - 岩盤
+  - ゴロタ
+  - テトラ
+  - 橋脚
+  - ウィード
+  - ブレイク
+  - など
+- 反応場所、天気、風、水の状態、水位、ベイト、プレッシャー、時間帯の選択肢を拡張
+- 保存済みの釣果記録、写真、釣り場ポイント、チェック欄は削除しない
+- 爆釣にゃん師匠のモーションも維持
 
-## アップロードする主なファイル
+## バージョン
 
-- `app.js`
-- `pwa-install.js`
-- `manifest.json`
-- `sw.js`
-- `reset-cache.html`
-- `assets/turi-nyan-motion-*-v173.png`
-- `assets/turi-nyan-motion-sheet-v173.png`
-- `assets/menu-bg-bakucho-nyanko-sensei-v173.png`
-- `assets/turi-nyan-speech-bubble-comic-transparent-v173.png`
+`v175-species-condition-fix`
 
-## index.html の重要修正
+## コミット名
 
-`index.html` の読み込みを必ず以下へ変更してください。
-
-```html
-<link rel="manifest" href="manifest.json?v=v173-motion-nyan-sensei">
-<link rel="stylesheet" href="style.css?v=v173-motion-nyan-sensei">
-<script src="pwa-install.js?v=v173-motion-nyan-sensei"></script>
-<script src="app.js?v=v173-motion-nyan-sensei"></script>
-```
-
-古い `app-v156-loader-fixed.js` は読み込まないでください。
+`魚種選択と釣況入力を復旧`

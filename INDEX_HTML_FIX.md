@@ -1,20 +1,18 @@
-# index.html 修正内容
+# index.html の修正
 
-`index.html` 内の古い `v156-menu-bg-map-fix` や `app-v156-loader-fixed.js` を残さないでください。
+GitHub上の `index.html` が古い `v156-menu-bg-map-fix` を読んでいると、v175の修正が反映されません。
 
-以下のように変更してください。
-
-```html
-<link rel="manifest" href="manifest.json?v=v173-motion-nyan-sensei">
-<link rel="stylesheet" href="style.css?v=v173-motion-nyan-sensei">
-<script src="pwa-install.js?v=v173-motion-nyan-sensei"></script>
-<script src="app.js?v=v173-motion-nyan-sensei"></script>
-```
-
-特に重要：
+下記に変更してください。
 
 ```html
-<script src="app.js?v=v173-motion-nyan-sensei"></script>
+<link rel="manifest" href="manifest.json?v=v175-species-condition-fix">
+<link rel="stylesheet" href="style.css?v=v175-species-condition-fix">
+<script src="pwa-install.js?v=v175-species-condition-fix"></script>
+<script src="app.js?v=v175-species-condition-fix"></script>
 ```
 
-古いローダーではなく `app.js` を直接読み込んでください。
+特に下のJSは、古い `app-v156-loader-fixed.js` ではなく `app.js` を直接読み込ませてください。
+
+```html
+<script src="app.js?v=v175-species-condition-fix"></script>
+```

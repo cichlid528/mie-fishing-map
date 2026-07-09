@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v173-motion-nyan-sensei";
-  const APP_STATUS_LABEL = "v173・爆釣にゃん師匠モーション版";
+  const APP_VERSION = "v175-species-condition-fix";
+  const APP_STATUS_LABEL = "v175・魚種と釣況選択復旧版";
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
   const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
@@ -11,7 +11,7 @@
   const BACKUP_META_STORAGE_KEY = "mie-fishing-map-backup-meta-v1";
   const MIE_CENTER = [34.55, 136.48];
   const MIE_HOME_ZOOM = 9;
-  const MENU_BACKGROUND_URL = `assets/menu-bg-bakucho-nyanko-sensei-v173.png?v=${APP_VERSION}`;
+  const MENU_BACKGROUND_URL = `assets/menu-bg-bakucho-nyanko-sensei-v175.png?v=${APP_VERSION}`;
 
   const seedSpots = [
     { id: "lake-shorenji", name: "青蓮寺湖", type: "ダム", area: "名張市", lat: 34.600869, lng: 136.11885, zoom: 15, source: "指定リスト", subtype: "レイク・ダム湖" },
@@ -91,7 +91,10 @@
     spotMode: false,
     catchMode: false,
     pendingPhoto: "",
-    pendingPhotoPromise: null
+    pendingPhotoPromise: null,
+    recordEntryMode: "detail",
+    speciesCategoryFilter: "all",
+    speciesSearch: ""
   };
 
   function normalizeSavedSpotState(raw = {}) {
@@ -511,6 +514,12 @@
     if (record.time) parts.push(record.time);
     if (record.sizeCm) parts.push(`${record.sizeCm}cm`);
     if (record.bait) parts.push(record.bait);
+    if (record.cover) parts.push(`地形:${record.cover}`);
+    if (record.reaction) parts.push(`反応:${record.reaction}`);
+    if (record.water) parts.push(`水:${record.water}`);
+    if (record.weather) parts.push(`天気:${record.weather}`);
+    if (record.wind) parts.push(`風:${record.wind}`);
+    if (record.pressure) parts.push(`圧:${record.pressure}`);
     if (record.photo) parts.push("写真あり");
     if (validPosition(record)) parts.push("釣果ピンあり");
     else parts.push("位置情報なし");
@@ -836,6 +845,127 @@
       .catch(() => { if (status) status.textContent = "背景画像を読み込めませんでした。"; });
   }
 
+
+  const FRESHWATER_SPECIES = new Set("ブラックバス ブルーギル ナマズ ライギョ コイ フナ ヘラブナ スモールマウスバス ニゴイ ウグイ オイカワ カワムツ ハス モロコ タナゴ ワカサギ アユ アマゴ イワナ ニジマス ウナギ".split(" "));
+  const SQUID_SPECIES = new Set("アオリイカ タコ テナガエビ".split(" "));
+  const POPULAR_SPECIES = new Set("ブラックバス ブルーギル シーバス キス アジ メバル カサゴ チヌ マゴチ ヒラメ アオリイカ".split(" "));
+
+  function speciesCategory(value) {
+    const name = String(value || "").trim();
+    if (SQUID_SPECIES.has(name)) return "squid";
+    if (FRESHWATER_SPECIES.has(name)) return "freshwater";
+    if (name === "その他") return "all";
+    return "saltwater";
+  }
+
+  function speciesSearchValue(value) {
+    return String(value || "").trim().toLowerCase().replace(/\s+/g, "");
+  }
+
+  function catchSpeciesInputs() {
+    return Array.from(document.querySelectorAll("[data-catch-species-option]"));
+  }
+
+  function refreshSpeciesSelectionStatus() {
+    const checked = catchSpeciesInputs().filter((input) => input.checked).map((input) => input.value);
+    const status = $("speciesSearchStatus");
+    const hidden = $("catchSpecies");
+    if (hidden) hidden.value = checked.length ? [...new Set(checked)].join("、") : "";
+    if (status) {
+      const q = String(state.speciesSearch || "").trim();
+      const visible = catchSpeciesInputs().filter((input) => !input.closest("label")?.classList.contains("is-hidden")).length;
+      status.textContent = checked.length
+        ? `選択中：${checked.join("、")}`
+        : (q ? `検索「${q}」: ${visible}件` : `${visible}件表示。複数の魚種を選択できます。`);
+    }
+  }
+
+  function prepareSpeciesChoices() {
+    catchSpeciesInputs().forEach((input) => {
+      const label = input.closest("label");
+      const category = speciesCategory(input.value);
+      input.dataset.speciesCategory = category;
+      input.dataset.speciesPopular = String(POPULAR_SPECIES.has(input.value));
+      if (label) {
+        label.dataset.speciesCategory = category;
+        label.dataset.speciesPopular = String(POPULAR_SPECIES.has(input.value));
+        label.classList.toggle("is-selected", input.checked);
+      }
+    });
+    applySpeciesFilter();
+  }
+
+  function applySpeciesFilter() {
+    const filter = state.speciesCategoryFilter || "all";
+    const q = speciesSearchValue(state.speciesSearch);
+    document.querySelectorAll(".species-category-chip").forEach((button) => {
+      button.classList.toggle("is-active", (button.dataset.speciesCategoryFilter || "all") === filter);
+      button.setAttribute("aria-pressed", (button.dataset.speciesCategoryFilter || "all") === filter ? "true" : "false");
+    });
+    catchSpeciesInputs().forEach((input) => {
+      const label = input.closest("label");
+      if (!label) return;
+      const category = input.dataset.speciesCategory || speciesCategory(input.value);
+      const popular = input.dataset.speciesPopular === "true";
+      const categoryOk = filter === "all" || (filter === "popular" ? popular : category === filter);
+      const searchOk = !q || speciesSearchValue(input.value).includes(q);
+      const visible = input.checked || (categoryOk && searchOk);
+      label.classList.toggle("is-hidden", !visible);
+      label.classList.toggle("is-selected", input.checked);
+    });
+    refreshSpeciesSelectionStatus();
+  }
+
+  function setRecordEntryMode(mode = "detail") {
+    const next = ["super", "quick", "detail"].includes(mode) ? mode : "detail";
+    state.recordEntryMode = next;
+    const panel = $("catchPanel");
+    if (panel) panel.dataset.recordEntryMode = next;
+    document.querySelectorAll("[data-record-entry-mode]").forEach((button) => {
+      const active = button.dataset.recordEntryMode === next;
+      button.classList.toggle("is-active", active);
+      button.setAttribute("aria-pressed", active ? "true" : "false");
+    });
+    const hint = document.querySelector(".quick-record-hint");
+    if (hint) {
+      hint.textContent = next === "detail"
+        ? "詳細入力では、魚種・ルアー・天気・風・水位・カバー・岩盤・沈み石などを選択できます。"
+        : next === "quick"
+          ? "かんたん記録では、よく使う項目を中心に入力できます。"
+          : "超かんたんは、魚種・サイズ・写真・メモだけで素早く保存できます。";
+    }
+  }
+
+  function setSelectOptions(selectId, values) {
+    const select = $(selectId);
+    if (!select) return;
+    const current = select.value;
+    const seen = new Set();
+    select.innerHTML = "";
+    values.forEach((value) => {
+      if (seen.has(value)) return;
+      seen.add(value);
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = value || "選択してください";
+      select.appendChild(option);
+    });
+    if ([...select.options].some((option) => option.value === current)) select.value = current;
+  }
+
+  function restoreFishingConditionOptions() {
+    setSelectOptions("catchBait", ["", "ワーム", "ミノー", "クランクベイト", "スピナーベイト", "バイブレーション", "ラバージグ", "チャター", "ビッグベイト", "トップウォーター", "メタルジグ", "ジグヘッド", "エギ", "サビキ", "餌", "その他"]);
+    setSelectOptions("catchWeather", ["", "晴れ", "曇り", "雨", "小雨", "雪", "強風", "無風", "ローライト", "晴れ時々曇り"]);
+    setSelectOptions("catchWind", ["", "無風", "弱い", "普通", "強い", "向かい風", "追い風", "横風"]);
+    setSelectOptions("catchWater", ["", "クリア", "普通", "濁り", "強い濁り", "ささ濁り", "増水", "減水", "流れあり", "流れ弱い"]);
+    setSelectOptions("catchWaterLevel", ["", "満水", "普通", "減水", "大減水", "増水", "干潮", "満潮", "上げ潮", "下げ潮"]);
+    setSelectOptions("catchBaitfish", ["", "ギル", "小魚", "ベイトフィッシュ", "イナッコ", "アユ", "ワカサギ", "エビ", "カニ", "虫", "カエル", "不明"]);
+    setSelectOptions("catchCover", ["", "アシ", "オーバーハング", "沈み木", "レイダウン", "立木", "杭", "護岸", "ウィード", "ブレイク", "流れ込み", "堰堤", "シェード", "沈み石", "岩盤", "ゴロタ", "テトラ", "橋脚", "桟橋", "リップラップ", "岬", "ワンド", "馬の背", "ディープ", "シャロー", "砂地", "泥底", "その他"]);
+    setSelectOptions("catchReaction", ["", "岸際", "カバー奥", "シェード", "ブレイク", "流れ込み", "堰堤", "岩盤際", "沈み石周り", "ウィード際", "橋脚周り", "明暗", "流れのヨレ", "表層", "中層", "ボトム", "沖", "足元", "その他"]);
+    setSelectOptions("catchPressure", ["", "低い", "普通", "高い", "人多い", "先行者あり", "足跡あり", "船多い", "雨後", "平日", "休日"]);
+    setSelectOptions("catchTimeBand", ["", "朝", "昼", "夕方", "夜", "夜明け前", "朝まずめ", "夕まずめ", "深夜"]);
+  }
+
   function selectedSpeciesText() {
     const checked = [...document.querySelectorAll('[data-catch-species-option]:checked')].map((input) => input.value).filter(Boolean);
     const hiddenValue = String($("catchSpecies")?.value || "").trim();
@@ -867,6 +997,8 @@
     if ($("catchRecordType")) $("catchRecordType").value = options.recordType || "catch";
     if ($("catchTime") && !$("catchTime").value) $("catchTime").value = nowLocalInputValue();
     if ($("catchLocationStatus")) $("catchLocationStatus").textContent = options.locationLabel || "地図中央の位置で記録します。必要なら現在地を使ってください。";
+    setRecordEntryMode(options.mode || "detail");
+    prepareSpeciesChoices();
     resetCatchPhotoSelection();
     syncSpeciesHiddenFromChecks();
     setPanelOpen(panel, true);
@@ -1073,7 +1205,20 @@
         switchList("catches");
       });
     });
-    document.querySelectorAll("[data-catch-species-option]").forEach((input) => input.addEventListener("change", syncSpeciesHiddenFromChecks));
+    document.querySelectorAll("[data-record-entry-mode]").forEach((button) => {
+      button.addEventListener("click", () => setRecordEntryMode(button.dataset.recordEntryMode || "detail"));
+    });
+    document.querySelectorAll(".species-category-chip").forEach((button) => {
+      button.addEventListener("click", () => {
+        state.speciesCategoryFilter = button.dataset.speciesCategoryFilter || "all";
+        applySpeciesFilter();
+      });
+    });
+    $("catchSpeciesSearch")?.addEventListener("input", (event) => {
+      state.speciesSearch = event.target.value || "";
+      applySpeciesFilter();
+    });
+    document.querySelectorAll("[data-catch-species-option]").forEach((input) => input.addEventListener("change", () => { syncSpeciesHiddenFromChecks(); applySpeciesFilter(); }));
     $("catchPhoto")?.addEventListener("change", () => handleCatchPhoto($("catchPhoto")?.files?.[0]));
     $("catchCamera")?.addEventListener("change", () => handleCatchPhoto($("catchCamera")?.files?.[0]));
     $("removeCatchPhoto")?.addEventListener("click", () => resetCatchPhotoSelection("写真を外しました。"));
@@ -1097,9 +1242,9 @@
   }
 
   function installRecoveryStyles() {
-    if (document.getElementById("v173MotionNyanSenseiStyle")) return;
+    if (document.getElementById("v175SpeciesConditionFixStyle")) return;
     const style = document.createElement("style");
-    style.id = "v173MotionNyanSenseiStyle";
+    style.id = "v175SpeciesConditionFixStyle";
     style.textContent = `
       #appStartScreen.is-hidden, body.start-screen-done #appStartScreen { display: none !important; pointer-events: none !important; visibility: hidden !important; opacity: 0 !important; }
       #map, .map-pane, #map.leaflet-container, .leaflet-container { background: #cfded8 !important; background-image: none !important; }
@@ -1118,6 +1263,21 @@
       .catch-photo-preview img { display: block; width: 100%; max-height: 260px; object-fit: contain; border-radius: 14px; background: #fff; }
       .catch-photo-preview.is-hidden { display: none !important; }
       .photo-picker input { display: block; width: 100%; margin-top: 6px; }
+      .record-entry-mode-row, .species-category-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 8px 0 12px; }
+      .record-entry-mode-button, .species-category-chip { border: 0; border-radius: 999px; padding: 8px 11px; background: #edf4f0; color: #095a48; font-weight: 900; }
+      .record-entry-mode-button.is-active, .species-category-chip.is-active { background: #0f7b63; color: #fff; }
+      .quick-record-hint { font-size: .78rem; color: #54635e; line-height: 1.35; }
+      .multi-choice-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 8px; max-height: 240px; overflow: auto; padding: 8px; border-radius: 14px; background: #f8fbfa; }
+      .multi-choice-grid label { display: flex; align-items: center; gap: 6px; min-height: 36px; padding: 7px 8px; border-radius: 999px; background: #fff; color: #073f33; border: 1px solid #dbe7e2; font-weight: 800; cursor: pointer; user-select: none; }
+      .multi-choice-grid label.is-selected { background: #e6f4ef; color: #095a48; border-color: rgba(15,123,99,.35); box-shadow: inset 0 0 0 2px rgba(15,123,99,.12); }
+      .multi-choice-grid label.is-hidden { display: none !important; }
+      .multi-choice-grid input { width: auto; margin: 0; }
+      .species-search-row { display: grid; gap: 5px; margin: 8px 0; }
+      .species-search-status { color: #64736e; font-size: .78rem; }
+      #catchPanel[data-record-entry-mode="super"] .super-record-hidden-field, #catchPanel[data-record-entry-mode="super"] .advanced-fishing-field { display: none !important; }
+      #catchPanel[data-record-entry-mode="quick"] .advanced-fishing-field { display: none !important; }
+      #catchPanel[data-record-entry-mode="detail"] .super-record-hidden-field, #catchPanel[data-record-entry-mode="detail"] .advanced-fishing-field { display: block !important; }
+      #catchPanel[data-record-entry-mode="detail"] label.full-width.advanced-fishing-field, #catchPanel[data-record-entry-mode="detail"] label.full-width { grid-column: 1 / -1; }
       .spot-item { width: 100%; display: grid !important; grid-template-columns: minmax(0, 1fr) 44px 52px 44px 44px; gap: 6px; align-items: center; text-align: left; margin: 0 0 8px; padding: 10px 8px; border-radius: 16px; border: 1px solid rgba(255,255,255,.35); background: rgba(255,255,255,.92); color: #073f33; box-shadow: 0 8px 24px rgba(0,0,0,.08); }
       .spot-item.is-selected { outline: 3px solid rgba(255, 211, 95, .9); }
       .spot-focus-button { min-width: 0; border: 0; background: transparent; color: inherit; text-align: left; padding: 0; }
@@ -1146,6 +1306,9 @@
     applyMenuBackground();
     setupStartScreen();
     loadState();
+    restoreFishingConditionOptions();
+    setRecordEntryMode("detail");
+    prepareSpeciesChoices();
     bindEvents();
     initMap();
     render();
