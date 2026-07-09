@@ -1,10 +1,10 @@
 (() => {
   "use strict";
   window.__MIE_PWA_INSTALL_MANAGED__ = true;
-  const APP_VERSION = "v169-photo-camera-fix";
+  const APP_VERSION = "v171-add-spot-button-fix";
   const PET_NAME = "爆釣にゃん師匠";
   const PET_IMAGE_SRC = `assets/turi-nyan-pose-front-v149.png?v=${APP_VERSION}`;
-  const PET_BUBBLE_IMAGE_SRC = `assets/turi-nyan-speech-bubble-comic-transparent-v169.png?v=${APP_VERSION}`;
+  const PET_BUBBLE_IMAGE_SRC = `assets/turi-nyan-speech-bubble-comic-transparent-v171.png?v=${APP_VERSION}`;
 
   function patchText(value) {
     if (typeof value !== "string") return value;
@@ -57,15 +57,56 @@
     if (document.getElementById("turiNyanPet")) return;
     const pet = document.createElement("aside");
     pet.id = "turiNyanPet";
-    pet.innerHTML = `<div class="pet-bubble"><strong>${PET_NAME}</strong><span id="turiNyanMessage">写真とカメラも復旧したにゃ。</span><div class="pet-actions"><button type="button" data-pet-close>閉じる</button><button type="button" data-pet-map>地図</button></div></div><button class="pet-button" type="button" aria-label="${PET_NAME}"><img src="${PET_IMAGE_SRC}" alt="${PET_NAME}"></button>`;
+    pet.innerHTML = `<div class="pet-bubble"><strong>${PET_NAME}</strong><span id="turiNyanMessage">地図ボタンも復旧したにゃ。</span><div class="pet-actions"><button type="button" data-pet-close>閉じる</button><button type="button" data-pet-map>地図</button></div></div><button class="pet-button" type="button" aria-label="${PET_NAME}"><img src="${PET_IMAGE_SRC}" alt="${PET_NAME}"></button>`;
     document.body.appendChild(pet);
     pet.querySelector(".pet-button")?.addEventListener("click", () => pet.classList.toggle("is-speaking"));
     pet.querySelector("[data-pet-close]")?.addEventListener("click", () => pet.classList.remove("is-speaking"));
-    pet.querySelector("[data-pet-map]")?.addEventListener("click", () => {
-      document.getElementById("appStartScreen")?.classList.add("is-hidden");
-      document.body.classList.add("start-screen-done");
+
+    // v170: 吹き出し内の「地図」ボタンを、タップ/クリックどちらでも確実に地図画面へ戻す。
+    const mapButton = pet.querySelector("[data-pet-map]");
+    let lastMapButtonAt = 0;
+    const openMapFromPet = (event) => {
+      try { event?.preventDefault?.(); } catch (error) {}
+      try { event?.stopPropagation?.(); } catch (error) {}
+      const now = Date.now();
+      if (now - lastMapButtonAt < 280) return;
+      lastMapButtonAt = now;
+
+      let handled = false;
+      try {
+        if (typeof window.__MIE_OPEN_MAP_VIEW__ === "function") {
+          handled = window.__MIE_OPEN_MAP_VIEW__("pet-map-button") === true;
+        }
+      } catch (error) {}
+
+      if (!handled) {
+        const screen = document.getElementById("appStartScreen");
+        if (screen) {
+          screen.classList.add("is-hidden", "is-closing");
+          screen.setAttribute("aria-hidden", "true");
+          screen.style.setProperty("display", "none", "important");
+          screen.style.setProperty("pointer-events", "none", "important");
+        }
+        document.getElementById("mobileMenu")?.classList.remove("is-open");
+        document.getElementById("menuBackdrop")?.classList.remove("is-open");
+        document.getElementById("menuToggle")?.setAttribute("aria-expanded", "false");
+        document.querySelectorAll(".catch-panel").forEach((panel) => {
+          panel.classList.remove("is-open");
+          panel.classList.add("is-hidden");
+          panel.setAttribute("aria-hidden", "true");
+          panel.style.removeProperty("display");
+        });
+        document.body.classList.remove("start-screen-active", "start-screen-launching", "menu-open", "panel-open", "position-adjusting", "map-popup-open", "record-popup-open", "spot-card-open");
+        document.body.classList.add("start-screen-done");
+        [40, 120, 300, 700].forEach((ms) => window.setTimeout(() => {
+          try { window.dispatchEvent(new Event("resize")); } catch (error) {}
+        }, ms));
+      }
       pet.classList.remove("is-speaking");
-    });
+    };
+    mapButton?.addEventListener("click", openMapFromPet, { capture: true });
+    mapButton?.addEventListener("pointerup", openMapFromPet, { capture: true });
+    mapButton?.addEventListener("touchend", openMapFromPet, { passive: false, capture: true });
   }
 
   function init() {

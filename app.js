@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v169-photo-camera-fix";
-  const APP_STATUS_LABEL = "v169・写真アップロードとカメラ復旧版";
+  const APP_VERSION = "v171-add-spot-button-fix";
+  const APP_STATUS_LABEL = "v171・釣り場追加ボタン修正版";
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
   const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
@@ -11,7 +11,7 @@
   const BACKUP_META_STORAGE_KEY = "mie-fishing-map-backup-meta-v1";
   const MIE_CENTER = [34.55, 136.48];
   const MIE_HOME_ZOOM = 9;
-  const MENU_BACKGROUND_URL = `assets/menu-bg-bakucho-nyanko-sensei-v169.png?v=${APP_VERSION}`;
+  const MENU_BACKGROUND_URL = `assets/menu-bg-bakucho-nyanko-sensei-v171.png?v=${APP_VERSION}`;
 
   const seedSpots = [
     { id: "lake-shorenji", name: "青蓮寺湖", type: "ダム", area: "名張市", lat: 34.600869, lng: 136.11885, zoom: 15, source: "指定リスト", subtype: "レイク・ダム湖" },
@@ -88,6 +88,7 @@
     activeFilter: "all",
     activeList: "spots",
     selectedSpotId: "",
+    spotMode: false,
     catchMode: false,
     pendingPhoto: "",
     pendingPhotoPromise: null
@@ -226,16 +227,46 @@
     });
   }
 
-  function loadState() {
-    state.savedState = safeParse(localStorage.getItem(STORAGE_KEY), {});
-    state.customSpots = safeParse(localStorage.getItem(CUSTOM_SPOT_STORAGE_KEY), []).filter(validPosition);
-    state.positionOverrides = safeParse(localStorage.getItem(POSITION_STORAGE_KEY), {});
+
+  function cleanCustomSpotForStorage(spot) {
+    return {
+      id: spot.id || `custom-spot-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+      name: String(spot.name || "未命名の釣り場").trim() || "未命名の釣り場",
+      type: String(spot.type || "池").trim() || "池",
+      area: String(spot.area || "").trim(),
+      lat: Number(spot.lat),
+      lng: Number(spot.lng),
+      zoom: Number(spot.zoom || 16),
+      source: "ユーザー追加",
+      subtype: String(spot.subtype || "").trim(),
+      memo: String(spot.memo || "").trim(),
+      custom: true,
+      createdAt: spot.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+  }
+
+  function rebuildSpotsFromState() {
     const baseSpots = seedSpots.map((spot) => {
       const override = state.positionOverrides?.[spot.id];
       return validPosition(override) ? { ...spot, lat: Number(override.lat), lng: Number(override.lng), positionAdjusted: true } : spot;
     });
-    state.spots = [...baseSpots, ...state.customSpots.map((spot) => ({ ...spot, custom: true }))].filter(validPosition);
+    state.customSpots = (Array.isArray(state.customSpots) ? state.customSpots : [])
+      .map(cleanCustomSpotForStorage)
+      .filter(validPosition);
+    state.spots = [...baseSpots, ...state.customSpots].filter(validPosition);
     if (!state.spots.length) state.spots = baseSpots;
+  }
+
+  function saveCustomSpotsToStorage() {
+    try { localStorage.setItem(CUSTOM_SPOT_STORAGE_KEY, JSON.stringify(state.customSpots.map(cleanCustomSpotForStorage))); } catch (error) {}
+  }
+
+  function loadState() {
+    state.savedState = safeParse(localStorage.getItem(STORAGE_KEY), {});
+    state.customSpots = safeParse(localStorage.getItem(CUSTOM_SPOT_STORAGE_KEY), []).filter(validPosition);
+    state.positionOverrides = safeParse(localStorage.getItem(POSITION_STORAGE_KEY), {});
+    rebuildSpotsFromState();
     state.catches = recoverCatchRecords();
   }
 
@@ -271,6 +302,10 @@
     const standardMap = L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png", tileOptions).addTo(map);
     const aerialMap = L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg", tileOptions);
     L.control.layers({ "標準地図": standardMap, "航空写真": aerialMap }, null, { position: "topright" }).addTo(map);
+    map.on("click", (event) => {
+      if (!state.spotMode) return;
+      openSpotPanel(event.latlng, {});
+    });
     [80, 250, 600, 1200].forEach((ms) => setTimeout(() => map?.invalidateSize?.({ animate: false }), ms));
   }
 
@@ -497,6 +532,95 @@
       panel.style.removeProperty("display");
       document.body.classList.remove("panel-open");
     }
+  }
+
+
+  function closeSpotPanel() {
+    setPanelOpen($("spotPanel"), false);
+    state.spotMode = false;
+    $("addSpotMode")?.classList.remove("is-active");
+    document.body.classList.remove("position-adjusting");
+  }
+
+  function openSpotPanel(latlng = null, options = {}) {
+    const panel = $("spotPanel");
+    if (!panel) {
+      const status = $("dataStatus");
+      if (status) status.textContent = "釣り場追加パネルが見つかりません。index.htmlのspotPanelを確認してください。";
+      return;
+    }
+    const pos = latlng || currentMapLatLng();
+    const lat = Number(pos.lat);
+    const lng = Number(pos.lng);
+    closeMobileMenu();
+    try { map?.closePopup?.(); } catch (error) {}
+    const card = $("spotCard");
+    if (card) card.classList.add("is-hidden");
+    document.body.classList.remove("spot-card-open");
+    state.spotMode = false;
+    $("addSpotMode")?.classList.remove("is-active");
+    if ($("spotIdInput")) $("spotIdInput").value = options.id || "";
+    if ($("spotLat")) $("spotLat").value = Number.isFinite(lat) ? String(lat) : String(MIE_CENTER[0]);
+    if ($("spotLng")) $("spotLng").value = Number.isFinite(lng) ? String(lng) : String(MIE_CENTER[1]);
+    if ($("spotNameInput")) $("spotNameInput").value = options.name || "";
+    if ($("spotTypeInput")) $("spotTypeInput").value = options.type || "池";
+    if ($("spotAreaInput")) $("spotAreaInput").value = options.area || "";
+    if ($("spotMemoInput")) $("spotMemoInput").value = options.memo || "";
+    setPanelOpen(panel, true);
+    const status = $("dataStatus");
+    if (status) status.textContent = "釣り場追加を開きました。名前を入力して保存してください。位置は地図中央です。";
+    setTimeout(() => $("spotNameInput")?.focus?.(), 80);
+  }
+
+  function saveSpot(event) {
+    event?.preventDefault?.();
+    const lat = Number($("spotLat")?.value || currentMapLatLng().lat);
+    const lng = Number($("spotLng")?.value || currentMapLatLng().lng);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+      const status = $("dataStatus");
+      if (status) status.textContent = "釣り場の位置を取得できませんでした。地図中央を表示してからもう一度試してください。";
+      return;
+    }
+    const id = $("spotIdInput")?.value || `custom-spot-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+    const spot = cleanCustomSpotForStorage({
+      id,
+      name: $("spotNameInput")?.value || "未命名の釣り場",
+      type: $("spotTypeInput")?.value || "池",
+      area: $("spotAreaInput")?.value || "",
+      memo: $("spotMemoInput")?.value || "",
+      lat,
+      lng,
+      zoom: Math.max(Number(map?.getZoom?.() || 16), 13),
+      createdAt: state.customSpots.find((item) => item.id === id)?.createdAt
+    });
+    const index = state.customSpots.findIndex((item) => item.id === id);
+    if (index >= 0) state.customSpots[index] = spot;
+    else state.customSpots.unshift(spot);
+    saveCustomSpotsToStorage();
+    rebuildSpotsFromState();
+    render();
+    closeSpotPanel();
+    switchList("spots");
+    showSpot(spot);
+    const status = $("dataStatus");
+    if (status) status.textContent = `釣り場「${spot.name}」を追加しました。`;
+  }
+
+  function deleteSelectedSpot() {
+    const id = $("spotIdInput")?.value;
+    if (!id) { closeSpotPanel(); return; }
+    state.customSpots = state.customSpots.filter((spot) => spot.id !== id);
+    saveCustomSpotsToStorage();
+    rebuildSpotsFromState();
+    render();
+    closeSpotPanel();
+    const status = $("dataStatus");
+    if (status) status.textContent = "追加した釣り場を削除しました。";
+  }
+
+  function startAddSpotFromMapCenter() {
+    const latlng = currentMapLatLng();
+    openSpotPanel(latlng, {});
   }
 
   function closeCatchPanel() {
@@ -759,6 +883,64 @@
   }
 
 
+  // v170: 爆釣にゃん師匠の吹き出し内「地図」ボタンなど、どこから押しても地図画面へ戻す共通処理。
+  function openMapViewFromAnyButton(reason = "map-button") {
+    try {
+      const screen = $("appStartScreen");
+      if (screen) {
+        screen.classList.add("is-hidden", "is-closing");
+        screen.setAttribute("aria-hidden", "true");
+        screen.style.setProperty("display", "none", "important");
+        screen.style.setProperty("pointer-events", "none", "important");
+      }
+
+      ["catchPanel", "spotPanel", "backgroundPanel", "installPanel", "infoPanel"].forEach((id) => {
+        const panel = $(id);
+        if (!panel) return;
+        panel.classList.remove("is-open");
+        panel.classList.add("is-hidden");
+        panel.setAttribute("aria-hidden", "true");
+        panel.style.removeProperty("display");
+      });
+
+      $("mobileMenu")?.classList.remove("is-open");
+      $("menuBackdrop")?.classList.remove("is-open");
+      $("menuToggle")?.setAttribute("aria-expanded", "false");
+      $("addCatchMode")?.classList.remove("is-active");
+      $("addSpotMode")?.classList.remove("is-active");
+      try { map?.closePopup?.(); } catch (error) {}
+      try { hideSpotCard?.(); } catch (error) {}
+
+      state.catchMode = false;
+      state.spotMode = false;
+      state.positionAdjustSpotId = null;
+      document.body.classList.remove(
+        "start-screen-active",
+        "start-screen-launching",
+        "menu-open",
+        "panel-open",
+        "position-adjusting",
+        "map-popup-open",
+        "record-popup-open",
+        "spot-card-open"
+      );
+      document.body.classList.add("start-screen-done");
+
+      [40, 120, 300, 700].forEach((ms) => window.setTimeout(() => {
+        try { map?.invalidateSize?.({ animate: false }); } catch (error) {}
+        try { window.dispatchEvent(new Event("resize")); } catch (error) {}
+      }, ms));
+
+      const status = $("dataStatus");
+      if (status) status.textContent = `${APP_STATUS_LABEL} / 地図画面を開きました。`;
+      return true;
+    } catch (error) {
+      console.warn("open map view failed", error);
+      return false;
+    }
+  }
+
+
   function bindEvents() {
     $("menuToggle")?.addEventListener("click", () => {
       const menu = $("mobileMenu");
@@ -797,16 +979,19 @@
     $("closeCatchPanel")?.addEventListener("click", closeCatchPanel);
     $("deleteCatch")?.addEventListener("click", deleteSelectedCatch);
     $("useCurrentLocationButton")?.addEventListener("click", useCurrentLocationForCatch);
-    $("addSpotMode")?.addEventListener("click", () => alert("釣り場追加機能は復旧作業中です。釣果記録ボタンは使えるように修正しました。"));
+    $("spotForm")?.addEventListener("submit", saveSpot);
+    $("closeSpotPanel")?.addEventListener("click", closeSpotPanel);
+    $("deleteSpot")?.addEventListener("click", deleteSelectedSpot);
+    $("addSpotMode")?.addEventListener("click", startAddSpotFromMapCenter);
     $("addCatchMode")?.addEventListener("click", () => openCatchPanel(currentMapLatLng(), { recordType: "catch", locationLabel: "地図中央の位置で釣果記録を作成します。" }));
     $("locateCatchButton")?.addEventListener("click", useCurrentLocationForCatch);
     window.addEventListener("resize", () => map?.invalidateSize?.({ animate: false }));
   }
 
   function installRecoveryStyles() {
-    if (document.getElementById("v169PhotoCameraFixStyle")) return;
+    if (document.getElementById("v171AddSpotButtonFixStyle")) return;
     const style = document.createElement("style");
-    style.id = "v169PhotoCameraFixStyle";
+    style.id = "v171AddSpotButtonFixStyle";
     style.textContent = `
       #appStartScreen.is-hidden, body.start-screen-done #appStartScreen { display: none !important; pointer-events: none !important; visibility: hidden !important; opacity: 0 !important; }
       #map, .map-pane, #map.leaflet-container, .leaflet-container { background: #cfded8 !important; background-image: none !important; }
@@ -828,6 +1013,7 @@
       .spot-item { width: 100%; display: grid; gap: 2px; text-align: left; margin: 0 0 8px; padding: 10px 12px; border-radius: 14px; border: 1px solid rgba(255,255,255,.35); background: rgba(255,255,255,.86); color: #073f33; }
       .spot-item strong { font-size: .95rem; }
       .spot-item span { font-size: .78rem; opacity: .86; }
+      .spot-mode-button.is-active { background: #ff9b3f !important; color: #432500 !important; }
       .sidebar, #mobileMenu.sidebar { background: linear-gradient(180deg, rgba(5,30,25,.08), rgba(5,44,36,.02)), var(--menu-bg-image) !important; background-size: cover !important; background-position: center !important; background-repeat: no-repeat !important; }
     `;
     document.head.appendChild(style);
@@ -842,6 +1028,7 @@
     initMap();
     render();
     switchList("spots");
+    window.__MIE_OPEN_MAP_VIEW__ = openMapViewFromAnyButton;
     window.__MIE_APP_READY__ = true;
   }
 

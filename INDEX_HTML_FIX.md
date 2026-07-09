@@ -1,20 +1,18 @@
-# index.html 修正
+# index.html の修正
 
-`index.html` の読み込みクエリを `v169-photo-camera-fix` に変更してください。
-
-特に下の2行を必ず変更してください。
+必ず下のように変更してください。古い `v156` や `app-v156-loader-fixed.js` を読み続けると、釣り場追加ボタンの修正が反映されません。
 
 ```html
-<script src="pwa-install.js?v=v169-photo-camera-fix"></script>
-<script src="app.js?v=v169-photo-camera-fix"></script>
+<link rel="manifest" href="manifest.json?v=v171-add-spot-button-fix">
+<link rel="stylesheet" href="style.css?v=v171-add-spot-button-fix">
+<script src="pwa-install.js?v=v171-add-spot-button-fix"></script>
+<script src="app.js?v=v171-add-spot-button-fix"></script>
 ```
 
-古い `app-v156-loader-fixed.js` を読み続ける場合でも、同梱の `app-v156-loader-fixed.js` は v169 内容に差し替えています。
-ただし、できれば `app.js` を直接読み込む形にしてください。
-
-manifest とCSSも可能なら変更してください。
+古い指定例：
 
 ```html
-<link rel="manifest" href="manifest.json?v=v169-photo-camera-fix">
-<link rel="stylesheet" href="style.css?v=v169-photo-camera-fix">
+<script src="app-v156-loader-fixed.js?v=v156-menu-bg-map-fix"></script>
 ```
+
+これは使わず、`app.js` を直接読み込んでください。
