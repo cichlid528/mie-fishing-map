@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v171-add-spot-button-fix";
-  const APP_STATUS_LABEL = "v171・釣り場追加ボタン修正版";
+  const APP_VERSION = "v172-spot-checklist-restore";
+  const APP_STATUS_LABEL = "v172・釣り場チェック欄復旧版";
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
   const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
@@ -11,7 +11,7 @@
   const BACKUP_META_STORAGE_KEY = "mie-fishing-map-backup-meta-v1";
   const MIE_CENTER = [34.55, 136.48];
   const MIE_HOME_ZOOM = 9;
-  const MENU_BACKGROUND_URL = `assets/menu-bg-bakucho-nyanko-sensei-v171.png?v=${APP_VERSION}`;
+  const MENU_BACKGROUND_URL = `assets/menu-bg-bakucho-nyanko-sensei-v172.png?v=${APP_VERSION}`;
 
   const seedSpots = [
     { id: "lake-shorenji", name: "青蓮寺湖", type: "ダム", area: "名張市", lat: 34.600869, lng: 136.11885, zoom: 15, source: "指定リスト", subtype: "レイク・ダム湖" },
@@ -93,6 +93,60 @@
     pendingPhoto: "",
     pendingPhotoPromise: null
   };
+
+  function normalizeSavedSpotState(raw = {}) {
+    return {
+      caught: Boolean(raw.caught ?? raw.hasCatch ?? raw.checked),
+      species: String(raw.species || raw.fish || raw.fishSpecies || "").trim(),
+      noFishing: Boolean(raw.noFishing ?? raw.prohibited ?? raw.banned),
+      parking: Boolean(raw.parking ?? raw.hasParking),
+      memo: String(raw.memo || "").trim()
+    };
+  }
+
+  function spotState(id) {
+    if (!state.savedState || typeof state.savedState !== "object") state.savedState = {};
+    const key = String(id || "");
+    if (!key) return normalizeSavedSpotState({});
+    state.savedState[key] = normalizeSavedSpotState(state.savedState[key] || {});
+    return state.savedState[key];
+  }
+
+  function persistSavedState() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.savedState || {})); } catch (error) {}
+  }
+
+  function spotSpeciesSummary(value, fallback = "魚種") {
+    const list = String(value || "").split(/[、,，/／]+/u).map((item) => item.trim()).filter(Boolean);
+    if (!list.length) return fallback;
+    if (list.length <= 2) return list.join("・");
+    return `${list[0]}ほか${list.length - 1}`;
+  }
+
+  function editSpotSpecies(spotId) {
+    const spot = state.spots.find((item) => item.id === spotId);
+    const saved = spotState(spotId);
+    const next = window.prompt(`「${spot?.name || "釣り場"}」で釣れた魚種を入力してください。例：ブラックバス、シーバス、アジ`, saved.species || "");
+    if (next === null) return;
+    saved.species = String(next || "").trim();
+    persistSavedState();
+    renderSpotList();
+    if (state.selectedSpotId === spotId && spot) renderSpotCard(spot);
+    const status = $("dataStatus");
+    if (status) status.textContent = saved.species ? `「${spot?.name || "釣り場"}」の魚種を保存しました。` : `「${spot?.name || "釣り場"}」の魚種を未設定に戻しました。`;
+  }
+
+  function updateSpotFlag(spotId, flag, value) {
+    const spot = state.spots.find((item) => item.id === spotId);
+    const saved = spotState(spotId);
+    saved[flag] = Boolean(value);
+    persistSavedState();
+    renderSpotList();
+    if (state.selectedSpotId === spotId && spot) renderSpotCard(spot);
+    const label = flag === "caught" ? "釣れた" : flag === "noFishing" ? "禁止/注意" : flag === "parking" ? "駐車" : flag;
+    const status = $("dataStatus");
+    if (status) status.textContent = `「${spot?.name || "釣り場"}」の${label}を${value ? "オン" : "オフ"}にしました。`;
+  }
 
   let map = null;
   let markers = new Map();
@@ -314,7 +368,15 @@
     return state.spots.filter((spot) => {
       if (state.activeFilter !== "all" && spot.type !== state.activeFilter) return false;
       if (!q) return true;
-      return [spot.name, spot.area, spot.type, spot.subtype].some((v) => String(v || "").toLowerCase().includes(q));
+      const saved = spotState(spot.id);
+      const savedWords = [
+        saved.caught ? "釣れた" : "",
+        saved.noFishing ? "禁止 注意 釣り禁止" : "",
+        saved.parking ? "駐車 駐車場" : "",
+        saved.species
+      ];
+      return [spot.name, spot.area, spot.type, spot.subtype, spot.source, spot.memo, ...savedWords]
+        .some((v) => String(v || "").toLowerCase().includes(q));
     });
   }
 
@@ -337,17 +399,34 @@
     });
   }
 
+  function renderSpotCard(spot) {
+    const card = $("spotCard");
+    if (!card || !spot) return;
+    const saved = spotState(spot.id);
+    card.classList.remove("is-hidden");
+    document.body.classList.add("spot-card-open");
+    card.innerHTML = `<header><p>${escapeHtml(spot.type)} / ${escapeHtml(spot.area || "")}</p><h2>${escapeHtml(spot.name)}</h2></header>
+      <p>${escapeHtml(spot.subtype || spot.source || "")}</p>
+      ${spot.memo ? `<p>${escapeHtml(spot.memo)}</p>` : ""}
+      <div class="card-flags spot-check-card" data-spot-id="${escapeHtml(spot.id)}">
+        <label class="card-flag-label"><input type="checkbox" data-card-spot-flag="caught" ${saved.caught ? "checked" : ""}><span>釣れた</span></label>
+        <button class="card-species-button ${saved.species ? "on" : ""}" type="button" data-card-spot-species="${escapeHtml(spot.id)}"><small>魚種</small><strong>${escapeHtml(spotSpeciesSummary(saved.species, "未設定"))}</strong></button>
+        <label class="card-flag-label"><input type="checkbox" data-card-spot-flag="noFishing" ${saved.noFishing ? "checked" : ""}><span>禁止/注意</span></label>
+        <label class="card-flag-label"><input type="checkbox" data-card-spot-flag="parking" ${saved.parking ? "checked" : ""}><span>駐車</span></label>
+      </div>
+      <div class="card-actions"><button type="button" data-action="close">閉じる</button></div>`;
+    card.querySelector('[data-action="close"]')?.addEventListener("click", () => { card.classList.add("is-hidden"); document.body.classList.remove("spot-card-open"); });
+    card.querySelectorAll("[data-card-spot-flag]").forEach((input) => {
+      input.addEventListener("change", () => updateSpotFlag(spot.id, input.dataset.cardSpotFlag, input.checked));
+    });
+    card.querySelector("[data-card-spot-species]")?.addEventListener("click", () => editSpotSpecies(spot.id));
+  }
+
   function showSpot(spot) {
     state.selectedSpotId = spot.id;
     if (map) map.setView([Number(spot.lat), Number(spot.lng)], Number(spot.zoom || 15), { animate: true });
     markers.get(spot.id)?.openPopup?.();
-    const card = $("spotCard");
-    if (card) {
-      card.classList.remove("is-hidden");
-      document.body.classList.add("spot-card-open");
-      card.innerHTML = `<header><p>${escapeHtml(spot.type)} / ${escapeHtml(spot.area || "")}</p><h2>${escapeHtml(spot.name)}</h2></header><p>${escapeHtml(spot.subtype || spot.source || "")}</p><div class="card-actions"><button type="button" data-action="close">閉じる</button></div>`;
-      card.querySelector('[data-action="close"]')?.addEventListener("click", () => { card.classList.add("is-hidden"); document.body.classList.remove("spot-card-open"); });
-    }
+    renderSpotCard(spot);
   }
 
   function renderSpotMarkers() {
@@ -386,11 +465,34 @@
     const list = $("spotList");
     const spots = filteredSpots();
     if (list) {
-      list.innerHTML = spots.map((spot) => `<button class="spot-item" type="button" data-spot-id="${escapeHtml(spot.id)}"><strong>${escapeHtml(spot.name)}</strong><span>${escapeHtml(spot.type)} / ${escapeHtml(spot.area || "")}</span></button>`).join("");
-      list.querySelectorAll("[data-spot-id]").forEach((button) => {
+      list.innerHTML = spots.map((spot) => {
+        const saved = spotState(spot.id);
+        const selected = state.selectedSpotId === spot.id ? " is-selected" : "";
+        return `<article class="spot-item spot-check-row${selected}" data-spot-id="${escapeHtml(spot.id)}">
+          <button class="spot-main spot-focus-button" type="button" data-spot-focus="${escapeHtml(spot.id)}">
+            <strong>${escapeHtml(spot.name)}</strong>
+            <small>${escapeHtml(spot.type)} / ${escapeHtml(spot.area || "")}</small>
+          </button>
+          <label class="spot-flag-label" title="釣れた"><input type="checkbox" data-spot-id="${escapeHtml(spot.id)}" data-spot-flag="caught" ${saved.caught ? "checked" : ""}><span>釣れた</span></label>
+          <button class="spot-species-button ${saved.species ? "on" : ""}" type="button" data-spot-species="${escapeHtml(spot.id)}" title="${escapeHtml(saved.species || "魚種未設定")}"><small>魚種</small><strong>${escapeHtml(spotSpeciesSummary(saved.species, "未設定"))}</strong></button>
+          <label class="spot-flag-label" title="禁止・注意"><input type="checkbox" data-spot-id="${escapeHtml(spot.id)}" data-spot-flag="noFishing" ${saved.noFishing ? "checked" : ""}><span>禁止</span></label>
+          <label class="spot-flag-label" title="駐車"><input type="checkbox" data-spot-id="${escapeHtml(spot.id)}" data-spot-flag="parking" ${saved.parking ? "checked" : ""}><span>駐車</span></label>
+        </article>`;
+      }).join("");
+      list.querySelectorAll("[data-spot-focus]").forEach((button) => {
         button.addEventListener("click", () => {
-          const spot = state.spots.find((item) => item.id === button.dataset.spotId);
+          const spot = state.spots.find((item) => item.id === button.dataset.spotFocus);
           if (spot) { closeMobileMenu(); showSpot(spot); }
+        });
+      });
+      list.querySelectorAll("[data-spot-flag]").forEach((input) => {
+        input.addEventListener("click", (event) => event.stopPropagation());
+        input.addEventListener("change", () => updateSpotFlag(input.dataset.spotId, input.dataset.spotFlag, input.checked));
+      });
+      list.querySelectorAll("[data-spot-species]").forEach((button) => {
+        button.addEventListener("click", (event) => {
+          event.stopPropagation();
+          editSpotSpecies(button.dataset.spotSpecies);
         });
       });
     }
@@ -835,6 +937,12 @@
     const index = state.catches.findIndex((item) => item.id === id);
     if (index >= 0) state.catches[index] = record;
     else state.catches.unshift(record);
+    if (record.recordType === "catch" && record.spotId) {
+      const saved = spotState(record.spotId);
+      saved.caught = true;
+      if (record.species) saved.species = String(record.species || "").trim();
+      persistSavedState();
+    }
     let savedWithPhoto = true;
     try {
       localStorage.setItem(CATCH_STORAGE_KEY, JSON.stringify(state.catches));
@@ -989,9 +1097,9 @@
   }
 
   function installRecoveryStyles() {
-    if (document.getElementById("v171AddSpotButtonFixStyle")) return;
+    if (document.getElementById("v172SpotChecklistRestoreStyle")) return;
     const style = document.createElement("style");
-    style.id = "v171AddSpotButtonFixStyle";
+    style.id = "v172SpotChecklistRestoreStyle";
     style.textContent = `
       #appStartScreen.is-hidden, body.start-screen-done #appStartScreen { display: none !important; pointer-events: none !important; visibility: hidden !important; opacity: 0 !important; }
       #map, .map-pane, #map.leaflet-container, .leaflet-container { background: #cfded8 !important; background-image: none !important; }
@@ -1010,9 +1118,23 @@
       .catch-photo-preview img { display: block; width: 100%; max-height: 260px; object-fit: contain; border-radius: 14px; background: #fff; }
       .catch-photo-preview.is-hidden { display: none !important; }
       .photo-picker input { display: block; width: 100%; margin-top: 6px; }
-      .spot-item { width: 100%; display: grid; gap: 2px; text-align: left; margin: 0 0 8px; padding: 10px 12px; border-radius: 14px; border: 1px solid rgba(255,255,255,.35); background: rgba(255,255,255,.86); color: #073f33; }
-      .spot-item strong { font-size: .95rem; }
-      .spot-item span { font-size: .78rem; opacity: .86; }
+      .spot-item { width: 100%; display: grid !important; grid-template-columns: minmax(0, 1fr) 44px 52px 44px 44px; gap: 6px; align-items: center; text-align: left; margin: 0 0 8px; padding: 10px 8px; border-radius: 16px; border: 1px solid rgba(255,255,255,.35); background: rgba(255,255,255,.92); color: #073f33; box-shadow: 0 8px 24px rgba(0,0,0,.08); }
+      .spot-item.is-selected { outline: 3px solid rgba(255, 211, 95, .9); }
+      .spot-focus-button { min-width: 0; border: 0; background: transparent; color: inherit; text-align: left; padding: 0; }
+      .spot-focus-button strong { display: block; font-size: .95rem; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .spot-focus-button small { display: block; margin-top: 3px; color: #54635e; line-height: 1.25; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .spot-flag-label { display: grid; place-items: center; min-width: 0; }
+      .spot-flag-label input { position: absolute; opacity: 0; pointer-events: none; }
+      .spot-flag-label span, .spot-species-button { display: grid; place-items: center; width: 100%; min-height: 34px; border: 0; border-radius: 11px; padding: 3px 4px; background: #f1f5f3; color: #6f7d78; font-size: .62rem; font-weight: 900; line-height: 1.05; text-align: center; }
+      .spot-species-button small { display: block; font-size: .52rem; opacity: .75; line-height: 1; }
+      .spot-species-button strong { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .58rem; line-height: 1.05; }
+      .spot-flag-label input:checked + span, .spot-species-button.on { background: #e6f4ef; color: #095a48; box-shadow: inset 0 0 0 2px rgba(15,123,99,.25); }
+      .spot-check-card, .card-flags { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 10px 0; }
+      .card-flag-label input { margin-right: 6px; }
+      .card-flag-label, .card-species-button { border: 0; border-radius: 12px; padding: 9px 10px; background: #f1f5f3; color: #073f33; font-weight: 900; text-align: center; }
+      .card-species-button.on, .card-flag-label:has(input:checked) { background: #e6f4ef; color: #095a48; }
+      .card-species-button small { display: block; font-size: .72rem; opacity: .7; }
+      .card-species-button strong { display: block; font-size: .88rem; }
       .spot-mode-button.is-active { background: #ff9b3f !important; color: #432500 !important; }
       .sidebar, #mobileMenu.sidebar { background: linear-gradient(180deg, rgba(5,30,25,.08), rgba(5,44,36,.02)), var(--menu-bg-image) !important; background-size: cover !important; background-position: center !important; background-repeat: no-repeat !important; }
     `;

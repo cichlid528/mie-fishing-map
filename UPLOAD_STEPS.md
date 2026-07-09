@@ -1,13 +1,14 @@
 # アップロード手順
 
-1. このフォルダ内のファイルをGitHubリポジトリ直下に上書きアップロードします。
-2. `assets` フォルダ内の画像も同じ場所にアップロードします。
-3. `index.html` の読み込みを `v171-add-spot-button-fix` に変更します。
-4. コミット名は「釣り場追加ボタンを修正」で大丈夫です。
-5. 反映後、以下を開きます。
+1. ZIPを解凍します。
+2. 中身をGitHubリポジトリの直下へ同じパスでアップロードします。
+3. `assets` フォルダ内の画像もアップロードします。
+4. `index.html` の読み込みバージョンを `v172-spot-checklist-restore` に変更します。
+5. コミット名は `釣り場チェック欄を復旧` にしてください。
+6. 反映後、キャッシュ削除URLを開いてください。
 
+キャッシュ削除URL：
 https://cichlid528.github.io/mie-fishing-map/reset-cache.html?auto=1
 
-そのあと確認URL：
-
-https://cichlid528.github.io/mie-fishing-map/?v=v171-add-spot-button-fix
+確認URL：
+https://cichlid528.github.io/mie-fishing-map/?v=v172-spot-checklist-restore

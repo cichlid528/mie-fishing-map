@@ -1,1 +1,35 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>キャッシュ削除</title><style>body{font-family:system-ui,sans-serif;line-height:1.7;padding:24px;background:#eef8f4;color:#073f33}a,button{display:inline-block;margin:8px 0;padding:12px 16px;border-radius:999px;background:#0f7b63;color:white;text-decoration:none;border:0;font-weight:800}</style></head><body><h1>三重県釣りマップ キャッシュ削除</h1><p>v171-add-spot-button-fix・記録ボタン動作修正版のキャッシュを削除します。</p><p id="status">処理中です…</p><a href="./?v=v171-add-spot-button-fix">アプリを開く</a><script>(async()=>{try{if('serviceWorker'in navigator){const regs=await navigator.serviceWorker.getRegistrations();await Promise.all(regs.map(r=>r.unregister()));}if('caches'in window){const keys=await caches.keys();await Promise.all(keys.map(k=>caches.delete(k)));}document.getElementById('status').textContent='キャッシュ削除が完了しました。';if(location.search.includes('auto=1'))setTimeout(()=>location.href='./?v=v171-add-spot-button-fix',900);}catch(e){document.getElementById('status').textContent='キャッシュ削除中にエラーが出ました。手動で再読み込みしてください。';}})();</script></body></html>
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>キャッシュ削除 - 三重県釣りマップ</title>
+  <style>body{font-family:system-ui,sans-serif;padding:24px;line-height:1.7;background:#edf4f0;color:#17221f}a,button{display:inline-block;margin-top:12px;padding:12px 16px;border-radius:12px;border:0;background:#0f7b63;color:#fff;text-decoration:none;font-weight:800}code{background:#fff;padding:2px 6px;border-radius:6px}</style>
+</head>
+<body>
+  <h1>キャッシュを削除しています</h1>
+  <p id="status">少し待ってください。</p>
+  <a id="openApp" href="./?v=v172-spot-checklist-restore">アプリを開く</a>
+  <script>
+    (async () => {
+      const status = document.getElementById('status');
+      try {
+        if ('serviceWorker' in navigator) {
+          const regs = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(regs.map((r) => r.unregister()));
+        }
+        if (window.caches) {
+          const keys = await caches.keys();
+          await Promise.all(keys.map((key) => caches.delete(key)));
+        }
+        status.textContent = 'キャッシュを削除しました。アプリを開きます。';
+      } catch (error) {
+        status.textContent = 'キャッシュ削除中にエラーが出ましたが、アプリは開けます。';
+      }
+      if (new URL(location.href).searchParams.get('auto') === '1') {
+        setTimeout(() => location.replace('./?v=v172-spot-checklist-restore'), 500);
+      }
+    })();
+  </script>
+</body>
+</html>
