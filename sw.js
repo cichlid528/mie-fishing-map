@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bass-spot-log-";
-const VERSION = "v152-pet-mobile-icon-bigger";
+const VERSION = "v153-pet-mobile-icon-double";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());

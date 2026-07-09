@@ -2,8 +2,8 @@
   "use strict";
   window.__MIE_PWA_INSTALL_MANAGED__ = true;
 
-  const APP_VERSION = "v152-pet-mobile-icon-bigger";
-  const STATUS_LABEL = "v152・釣りニャンスマホ表示さらに大きめ版";
+  const APP_VERSION = "v153-pet-mobile-icon-double";
+  const STATUS_LABEL = "v153・釣りニャンスマホ表示ほぼ倍サイズ版";
   const PET_NAME = "爆釣にゃん師匠";
   const PET_BUBBLE_IMAGE_SRC = `assets/turi-nyan-speech-bubble-v149.png?v=${APP_VERSION}`;
   const PET_IMAGE_SRC = `assets/turi-nyan-pose-front-v149.png?v=${APP_VERSION}`;
@@ -107,6 +107,7 @@
       .replaceAll("v149・釣りニャン高速化・軽量化版", STATUS_LABEL)
       .replaceAll("v150・釣りニャン軽量ふわふわ復活版", STATUS_LABEL)
       .replaceAll("v151・釣りニャンスマホ表示少し大きめ版", STATUS_LABEL)
+      .replaceAll("v152・釣りニャンスマホ表示さらに大きめ版", STATUS_LABEL)
       .replaceAll("v131-remove-chusei-green-park", APP_VERSION)
       .replaceAll("v133-miyagawa-nanairo-ikehara", APP_VERSION)
       .replaceAll("v134-nanairo-dam-fix", APP_VERSION)
@@ -126,7 +127,8 @@
       .replaceAll("v148-pet-catch-button-fast", APP_VERSION)
       .replaceAll("v149-pet-speed-light-bigger-text", APP_VERSION)
       .replaceAll("v150-pet-light-float", APP_VERSION)
-      .replaceAll("v151-pet-mobile-size-up", APP_VERSION);
+      .replaceAll("v151-pet-mobile-size-up", APP_VERSION)
+      .replaceAll("v152-pet-mobile-icon-bigger", APP_VERSION);
   }
 
   function patchSingleNode(node) {
@@ -288,12 +290,12 @@
       }
       @media (max-width: 920px) {
         #turiNyanPet {
-          right: calc(5px + env(safe-area-inset-right));
-          bottom: calc(82px + env(safe-area-inset-bottom));
+          right: calc(4px + env(safe-area-inset-right));
+          bottom: calc(68px + env(safe-area-inset-bottom));
         }
-        #turiNyanPet .pet-button { width: 112px; height: 112px; animation: turiNyanBob 5.2s ease-in-out infinite; }
-        #turiNyanPet .pet-button img { transform: scale(1.18); transform-origin: center bottom; }
-        #turiNyanPet.is-lookout .pet-button img { transform: scale(1.22); }
+        #turiNyanPet .pet-button { width: 168px; height: 168px; animation: turiNyanBob 5.2s ease-in-out infinite; }
+        #turiNyanPet .pet-button img { transform: scale(1.45); transform-origin: center bottom; }
+        #turiNyanPet.is-lookout .pet-button img { transform: scale(1.50); }
         #turiNyanPet .pet-bubble { width: min(344px, calc(100vw - 10px)); aspect-ratio: 1 / 1; min-height: 0; padding: 94px 54px 104px 96px; font-size: .70rem; }
         #turiNyanPet .pet-bubble strong { font-size: .68rem; margin-bottom: 2px; }
         #turiNyanPet #turiNyanMessage { min-height: 2.1em; max-height: 3.5em; font-size: .54rem; line-height: 1.14; }
