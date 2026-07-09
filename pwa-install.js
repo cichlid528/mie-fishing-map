@@ -2,12 +2,12 @@
   "use strict";
   window.__MIE_PWA_INSTALL_MANAGED__ = true;
 
-  const APP_VERSION = "v162-start-screen-map-fix";
-  const STATUS_LABEL = "v162・起動画面と地図表示修正版";
+  const APP_VERSION = "v163-menu-points-fix";
+  const STATUS_LABEL = "v163・メニュー開閉とポイント復旧修正版";
   const PET_NAME = "爆釣にゃん師匠";
   const PET_IMAGE_SRC = `assets/turi-nyan-pose-front-v149.png?v=${APP_VERSION}`;
   const PET_BACK_IMAGE_SRC = `assets/turi-nyan-back-v149.png?v=${APP_VERSION}`;
-  const PET_BUBBLE_IMAGE_SRC = `assets/turi-nyan-speech-bubble-comic-transparent-v162.png?v=${APP_VERSION}`;
+  const PET_BUBBLE_IMAGE_SRC = `assets/turi-nyan-speech-bubble-comic-transparent-v163.png?v=${APP_VERSION}`;
 
   let deferredInstallPrompt = null;
   let petHideTimer = null;
@@ -54,12 +54,12 @@
       .replaceAll("v155・釣りニャン初期背景強制反映版", STATUS_LABEL)
       .replaceAll("v156・メニュー背景と地図反映修正版", STATUS_LABEL)
       .replaceAll("v157・漫画風吹き出しとメニュー背景修正版", STATUS_LABEL)
-      .replaceAll("v162・起動画面と地図表示修正版", STATUS_LABEL)
+      .replaceAll("v163・メニュー開閉とポイント復旧修正版", STATUS_LABEL)
       .replaceAll("v131-remove-chusei-green-park", APP_VERSION)
       .replaceAll("v155-default-background-force", APP_VERSION)
-      .replaceAll("v162-start-screen-map-fix", APP_VERSION)
-      .replaceAll("v162-start-screen-map-fix", APP_VERSION)
-      .replaceAll("v162-start-screen-map-fix", APP_VERSION);
+      .replaceAll("v163-menu-points-fix", APP_VERSION)
+      .replaceAll("v163-menu-points-fix", APP_VERSION)
+      .replaceAll("v163-menu-points-fix", APP_VERSION);
   }
 
   function patchNode(root = document.body) {

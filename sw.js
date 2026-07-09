@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bass-spot-log-";
-const VERSION = "v162-start-screen-map-fix";
+const VERSION = "v163-menu-points-fix";
 self.addEventListener("install", (event) => { event.waitUntil(self.skipWaiting()); });
 self.addEventListener("activate", (event) => {
   event.waitUntil((async () => {

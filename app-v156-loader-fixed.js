@@ -1,16 +1,16 @@
 (() => {
   "use strict";
 
-  const PATCH_VERSION = "v162-start-screen-map-fix";
-  const PATCH_STATUS_LABEL = "v162・起動画面と地図表示修正版";
-  const MENU_BACKGROUND_URL = `assets/menu-bg-bakucho-nyanko-sensei-v162.png?v=${PATCH_VERSION}`;
+  const PATCH_VERSION = "v163-menu-points-fix";
+  const PATCH_STATUS_LABEL = "v163・メニュー開閉とポイント復旧修正版";
+  const MENU_BACKGROUND_URL = `assets/menu-bg-bakucho-nyanko-sensei-v163.png?v=${PATCH_VERSION}`;
   const BACKGROUND_STORAGE_KEY = "mie-fishing-map-sidebar-background-v1";
-  const MENU_BACKGROUND_FORCE_KEY = "mie-fishing-map-v162-start-screen-map-fix-installed";
+  const MENU_BACKGROUND_FORCE_KEY = "mie-fishing-map-v163-menu-points-fix-installed";
   const SOURCE_APP_URLS = [
     "https://cdn.jsdelivr.net/gh/cichlid528/mie-fishing-map@486490f1fda171ba9dfdf8ac9a431d4b3b09c530/app.js",
     "https://raw.githubusercontent.com/cichlid528/mie-fishing-map/486490f1fda171ba9dfdf8ac9a431d4b3b09c530/app.js"
   ];
-  const SOURCE_CACHE_KEY = "mie-fishing-map-source-cache-486490f1-v162-start-screen-map-fix";
+  const SOURCE_CACHE_KEY = "mie-fishing-map-source-cache-486490f1-v163-menu-points-fix";
 
   const oldOsugiLine = '    { id: "lake-osugi", name: "大杉湖", type: "ダム", area: "多気郡大台町", lat: 34.286385, lng: 136.19336, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },';
   const newOsugiLine = '    { id: "lake-osugi", name: "宮川ダム", type: "ダム", area: "多気郡大台町", lat: 34.286385, lng: 136.19336, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },';
@@ -49,12 +49,12 @@
       .replaceAll("v155・釣りニャン初期背景強制反映版", PATCH_STATUS_LABEL)
       .replaceAll("v156・メニュー背景と地図反映修正版", PATCH_STATUS_LABEL)
       .replaceAll("v157・漫画風吹き出しとメニュー背景修正版", PATCH_STATUS_LABEL)
-      .replaceAll("v162・起動画面と地図表示修正版", PATCH_STATUS_LABEL)
+      .replaceAll("v163・メニュー開閉とポイント復旧修正版", PATCH_STATUS_LABEL)
       .replaceAll("v131-remove-chusei-green-park", PATCH_VERSION)
       .replaceAll("v155-default-background-force", PATCH_VERSION)
-      .replaceAll("v162-start-screen-map-fix", PATCH_VERSION)
-      .replaceAll("v162-start-screen-map-fix", PATCH_VERSION)
-      .replaceAll("v162-start-screen-map-fix", PATCH_VERSION);
+      .replaceAll("v163-menu-points-fix", PATCH_VERSION)
+      .replaceAll("v163-menu-points-fix", PATCH_VERSION)
+      .replaceAll("v163-menu-points-fix", PATCH_VERSION);
   }
 
   function installImmediateFixes() {
@@ -82,9 +82,9 @@
       });
     };
 
-    if (!document.getElementById("v162StartScreenMapFix")) {
+    if (!document.getElementById("v163MenuPointsFix")) {
       const style = document.createElement("style");
-      style.id = "v162StartScreenMapFix";
+      style.id = "v163MenuPointsFix";
       style.textContent = `
         :root { --menu-bg-image: ${menuCssValue}; --sidebar-bg-image: ${menuCssValue}; }
         .sidebar, #mobileMenu.sidebar {
@@ -191,33 +191,100 @@
       try { window.dispatchEvent(new Event("resize")); } catch (error) {}
       [80, 250, 600, 1200].forEach((ms) => window.setTimeout(() => {
         try { window.dispatchEvent(new Event("resize")); } catch (error) {}
-        try { window.__MIE_FALLBACK_MAP__?.invalidateSize?.({ animate: false }); } catch (error) {}
       }, ms));
-      ensureFallbackMap();
+      // v163: fallback Leaflet mapは作らない。先に作ると本体initMapが「Map container is already initialized」で止まるため。
     } catch (error) {
       console.warn("start screen force open failed", error);
     }
   }
 
-  function ensureFallbackMap() {
+  function removeOldFallbackMapIfAny() {
     try {
+      if (window.__MIE_FALLBACK_MAP__) {
+        window.__MIE_FALLBACK_MAP__.remove?.();
+        window.__MIE_FALLBACK_MAP__ = null;
+      }
       const mapElement = document.getElementById("map");
-      if (!mapElement || typeof L === "undefined") return;
-      if (window.__MIE_FALLBACK_MAP__ || mapElement.querySelector(".leaflet-tile-pane")) return;
-      window.__MIE_FALLBACK_MAP__ = L.map("map", {
-        zoomControl: true,
-        touchZoom: true,
-        scrollWheelZoom: true,
-        doubleClickZoom: true
-      }).setView([34.55, 136.48], 9);
-      L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png", {
-        maxZoom: 18,
-        attribution: '地図出典：<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noopener">国土地理院（地理院タイル）</a>'
-      }).addTo(window.__MIE_FALLBACK_MAP__);
-      window.setTimeout(() => window.__MIE_FALLBACK_MAP__?.invalidateSize?.({ animate: false }), 120);
+      if (mapElement && mapElement.classList.contains("leaflet-container") && !window.__MIE_APP_READY__) {
+        mapElement.classList.remove("leaflet-container", "leaflet-touch", "leaflet-retina", "leaflet-fade-anim", "leaflet-grab", "leaflet-touch-drag", "leaflet-touch-zoom");
+        mapElement.removeAttribute("tabindex");
+        mapElement.innerHTML = "";
+      }
     } catch (error) {
-      console.warn("fallback map failed", error);
+      console.warn("old fallback map cleanup failed", error);
     }
+  }
+
+
+  function installEmergencyMenuFallback() {
+    let lastFallbackAt = 0;
+    const openMenu = () => {
+      const menu = document.getElementById("mobileMenu");
+      const backdrop = document.getElementById("menuBackdrop");
+      const toggle = document.getElementById("menuToggle");
+      if (!menu) return;
+      menu.classList.add("is-open");
+      backdrop?.classList.add("is-open");
+      document.body?.classList?.add("menu-open");
+      toggle?.setAttribute("aria-expanded", "true");
+      try { window.dispatchEvent(new Event("resize")); } catch (error) {}
+    };
+    const closeMenu = () => {
+      const menu = document.getElementById("mobileMenu");
+      const backdrop = document.getElementById("menuBackdrop");
+      const toggle = document.getElementById("menuToggle");
+      menu?.classList.remove("is-open");
+      backdrop?.classList.remove("is-open");
+      document.body?.classList?.remove("menu-open");
+      toggle?.setAttribute("aria-expanded", "false");
+      try { window.dispatchEvent(new Event("resize")); } catch (error) {}
+    };
+    const toggleMenu = () => {
+      const menu = document.getElementById("mobileMenu");
+      if (!menu) return;
+      if (menu.classList.contains("is-open")) closeMenu(); else openMenu();
+    };
+    const bind = () => {
+      const toggle = document.getElementById("menuToggle");
+      const close = document.getElementById("closeMenuButton");
+      const backdrop = document.getElementById("menuBackdrop");
+      if (toggle && toggle.dataset.v163MenuFallback !== "1") {
+        toggle.dataset.v163MenuFallback = "1";
+        const handler = (event) => {
+          const now = Date.now();
+          if (now - lastFallbackAt < 260) return;
+          const menu = document.getElementById("mobileMenu");
+          const before = Boolean(menu?.classList.contains("is-open"));
+          if (!window.__MIE_APP_READY__) {
+            try { event.preventDefault(); event.stopPropagation(); } catch (error) {}
+            lastFallbackAt = now;
+            toggleMenu();
+            return;
+          }
+          window.setTimeout(() => {
+            const after = Boolean(menu?.classList.contains("is-open"));
+            if (after === before) {
+              lastFallbackAt = Date.now();
+              toggleMenu();
+            }
+          }, 90);
+        };
+        toggle.addEventListener("click", handler, { capture: true });
+        toggle.addEventListener("pointerup", handler, { capture: true });
+        toggle.addEventListener("touchend", handler, { passive: false, capture: true });
+      }
+      if (close && close.dataset.v163MenuFallback !== "1") {
+        close.dataset.v163MenuFallback = "1";
+        close.addEventListener("click", () => { if (!window.__MIE_APP_READY__) closeMenu(); }, { capture: true });
+      }
+      if (backdrop && backdrop.dataset.v163MenuFallback !== "1") {
+        backdrop.dataset.v163MenuFallback = "1";
+        backdrop.addEventListener("click", () => { if (!window.__MIE_APP_READY__) closeMenu(); }, { capture: true });
+      }
+    };
+    bind();
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bind, { once: true });
+    window.addEventListener("load", bind);
   }
 
   function installStartScreenFallback() {
@@ -245,11 +312,13 @@
   }
 
 
+  window.__MIE_APP_READY__ = false;
+  installEmergencyMenuFallback();
   installStartScreenFallback();
   installImmediateFixes();
 
   function showLoadError(error) {
-    console.error("Mie Fishing Map v162 start screen map fix loader failed", error);
+    console.error("Mie Fishing Map v163 menu points fix loader failed", error);
     const message = "アプリ本体の読み込みに失敗しました。通信状況を確認して、reset-cache.html?auto=1 を開き直してください。";
     const target = document.querySelector("#dataStatus") || document.body;
     if (!target) return;
@@ -370,6 +439,22 @@
     );
 
     patched = patched.replace(
+      `    // v129: スマホにv127の「ポイント初期化」状態が残っていても、指定リスト62件を確実に表示する。
+    // 釣果記録は安全のため残します。
+    if (!localStorage.getItem(POINTS_CLEARED_STORAGE_KEY)) {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(CUSTOM_SPOT_STORAGE_KEY);
+      localStorage.removeItem(POSITION_STORAGE_KEY);
+      localStorage.setItem(POINTS_CLEARED_STORAGE_KEY, JSON.stringify({ clearedAt: new Date().toISOString(), version: APP_VERSION }));
+    }`,
+      `    // v163: ポイントが消える事故を避けるため、保存済みポイント・追加ポイント・位置調整は削除しない。
+    // 初期収録リストは seedSpots から毎回復元されるので、ここでは版情報だけ記録する。
+    if (!localStorage.getItem(POINTS_CLEARED_STORAGE_KEY)) {
+      localStorage.setItem(POINTS_CLEARED_STORAGE_KEY, JSON.stringify({ checkedAt: new Date().toISOString(), version: APP_VERSION, preserveUserData: true }));
+    }`
+    );
+
+    patched = patched.replace(
       '    window.addEventListener("resize", () => invalidateMapSize(120));',
       '    window.addEventListener("resize", () => invalidateMapSize(120));\n    [80, 250, 600, 1200].forEach((ms) => invalidateMapSize(ms));'
     );
@@ -379,9 +464,11 @@
 
   fetchSourceApp()
     .then((source) => {
+      removeOldFallbackMapIfAny();
       const patchedSource = patchSource(source);
       const runPatchedApp = new Function(patchedSource);
       runPatchedApp();
+      window.__MIE_APP_READY__ = true;
       installImmediateFixes();
     })
     .catch(showLoadError);
