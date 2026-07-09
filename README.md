@@ -1,28 +1,20 @@
-# 三重県釣りマップ v158-bubble-size-menu-bg-fix
-
-このZIPは、爆釣にゃん師匠の吹き出しサイズとメニュー背景を修正する差し替え用です。
+# 三重県釣りマップ v159 修正版
 
 ## 修正内容
 
-- 吹き出しを前回より小さく調整
-- 吹き出し内の文字を左寄りに調整し、はみ出しにくく修正
-- 添付された背景画像をそのまま `assets/menu-bg-bakucho-nyanko-sensei-v158.png` として同梱
-- メニュー画面だけに背景画像を適用
-- 地図本体には背景画像を適用しない
-- バージョンを `v158-bubble-size-menu-bg-fix` に統一
+- メニュー画面の初期背景を、ユーザー指定の「釣り最高！」猫画像に変更しました。
+- 背景画像は `.sidebar` / `#mobileMenu.sidebar` のメニュー画面だけに適用します。
+- 地図本体、Leaflet タイル、地図背景には画像を適用しません。
+- 爆釣にゃん師匠の吹き出し画像の外側を透明化しました。
+- 吹き出しサイズを少し小さくし、文字を左寄りに調整しました。
+- バージョンを `v159-menu-bg-transparent-bubble` に統一しました。
 
-## コミット名
+## 反映後の確認URL
 
-```text
-吹き出しサイズとメニュー背景を修正
-```
+1. キャッシュ削除
 
-## 確認URL
-
-```text
 https://cichlid528.github.io/mie-fishing-map/reset-cache.html?auto=1
-```
 
-```text
-https://cichlid528.github.io/mie-fishing-map/?v=v158-bubble-size-menu-bg-fix
-```
+2. アプリ確認
+
+https://cichlid528.github.io/mie-fishing-map/?v=v159-menu-bg-transparent-bubble

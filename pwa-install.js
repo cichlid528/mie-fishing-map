@@ -2,12 +2,12 @@
   "use strict";
   window.__MIE_PWA_INSTALL_MANAGED__ = true;
 
-  const APP_VERSION = "v158-bubble-size-menu-bg-fix";
-  const STATUS_LABEL = "v158・吹き出しサイズとメニュー背景修正版";
+  const APP_VERSION = "v159-menu-bg-transparent-bubble";
+  const STATUS_LABEL = "v159・メニュー背景と透明吹き出し修正版";
   const PET_NAME = "爆釣にゃん師匠";
   const PET_IMAGE_SRC = `assets/turi-nyan-pose-front-v149.png?v=${APP_VERSION}`;
   const PET_BACK_IMAGE_SRC = `assets/turi-nyan-back-v149.png?v=${APP_VERSION}`;
-  const PET_BUBBLE_IMAGE_SRC = `assets/turi-nyan-speech-bubble-comic-v158.png?v=${APP_VERSION}`;
+  const PET_BUBBLE_IMAGE_SRC = `assets/turi-nyan-speech-bubble-comic-transparent-v159.png?v=${APP_VERSION}`;
 
   let deferredInstallPrompt = null;
   let petHideTimer = null;
@@ -23,7 +23,8 @@
       .replaceAll("v131-remove-chusei-green-park", APP_VERSION)
       .replaceAll("v155-default-background-force", APP_VERSION)
       .replaceAll("v156-menu-bg-map-fix", APP_VERSION)
-      .replaceAll("v157-comic-bubble-menu-bg", APP_VERSION);
+      .replaceAll("v157-comic-bubble-menu-bg", APP_VERSION)
+      .replaceAll("v158-bubble-size-menu-bg-fix", APP_VERSION);
   }
 
   function patchNode(root = document.body) {
@@ -72,10 +73,10 @@
         display: none;
         position: relative;
         box-sizing: border-box;
-        width: min(304px, calc(100vw - 18px));
+        width: min(286px, calc(100vw - 18px));
         aspect-ratio: 1 / 1;
         min-height: 0;
-        padding: 78px 68px 88px 62px;
+        padding: 72px 62px 82px 48px;
         border: 0;
         border-radius: 0;
         background-color: transparent;
@@ -85,16 +86,16 @@
         background-position: center;
         color: #17120d;
         box-shadow: none;
-        font-size: .60rem;
+        font-size: .56rem;
         font-weight: 900;
-        line-height: 1.10;
+        line-height: 1.08;
         pointer-events: auto;
         text-shadow: none;
         overflow: hidden;
       }
       #turiNyanPet.is-speaking .pet-bubble { display: block; }
-      #turiNyanPet .pet-bubble strong { display: block; color: #8d321d; font-size: .62rem; line-height: 1.04; margin-bottom: 2px; white-space: nowrap; }
-      #turiNyanPet #turiNyanMessage { display: block; max-height: 2.5em; overflow: hidden; overflow-wrap: anywhere; word-break: keep-all; }
+      #turiNyanPet .pet-bubble strong { display: block; color: #8d321d; font-size: .58rem; line-height: 1.04; margin-bottom: 2px; white-space: nowrap; }
+      #turiNyanPet #turiNyanMessage { display: block; max-height: 2.35em; overflow: hidden; overflow-wrap: anywhere; word-break: keep-all; }
       #turiNyanPet .pet-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px; margin-top: 4px; }
       #turiNyanPet .pet-actions button {
         border: 0;
@@ -142,16 +143,16 @@
         #turiNyanPet .pet-button { width: 118px !important; height: 118px !important; }
         #turiNyanPet .pet-button img { transform: scale(1.12) !important; transform-origin: center bottom !important; }
         #turiNyanPet.is-lookout .pet-button img { transform: scale(1.16) !important; }
-        #turiNyanPet .pet-bubble { width: min(284px, calc(100vw - 14px)) !important; padding: 72px 64px 82px 56px !important; }
+        #turiNyanPet .pet-bubble { width: min(260px, calc(100vw - 14px)) !important; padding: 64px 58px 74px 42px !important; }
         body.menu-open #turiNyanPet,
         body.panel-open #turiNyanPet,
         body.position-adjusting #turiNyanPet,
         body.map-popup-open #turiNyanPet,
         body.record-popup-open #turiNyanPet,
         body.spot-card-open #turiNyanPet { display: none !important; }
-        #turiNyanPet .pet-bubble strong { font-size: .56rem !important; }
-        #turiNyanPet #turiNyanMessage { font-size: .48rem !important; line-height: 1.08 !important; max-height: 2.25em !important; }
-        #turiNyanPet .pet-actions button { min-height: 19px !important; padding: 2px 4px !important; font-size: .46rem !important; }
+        #turiNyanPet .pet-bubble strong { font-size: .52rem !important; }
+        #turiNyanPet #turiNyanMessage { font-size: .44rem !important; line-height: 1.06 !important; max-height: 2.25em !important; }
+        #turiNyanPet .pet-actions button { min-height: 18px !important; padding: 2px 3px !important; font-size: .42rem !important; }
       }
       @media (prefers-reduced-motion: reduce) { #turiNyanPet .pet-button { animation: none; } }
     `;
