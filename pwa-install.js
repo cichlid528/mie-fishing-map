@@ -2,12 +2,12 @@
   "use strict";
   window.__MIE_PWA_INSTALL_MANAGED__ = true;
 
-  const APP_VERSION = "v160-menu-bg-force";
-  const STATUS_LABEL = "v160・指定メニュー背景強制反映版";
+  const APP_VERSION = "v161-menu-bg-reapply";
+  const STATUS_LABEL = "v161・メニュー背景再反映版";
   const PET_NAME = "爆釣にゃん師匠";
   const PET_IMAGE_SRC = `assets/turi-nyan-pose-front-v149.png?v=${APP_VERSION}`;
   const PET_BACK_IMAGE_SRC = `assets/turi-nyan-back-v149.png?v=${APP_VERSION}`;
-  const PET_BUBBLE_IMAGE_SRC = `assets/turi-nyan-speech-bubble-comic-transparent-v160.png?v=${APP_VERSION}`;
+  const PET_BUBBLE_IMAGE_SRC = `assets/turi-nyan-speech-bubble-comic-transparent-v161.png?v=${APP_VERSION}`;
 
   let deferredInstallPrompt = null;
   let petHideTimer = null;
@@ -20,12 +20,12 @@
       .replaceAll("v155・釣りニャン初期背景強制反映版", STATUS_LABEL)
       .replaceAll("v156・メニュー背景と地図反映修正版", STATUS_LABEL)
       .replaceAll("v157・漫画風吹き出しとメニュー背景修正版", STATUS_LABEL)
-      .replaceAll("v159・メニュー背景と透明吹き出し修正版", STATUS_LABEL)
+      .replaceAll("v161・メニュー背景再反映版", STATUS_LABEL)
       .replaceAll("v131-remove-chusei-green-park", APP_VERSION)
       .replaceAll("v155-default-background-force", APP_VERSION)
-      .replaceAll("v160-menu-bg-force", APP_VERSION)
-      .replaceAll("v160-menu-bg-force", APP_VERSION)
-      .replaceAll("v160-menu-bg-force", APP_VERSION);
+      .replaceAll("v161-menu-bg-reapply", APP_VERSION)
+      .replaceAll("v161-menu-bg-reapply", APP_VERSION)
+      .replaceAll("v161-menu-bg-reapply", APP_VERSION);
   }
 
   function patchNode(root = document.body) {

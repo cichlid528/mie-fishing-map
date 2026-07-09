@@ -1,26 +1,22 @@
-# 三重県釣りマップ v160 指定メニュー背景強制反映版
+# v161 メニュー背景再反映版
 
-このZIPは、ユーザー指定の猫画像をメニュー画面の初期背景に強制設定する修正版です。
+指定された猫の画像を、メニュー画面の初期背景として再反映する修正版です。
 
-## 重要
-GitHub上で `assets/menu-bg-bakucho-nyanko-sensei-v159.png` が空ファイルになっている可能性が高いです。
-そのため、今回は新しい画像名で `assets/menu-bg-bakucho-nyanko-sensei-v160.png` を入れ直しています。
+重要：GitHub上で `assets/menu-bg-bakucho-nyanko-sensei-v160.png` が空ファイルになっていたため、今回は `assets/menu-bg-bakucho-nyanko-sensei-v161.png` として入れ直しています。
 
-## バージョン
-`v160-menu-bg-force`
+## アップロードするファイル
 
-## 表示ラベル
-`v160・指定メニュー背景強制反映版`
+- app.js
+- app-v156-loader-fixed.js
+- pwa-install.js
+- manifest.json
+- sw.js
+- reset-cache.html
+- assets/menu-bg-bakucho-nyanko-sensei-v161.png
+- assets/turi-nyan-speech-bubble-comic-transparent-v161.png
 
-## 変更点
-- メニュー画面背景を `assets/menu-bg-bakucho-nyanko-sensei-v160.png` に変更
-- `.sidebar` と `#mobileMenu.sidebar` にだけ背景画像を適用
-- 地図本体には背景画像を適用しない
-- `index.html` が古い `app-v156-loader-fixed.js` を読んでいても効くように、同名ファイルも同梱
-- 吹き出し外側は透明のまま維持
+加えて、INDEX_HTML_FIX.md の通り index.html のクエリを v161 に変更してください。
 
-## 確認URL
-`https://cichlid528.github.io/mie-fishing-map/reset-cache.html?auto=1`
+## コミット名
 
-その後：
-`https://cichlid528.github.io/mie-fishing-map/?v=v160-menu-bg-force`
+指定メニュー背景を再反映

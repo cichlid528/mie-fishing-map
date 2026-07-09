@@ -1,16 +1,16 @@
 (() => {
   "use strict";
 
-  const PATCH_VERSION = "v160-menu-bg-force";
-  const PATCH_STATUS_LABEL = "v160・指定メニュー背景強制反映版";
-  const MENU_BACKGROUND_URL = `assets/menu-bg-bakucho-nyanko-sensei-v160.png?v=${PATCH_VERSION}`;
+  const PATCH_VERSION = "v161-menu-bg-reapply";
+  const PATCH_STATUS_LABEL = "v161・メニュー背景再反映版";
+  const MENU_BACKGROUND_URL = `assets/menu-bg-bakucho-nyanko-sensei-v161.png?v=${PATCH_VERSION}`;
   const BACKGROUND_STORAGE_KEY = "mie-fishing-map-sidebar-background-v1";
-  const MENU_BACKGROUND_FORCE_KEY = "mie-fishing-map-v160-menu-bg-force-installed";
+  const MENU_BACKGROUND_FORCE_KEY = "mie-fishing-map-v161-menu-bg-reapply-installed";
   const SOURCE_APP_URLS = [
     "https://cdn.jsdelivr.net/gh/cichlid528/mie-fishing-map@486490f1fda171ba9dfdf8ac9a431d4b3b09c530/app.js",
     "https://raw.githubusercontent.com/cichlid528/mie-fishing-map/486490f1fda171ba9dfdf8ac9a431d4b3b09c530/app.js"
   ];
-  const SOURCE_CACHE_KEY = "mie-fishing-map-source-cache-486490f1-v160-menu-bg-force";
+  const SOURCE_CACHE_KEY = "mie-fishing-map-source-cache-486490f1-v161-menu-bg-reapply";
 
   const oldOsugiLine = '    { id: "lake-osugi", name: "大杉湖", type: "ダム", area: "多気郡大台町", lat: 34.286385, lng: 136.19336, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },';
   const newOsugiLine = '    { id: "lake-osugi", name: "宮川ダム", type: "ダム", area: "多気郡大台町", lat: 34.286385, lng: 136.19336, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },';
@@ -49,12 +49,12 @@
       .replaceAll("v155・釣りニャン初期背景強制反映版", PATCH_STATUS_LABEL)
       .replaceAll("v156・メニュー背景と地図反映修正版", PATCH_STATUS_LABEL)
       .replaceAll("v157・漫画風吹き出しとメニュー背景修正版", PATCH_STATUS_LABEL)
-      .replaceAll("v159・メニュー背景と透明吹き出し修正版", PATCH_STATUS_LABEL)
+      .replaceAll("v161・メニュー背景再反映版", PATCH_STATUS_LABEL)
       .replaceAll("v131-remove-chusei-green-park", PATCH_VERSION)
       .replaceAll("v155-default-background-force", PATCH_VERSION)
-      .replaceAll("v160-menu-bg-force", PATCH_VERSION)
-      .replaceAll("v160-menu-bg-force", PATCH_VERSION)
-      .replaceAll("v160-menu-bg-force", PATCH_VERSION);
+      .replaceAll("v161-menu-bg-reapply", PATCH_VERSION)
+      .replaceAll("v161-menu-bg-reapply", PATCH_VERSION)
+      .replaceAll("v161-menu-bg-reapply", PATCH_VERSION);
   }
 
   function installImmediateFixes() {

@@ -1,48 +1,40 @@
-# index.html 修正指示
+# index.html 必須修正
 
-現在の `index.html` はまだ `v156-menu-bg-map-fix` を読み込んでいます。
-背景が変わらない原因になります。
+今回の反映漏れの原因は、index.html がまだ古い v156 の読み込み指定を持っていることです。
+GitHub の index.html を開いて、以下を必ず置換してください。
 
-以下を置換してください。
-
-## 1. バージョン文字列の置換
-`v156-menu-bg-map-fix`
-をすべて
-`v160-menu-bg-force`
-に置換してください。
-
-## 2. app読み込みの修正
-現在：
+## 置換1
 ```html
+<link rel="manifest" href="manifest.json?v=v156-menu-bg-map-fix">
+```
+を
+```html
+<link rel="manifest" href="manifest.json?v=v161-menu-bg-reapply">
+```
+へ。
+
+## 置換2
+```html
+<link rel="stylesheet" href="style.css?v=v156-menu-bg-map-fix">
+```
+を
+```html
+<link rel="stylesheet" href="style.css?v=v161-menu-bg-reapply">
+```
+へ。
+
+## 置換3
+```html
+<script src="pwa-install.js?v=v156-menu-bg-map-fix"></script>
 <script src="app-v156-loader-fixed.js?v=v156-menu-bg-map-fix"></script>
 ```
-
-推奨：
+を
 ```html
-<script src="app-v156-loader-fixed.js?v=v160-menu-bg-force"></script>
+<script src="pwa-install.js?v=v161-menu-bg-reapply"></script>
+<script src="app-v156-loader-fixed.js?v=v161-menu-bg-reapply"></script>
 ```
+へ。
 
-または：
-```html
-<script src="app.js?v=v160-menu-bg-force"></script>
-```
-
-## 3. CSSにメニュー背景変数を追加
-`<style>` 内の先頭付近に以下を追加してください。
-
-```css
-:root {
-  --menu-bg-image: url("assets/menu-bg-bakucho-nyanko-sensei-v160.png?v=v160-menu-bg-force");
-  --sidebar-bg-image: url("assets/menu-bg-bakucho-nyanko-sensei-v160.png?v=v160-menu-bg-force");
-}
-.sidebar, #mobileMenu.sidebar {
-  background: linear-gradient(180deg, rgba(5,30,25,.08), rgba(5,44,36,.02)), var(--menu-bg-image) !important;
-  background-size: cover !important;
-  background-position: center center !important;
-  background-repeat: no-repeat !important;
-}
-.sidebar::before, #mobileMenu.sidebar::before {
-  background: transparent !important;
-  opacity: 0 !important;
-}
-```
+## 置換4
+画面内に残る `v156・メニュー背景と地図反映修正版` などの古い表示を、
+`v161・メニュー背景再反映版` に置換してください。
