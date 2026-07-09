@@ -2,8 +2,8 @@
   "use strict";
   window.__MIE_PWA_INSTALL_MANAGED__ = true;
 
-  const APP_VERSION = "v155-default-background-force";
-  const STATUS_LABEL = "v155・釣りニャン初期背景強制反映版";
+  const APP_VERSION = "v156-map-open-background-fix";
+  const STATUS_LABEL = "v156・地図表示と初期背景修正版";
   const PET_NAME = "爆釣にゃん師匠";
   const PET_BUBBLE_IMAGE_SRC = `assets/turi-nyan-speech-bubble-v149.png?v=${APP_VERSION}`;
   const PET_IMAGE_SRC = `assets/turi-nyan-pose-front-v149.png?v=${APP_VERSION}`;
@@ -58,6 +58,9 @@
   const BACKUP_META_STORAGE_KEY = "mie-fishing-map-backup-meta-v1";
   const PET_LAST_NO_RECORD_PROMPT_KEY = "mie-fishing-map-pet-no-record-prompt-v148";
   const PET_LAST_BACKUP_PROMPT_KEY = "mie-fishing-map-pet-backup-prompt-v148";
+  const DEFAULT_BACKGROUND_SRC = `assets/default-app-background-turi-nyan-v156.jpg?v=${APP_VERSION}`;
+  const BACKGROUND_STORAGE_KEY = "mie-fishing-map-sidebar-background-v1";
+  const DEFAULT_BACKGROUND_FORCE_KEY = "mie-fishing-map-v156-default-background-installed";
 
   function isStandalone() {
     return window.matchMedia?.("(display-mode: standalone)")?.matches || window.navigator.standalone === true;
@@ -110,6 +113,7 @@
       .replaceAll("v152・釣りニャンスマホ表示さらに大きめ版", STATUS_LABEL)
       .replaceAll("v153・釣りニャンスマホ表示ほぼ倍サイズ版", STATUS_LABEL)
       .replaceAll("v154・釣りニャン初期背景採用版", STATUS_LABEL)
+      .replaceAll("v155・釣りニャン初期背景強制反映版", STATUS_LABEL)
       .replaceAll("v131-remove-chusei-green-park", APP_VERSION)
       .replaceAll("v133-miyagawa-nanairo-ikehara", APP_VERSION)
       .replaceAll("v134-nanairo-dam-fix", APP_VERSION)
@@ -132,7 +136,8 @@
       .replaceAll("v151-pet-mobile-size-up", APP_VERSION)
       .replaceAll("v152-pet-mobile-icon-bigger", APP_VERSION)
       .replaceAll("v153-pet-mobile-icon-double", APP_VERSION)
-      .replaceAll("v154-default-background", APP_VERSION);
+      .replaceAll("v154-default-background", APP_VERSION)
+      .replaceAll("v155-default-background-force", APP_VERSION);
   }
 
   function patchSingleNode(node) {
@@ -186,6 +191,98 @@
       }
     });
     observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+  }
+
+
+  function defaultBackgroundCssValue() {
+    return `url("${DEFAULT_BACKGROUND_SRC}")`;
+  }
+
+  function applyDefaultBackgroundNow() {
+    const cssValue = defaultBackgroundCssValue();
+    try {
+      if (localStorage.getItem(DEFAULT_BACKGROUND_FORCE_KEY) !== "1") {
+        localStorage.removeItem(BACKGROUND_STORAGE_KEY);
+        localStorage.setItem(DEFAULT_BACKGROUND_FORCE_KEY, "1");
+      }
+    } catch (error) {}
+    try {
+      document.documentElement.style.setProperty("--sidebar-bg-image", cssValue);
+      document.documentElement.style.setProperty("--app-default-background-image", cssValue);
+    } catch (error) {}
+    document.querySelectorAll(".sidebar, #mobileMenu.sidebar, .app-start-screen").forEach((target) => {
+      target.style.setProperty("--sidebar-bg-image", cssValue);
+      target.style.setProperty("--app-default-background-image", cssValue);
+    });
+  }
+
+  function injectDefaultBackgroundStyles() {
+    if (document.getElementById("v156DefaultBackgroundStyles")) return;
+    const style = document.createElement("style");
+    style.id = "v156DefaultBackgroundStyles";
+    style.textContent = `
+      :root { --app-default-background-image: ${defaultBackgroundCssValue()}; --sidebar-bg-image: ${defaultBackgroundCssValue()}; }
+      .app-start-screen {
+        background:
+          linear-gradient(180deg, rgba(255,255,255,.20), rgba(255,255,255,.05)),
+          var(--app-default-background-image) center / cover no-repeat !important;
+      }
+      .app-start-card {
+        background: rgba(255,255,255,.90) !important;
+        backdrop-filter: blur(3px) saturate(1.04) !important;
+        -webkit-backdrop-filter: blur(3px) saturate(1.04) !important;
+      }
+      .sidebar, #mobileMenu.sidebar {
+        background:
+          linear-gradient(180deg, rgba(5,30,25,.22), rgba(5,44,36,.10)),
+          var(--sidebar-bg-image) center / cover no-repeat !important;
+      }
+      body.start-screen-active #turiNyanPet,
+      body.start-screen-launching #turiNyanPet { display: none !important; }
+    `;
+    document.head.appendChild(style);
+    applyDefaultBackgroundNow();
+  }
+
+  function forceOpenMapFromStartScreen() {
+    const screen = document.querySelector("#appStartScreen");
+    if (!screen) return;
+    window.__MIE_START_SCREEN_FORCE_OPEN__ = true;
+    screen.classList.add("is-hidden", "is-closing");
+    screen.setAttribute("aria-hidden", "true");
+    screen.removeAttribute("aria-busy");
+    document.body.classList.remove("start-screen-active", "start-screen-launching");
+    document.body.classList.add("start-screen-done");
+    try { window.dispatchEvent(new Event("resize")); } catch (error) {}
+    window.setTimeout(() => { try { window.dispatchEvent(new Event("resize")); } catch (error) {} }, 80);
+    window.setTimeout(() => { try { window.dispatchEvent(new Event("resize")); } catch (error) {} }, 360);
+  }
+
+  function installMapOpenFallback() {
+    const bind = () => {
+      const screen = document.querySelector("#appStartScreen");
+      const button = document.querySelector("#startScreenSkip");
+      if (!screen || !button || button.dataset.v156MapOpenBound === "1") return;
+      button.dataset.v156MapOpenBound = "1";
+      const handler = (event) => {
+        event?.preventDefault?.();
+        event?.stopPropagation?.();
+        event?.stopImmediatePropagation?.();
+        forceOpenMapFromStartScreen();
+      };
+      button.disabled = false;
+      button.addEventListener("click", handler, { capture: true });
+      button.addEventListener("touchend", handler, { passive: false, capture: true });
+      button.addEventListener("pointerup", handler, { passive: false, capture: true });
+      const observer = new MutationObserver(() => {
+        if (window.__MIE_START_SCREEN_FORCE_OPEN__) forceOpenMapFromStartScreen();
+      });
+      observer.observe(screen, { attributes: true, attributeFilter: ["class", "aria-hidden", "aria-busy"] });
+      observer.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+    };
+    bind();
+    document.addEventListener("DOMContentLoaded", bind, { once: true });
+    window.addEventListener("load", bind, { once: true });
   }
 
   function injectPetStyles() {
@@ -680,6 +777,8 @@
       : "Chrome右上の『︙』から『アプリをインストール』または『ホーム画面に追加』を選んでください。");
   }
 
+  injectDefaultBackgroundStyles();
+  installMapOpenFallback();
   installPetRecordWatcher();
 
   window.addEventListener("beforeinstallprompt", (event) => {
@@ -699,15 +798,21 @@
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () => {
+      injectDefaultBackgroundStyles();
+      applyDefaultBackgroundNow();
       startTextPatch();
       injectPet();
     }, { once: true });
   } else {
+    injectDefaultBackgroundStyles();
+    applyDefaultBackgroundNow();
     startTextPatch();
     injectPet();
   }
 
   window.addEventListener("load", () => {
+    injectDefaultBackgroundStyles();
+    applyDefaultBackgroundNow();
     patchNode(document.body);
     injectPet();
     clearOldAppCache();

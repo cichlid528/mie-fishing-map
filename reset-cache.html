@@ -24,7 +24,7 @@
       <p>古い地図や古いService Workerキャッシュが残っている場合、このページでアプリ本体の保存データは残したまま、キャッシュだけを削除します。</p>
       <p>釣果・追加した釣り場・写真などの <code>localStorage</code> データは削除しません。背景画像だけは、v155で指定の初期背景へ一度戻します。</p>
       <button id="resetButton" type="button">キャッシュを消して開き直す</button>
-      <a href="./?v=v155-default-background-force">そのまま開く</a>
+      <a href="./?v=v156-map-open-background-fix">そのまま開く</a>
       <p id="status" class="status" aria-live="polite">準備できました。</p>
     </main>
     <script>
@@ -46,7 +46,7 @@
 
           say("完了しました。最新版を開き直します…");
           const url = new URL("./", location.href);
-          url.searchParams.set("v", "v155-default-background-force");
+          url.searchParams.set("v", "v156-map-open-background-fix");
           url.searchParams.set("reset", Date.now().toString());
           setTimeout(() => location.replace(url.toString()), 500);
         } catch (error) {
