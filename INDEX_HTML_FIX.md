@@ -1,80 +1,44 @@
-# index.html の修正メモ
+# index.html の修正
 
-このZIPには、巨大な `index.html` の丸ごと差し替え版は入れていません。
-その代わり、下の置換をGitHub上の `index.html` に行ってください。
+`index.html` に残っている古いバージョン指定を、すべて次に置換してください。
 
-## 1. バージョン文字列の置換
+```text
+v158-bubble-size-menu-bg-fix
+```
 
-すべて検索して置換してください。
+## 置換対象
 
 ```text
 v131-remove-chusei-green-park
-```
-
-を
-
-```text
+v155-default-background-force
+v156-menu-bg-map-fix
 v157-comic-bubble-menu-bg
 ```
 
-へ変更。
+上記をすべて次へ置換します。
+
+```text
+v158-bubble-size-menu-bg-fix
+```
+
+## 表示ラベル
+
+以下のような古い表示ラベルが残っていたら、
 
 ```text
 v131・中勢グリーンパーク削除版
-```
-
-を
-
-```text
-v157・漫画風吹き出しとメニュー背景修正版
-```
-
-へ変更。
-
-もし下記が残っていたら、同じく置換してください。
-
-```text
-v155-default-background-force
-```
-
-を
-
-```text
-v157-comic-bubble-menu-bg
-```
-
-へ変更。
-
-```text
 v155・釣りニャン初期背景強制反映版
-```
-
-を
-
-```text
+v156・メニュー背景と地図反映修正版
 v157・漫画風吹き出しとメニュー背景修正版
 ```
 
-へ変更。
+すべて次へ置換してください。
 
-## 2. head内にメニュー背景変数を追加
-
-`<style` がある場合、先頭付近に以下を追加してください。
-
-```css
-:root {
-  --menu-bg-image: url("assets/menu-bg-bakucho-nyanko-sensei-v157.png?v=v157-comic-bubble-menu-bg");
-}
+```text
+v158・吹き出しサイズとメニュー背景修正版
 ```
 
-## 3. 注意
+## 注意
 
-背景画像を当てるのは、次の2つだけです。
-
-```css
-.sidebar
-#mobileMenu.sidebar
-```
-
-`body`、`.map-pane`、`#map`、`.leaflet-container` には背景画像を当てないでください。
-地図が壊れる原因になります。
+背景画像を設定するのは `.sidebar` と `#mobileMenu.sidebar` だけです。
+`body`、`.map-pane`、`#map`、`.leaflet-container` には背景画像を入れないでください。

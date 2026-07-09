@@ -1,40 +1,31 @@
-# GitHubアップロード手順
+# アップロード手順
 
-1. ZIPを解凍します。
-2. GitHubの `cichlid528/mie-fishing-map` を開きます。
-3. 下記ファイルを同じ場所に上書きアップロードします。
+1. ZIPを展開します。
+2. GitHub の `cichlid528/mie-fishing-map` を開きます。
+3. 以下のファイルを同じ場所へアップロードして上書きします。
 
-```text
-app.js
-pwa-install.js
-manifest.json
-sw.js
-reset-cache.html
-```
+- `app.js`
+- `pwa-install.js`
+- `manifest.json`
+- `sw.js`
+- `reset-cache.html`
+- `assets/menu-bg-bakucho-nyanko-sensei-v158.png`
+- `assets/turi-nyan-speech-bubble-comic-v158.png`
 
-4. `assets` フォルダに下記画像を追加します。
+4. `INDEX_HTML_FIX.md` の内容に従って `index.html` のバージョン指定を `v158-bubble-size-menu-bg-fix` に置換します。
 
-```text
-assets/menu-bg-bakucho-nyanko-sensei-v157.png
-assets/turi-nyan-speech-bubble-comic-v157.png
-```
-
-5. `index.html` を開いて、`INDEX_HTML_FIX.md` の通りに置換します。
-
-6. コミット名はこれでOKです。
+## コミット名
 
 ```text
-漫画風吹き出しとメニュー背景を修正
+吹き出しサイズとメニュー背景を修正
 ```
 
-7. 反映後、まず下記を開きます。
+## 反映後の確認
 
 ```text
 https://cichlid528.github.io/mie-fishing-map/reset-cache.html?auto=1
 ```
 
-8. そのあと下記で確認します。
-
 ```text
-https://cichlid528.github.io/mie-fishing-map/?v=v157-comic-bubble-menu-bg
+https://cichlid528.github.io/mie-fishing-map/?v=v158-bubble-size-menu-bg-fix
 ```

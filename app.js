@@ -1,16 +1,16 @@
 (() => {
   "use strict";
 
-  const PATCH_VERSION = "v157-comic-bubble-menu-bg";
-  const PATCH_STATUS_LABEL = "v157・漫画風吹き出しとメニュー背景修正版";
-  const MENU_BACKGROUND_URL = `assets/menu-bg-bakucho-nyanko-sensei-v157.png?v=${PATCH_VERSION}`;
+  const PATCH_VERSION = "v158-bubble-size-menu-bg-fix";
+  const PATCH_STATUS_LABEL = "v158・吹き出しサイズとメニュー背景修正版";
+  const MENU_BACKGROUND_URL = `assets/menu-bg-bakucho-nyanko-sensei-v158.png?v=${PATCH_VERSION}`;
   const BACKGROUND_STORAGE_KEY = "mie-fishing-map-sidebar-background-v1";
-  const MENU_BACKGROUND_FORCE_KEY = "mie-fishing-map-v157-comic-bubble-menu-bg-installed";
+  const MENU_BACKGROUND_FORCE_KEY = "mie-fishing-map-v158-bubble-size-menu-bg-fix-installed";
   const SOURCE_APP_URLS = [
     "https://cdn.jsdelivr.net/gh/cichlid528/mie-fishing-map@486490f1fda171ba9dfdf8ac9a431d4b3b09c530/app.js",
     "https://raw.githubusercontent.com/cichlid528/mie-fishing-map/486490f1fda171ba9dfdf8ac9a431d4b3b09c530/app.js"
   ];
-  const SOURCE_CACHE_KEY = "mie-fishing-map-source-cache-486490f1-v157-comic-bubble";
+  const SOURCE_CACHE_KEY = "mie-fishing-map-source-cache-486490f1-v158-bubble-size-menu-bg-fix";
 
   const oldOsugiLine = '    { id: "lake-osugi", name: "大杉湖", type: "ダム", area: "多気郡大台町", lat: 34.286385, lng: 136.19336, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },';
   const newOsugiLine = '    { id: "lake-osugi", name: "宮川ダム", type: "ダム", area: "多気郡大台町", lat: 34.286385, lng: 136.19336, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },';
@@ -47,8 +47,12 @@
       .replaceAll("v153・釣りニャンスマホ表示ほぼ倍サイズ版", PATCH_STATUS_LABEL)
       .replaceAll("v154・釣りニャン初期背景採用版", PATCH_STATUS_LABEL)
       .replaceAll("v155・釣りニャン初期背景強制反映版", PATCH_STATUS_LABEL)
+      .replaceAll("v156・メニュー背景と地図反映修正版", PATCH_STATUS_LABEL)
+      .replaceAll("v157・漫画風吹き出しとメニュー背景修正版", PATCH_STATUS_LABEL)
       .replaceAll("v131-remove-chusei-green-park", PATCH_VERSION)
-      .replaceAll("v155-default-background-force", PATCH_VERSION);
+      .replaceAll("v155-default-background-force", PATCH_VERSION)
+      .replaceAll("v156-menu-bg-map-fix", PATCH_VERSION)
+      .replaceAll("v157-comic-bubble-menu-bg", PATCH_VERSION);
   }
 
   function installImmediateFixes() {
@@ -71,9 +75,9 @@
       });
     };
 
-    if (!document.getElementById("v157ComicBubbleMenuBgFix")) {
+    if (!document.getElementById("v158ComicBubbleMenuBgFix")) {
       const style = document.createElement("style");
-      style.id = "v157ComicBubbleMenuBgFix";
+      style.id = "v158ComicBubbleMenuBgFix";
       style.textContent = `
         :root { --menu-bg-image: ${menuCssValue}; --sidebar-bg-image: ${menuCssValue}; }
         .sidebar, #mobileMenu.sidebar {
@@ -85,6 +89,17 @@
         }
         .map-pane, #map, #map.leaflet-container, .leaflet-container { background: #cfded8 !important; }
         .leaflet-tile-pane, .leaflet-layer, .leaflet-tile-container, .leaflet-tile { background: transparent !important; }
+        /* v158: comic bubble size override */
+        #turiNyanPet .pet-bubble {
+          width: min(304px, calc(100vw - 18px)) !important;
+          padding: 78px 68px 88px 62px !important;
+          font-size: .60rem !important;
+          line-height: 1.10 !important;
+        }
+        #turiNyanPet .pet-bubble strong { font-size: .62rem !important; line-height: 1.04 !important; margin-bottom: 2px !important; }
+        #turiNyanPet #turiNyanMessage { font-size: .52rem !important; line-height: 1.08 !important; max-height: 2.5em !important; overflow: hidden !important; }
+        #turiNyanPet .pet-actions { gap: 3px !important; margin-top: 4px !important; }
+        #turiNyanPet .pet-actions button { min-height: 21px !important; padding: 3px 5px !important; font-size: .50rem !important; }
         @media (max-width: 920px) {
           #turiNyanPet {
             right: calc(6px + env(safe-area-inset-right)) !important;
@@ -94,13 +109,16 @@
           #turiNyanPet .pet-button { width: 118px !important; height: 118px !important; }
           #turiNyanPet .pet-button img { transform: scale(1.12) !important; transform-origin: center bottom !important; }
           #turiNyanPet.is-lookout .pet-button img { transform: scale(1.16) !important; }
-          #turiNyanPet .pet-bubble { width: min(318px, calc(100vw - 14px)) !important; padding: 88px 50px 98px 88px !important; }
+          #turiNyanPet .pet-bubble { width: min(284px, calc(100vw - 14px)) !important; padding: 72px 64px 82px 56px !important; }
           body.menu-open #turiNyanPet,
           body.panel-open #turiNyanPet,
           body.position-adjusting #turiNyanPet,
           body.map-popup-open #turiNyanPet,
           body.record-popup-open #turiNyanPet,
           body.spot-card-open #turiNyanPet { display: none !important; }
+          #turiNyanPet .pet-bubble strong { font-size: .56rem !important; }
+          #turiNyanPet #turiNyanMessage { font-size: .48rem !important; line-height: 1.08 !important; max-height: 2.25em !important; }
+          #turiNyanPet .pet-actions button { min-height: 19px !important; padding: 2px 4px !important; font-size: .46rem !important; }
         }
       `;
       document.head.appendChild(style);
@@ -146,7 +164,7 @@
   installImmediateFixes();
 
   function showLoadError(error) {
-    console.error("Mie Fishing Map v157 comic bubble loader failed", error);
+    console.error("Mie Fishing Map v158 bubble size menu background loader failed", error);
     const message = "アプリ本体の読み込みに失敗しました。通信状況を確認して、reset-cache.html?auto=1 を開き直してください。";
     const target = document.querySelector("#dataStatus") || document.body;
     if (!target) return;
@@ -185,7 +203,7 @@
     let patched = source
       .replace('const APP_VERSION = "v131-remove-chusei-green-park";', `const APP_VERSION = "${PATCH_VERSION}";`)
       .replace('const APP_STATUS_LABEL = "v131・中勢グリーンパーク削除版";', `const APP_STATUS_LABEL = "${PATCH_STATUS_LABEL}";`)
-      .replace('// v131: 中勢グリーンパーク池も除いた初期収録。', '// v157: 漫画風吹き出しとメニュー背景を修正。')
+      .replace('// v131: 中勢グリーンパーク池も除いた初期収録。', '// v158: 吹き出しサイズとメニュー背景を修正。')
       .replace(oldOsugiLine, newOsugiLine)
       .replace(oldNanairoLine, `${newNanairoLine}\n${ikeharaLine}`);
 
@@ -202,7 +220,7 @@
     }
 
     const petCatchBridge = `
-  // v157: 釣りニャンの「釣果記録」ボタンから、アプリ本体の釣果記録画面をすぐ開くための橋渡し。
+  // v158: 釣りニャンの「釣果記録」ボタンから、アプリ本体の釣果記録画面をすぐ開くための橋渡し。
   window.__MIE_OPEN_CATCH_PANEL_FROM_PET__ = function openCatchPanelFromPet() {
     try {
       state.positionAdjustSpotId = null;
@@ -255,7 +273,7 @@
 
     patched = patched.replace(
       '    applySidebarBackground(localStorage.getItem(BACKGROUND_STORAGE_KEY) || "");',
-      `    // v157: メニュー背景だけを指定画像に戻す。地図側には適用しない。
+      `    // v158: メニュー背景だけを指定画像に戻す。地図側には適用しない。
     try {
       const menuBackgroundForceKey = "${MENU_BACKGROUND_FORCE_KEY}";
       if (localStorage.getItem(menuBackgroundForceKey) !== "1") {
