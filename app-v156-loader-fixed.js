@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v168-record-button-fix";
-  const APP_STATUS_LABEL = "v168・記録ボタン動作修正版";
+  const APP_VERSION = "v169-photo-camera-fix";
+  const APP_STATUS_LABEL = "v169・写真アップロードとカメラ復旧版";
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
   const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
@@ -11,7 +11,7 @@
   const BACKUP_META_STORAGE_KEY = "mie-fishing-map-backup-meta-v1";
   const MIE_CENTER = [34.55, 136.48];
   const MIE_HOME_ZOOM = 9;
-  const MENU_BACKGROUND_URL = `assets/menu-bg-bakucho-nyanko-sensei-v168.png?v=${APP_VERSION}`;
+  const MENU_BACKGROUND_URL = `assets/menu-bg-bakucho-nyanko-sensei-v169.png?v=${APP_VERSION}`;
 
   const seedSpots = [
     { id: "lake-shorenji", name: "青蓮寺湖", type: "ダム", area: "名張市", lat: 34.600869, lng: 136.11885, zoom: 15, source: "指定リスト", subtype: "レイク・ダム湖" },
@@ -88,7 +88,9 @@
     activeFilter: "all",
     activeList: "spots",
     selectedSpotId: "",
-    catchMode: false
+    catchMode: false,
+    pendingPhoto: "",
+    pendingPhotoPromise: null
   };
 
   let map = null;
@@ -205,8 +207,13 @@
     return list;
   }
 
-  function applyMenuBackground() {
-    const value = `url("${MENU_BACKGROUND_URL}")`;
+  function applyMenuBackground(customSource = "") {
+    let source = String(customSource || "").trim();
+    if (!source) {
+      try { source = String(localStorage.getItem(BACKGROUND_STORAGE_KEY) || "").trim(); } catch (error) {}
+    }
+    const backgroundUrl = source || MENU_BACKGROUND_URL;
+    const value = backgroundUrl.startsWith("url(") ? backgroundUrl : `url("${backgroundUrl}")`;
     document.documentElement.style.setProperty("--menu-bg-image", value);
     document.documentElement.style.setProperty("--sidebar-bg-image", value);
     document.querySelectorAll(".sidebar, #mobileMenu.sidebar").forEach((sidebar) => {
@@ -335,7 +342,7 @@
         fillOpacity: .95
       })
         .addTo(map)
-        .bindPopup(`<strong>${escapeHtml(record.species || record.placeName || "釣果記録")}</strong><br>${escapeHtml(record.time || "")}<br>${escapeHtml(record.memo || "")}`);
+        .bindPopup(`${photoMarkup(record, "popup-record-photo")}<strong>${escapeHtml(record.species || record.placeName || "釣果記録")}</strong><br>${escapeHtml(record.time || "")}<br>${escapeHtml(record.memo || "")}`);
       catchMarkers.set(record.id, marker);
     });
   }
@@ -367,9 +374,26 @@
     if (record.time) parts.push(record.time);
     if (record.sizeCm) parts.push(`${record.sizeCm}cm`);
     if (record.bait) parts.push(record.bait);
+    if (record.photo) parts.push("写真あり");
     if (validPosition(record)) parts.push("釣果ピンあり");
     else parts.push("位置情報なし");
     return parts.join(" / ");
+  }
+
+  function safePhotoSrc(value) {
+    const src = String(value || "").trim();
+    if (!src) return "";
+    if (src.startsWith("data:image/")) return src;
+    if (src.startsWith("blob:")) return src;
+    if (src.startsWith("https://") || src.startsWith("http://")) return src;
+    if (src.startsWith("assets/")) return src;
+    return "";
+  }
+
+  function photoMarkup(record, className = "record-photo-thumb") {
+    const src = safePhotoSrc(record?.photo);
+    if (!src) return "";
+    return `<img class="${className}" src="${escapeHtml(src)}" alt="釣果写真" loading="lazy">`;
   }
 
   function focusCatchRecord(recordId) {
@@ -393,7 +417,7 @@
         ? state.catches.map((record, index) => {
             const pinText = validPosition(record) ? "釣果ピンあり" : "位置情報なし";
             const recovered = record.__recoveredFrom ? ` / 復旧元:${escapeHtml(record.__recoveredFrom)}` : "";
-            return `<button class="catch-item" type="button" data-catch-id="${escapeHtml(record.id)}"><span class="catch-num ${record.recordType === "note" ? "note" : ""}">${index + 1}</span><span class="catch-main"><strong>${escapeHtml(recordTitle(record))}${Number(record.sizeCm) >= 40 ? '<span class="big-bass-badge">40up</span>' : ''}</strong><small>${escapeHtml(recordSubText(record))}</small><small>${pinText}${recovered}</small></span></button>`;
+            return `<button class="catch-item ${record.photo ? "has-photo" : ""}" type="button" data-catch-id="${escapeHtml(record.id)}"><span class="catch-num ${record.recordType === "note" ? "note" : ""}">${index + 1}</span>${photoMarkup(record)}<span class="catch-main"><strong>${escapeHtml(recordTitle(record))}${Number(record.sizeCm) >= 40 ? '<span class="big-bass-badge">40up</span>' : ''}</strong><small>${escapeHtml(recordSubText(record))}</small><small>${pinText}${recovered}</small></span></button>`;
           }).join("")
         : `<p class="empty-message">釣果記録はまだ見つかりません。端末内に旧形式の記録が残っていれば、自動復旧します。</p>`;
       catchList.querySelectorAll("[data-catch-id]").forEach((button) => {
@@ -481,6 +505,111 @@
     $("addCatchMode")?.classList.remove("is-active");
   }
 
+  function clearFileInput(input) {
+    try { if (input) input.value = ""; } catch (error) {}
+  }
+
+  function updateCatchPhotoPreview(dataUrl = state.pendingPhoto) {
+    const preview = $("catchPhotoPreview");
+    const image = $("catchPhotoImage");
+    const src = safePhotoSrc(dataUrl);
+    if (image) {
+      if (src) image.src = src;
+      else image.removeAttribute("src");
+    }
+    preview?.classList.toggle("is-hidden", !src);
+  }
+
+  function resetCatchPhotoSelection(message = "写真を選ぶと、この端末に圧縮保存します") {
+    state.pendingPhoto = "";
+    state.pendingPhotoPromise = null;
+    clearFileInput($("catchPhoto"));
+    clearFileInput($("catchCamera"));
+    updateCatchPhotoPreview("");
+    const status = $("catchPhotoStatus");
+    if (status) status.textContent = message;
+  }
+
+  function compressImageFile(file, options = {}) {
+    const maxDimension = options.maxDimension || 1280;
+    const maxLength = options.maxLength || 520000;
+    const initialQuality = options.initialQuality || 0.78;
+    const minQuality = options.minQuality || 0.42;
+    return new Promise((resolve, reject) => {
+      if (!file || !String(file.type || "").startsWith("image/")) {
+        reject(new Error("画像ファイルではありません"));
+        return;
+      }
+      const objectUrl = URL.createObjectURL(file);
+      const image = new Image();
+      image.onload = () => {
+        URL.revokeObjectURL(objectUrl);
+        const scale = Math.min(1, maxDimension / Math.max(image.naturalWidth || 1, image.naturalHeight || 1));
+        const width = Math.max(1, Math.round((image.naturalWidth || 1) * scale));
+        const height = Math.max(1, Math.round((image.naturalHeight || 1) * scale));
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(0, 0, width, height);
+        ctx.drawImage(image, 0, 0, width, height);
+        let quality = initialQuality;
+        let dataUrl = canvas.toDataURL("image/jpeg", quality);
+        while (dataUrl.length > maxLength && quality > minQuality) {
+          quality = Math.max(minQuality, quality - 0.08);
+          dataUrl = canvas.toDataURL("image/jpeg", quality);
+          if (quality <= minQuality) break;
+        }
+        resolve(dataUrl);
+      };
+      image.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        reject(new Error("画像を読み込めませんでした"));
+      };
+      image.src = objectUrl;
+    });
+  }
+
+  function handleCatchPhoto(file) {
+    const status = $("catchPhotoStatus");
+    if (!file) {
+      if (status) status.textContent = "写真が選択されていません。";
+      return;
+    }
+    if (status) status.textContent = "写真を圧縮しています…";
+    state.pendingPhotoPromise = compressImageFile(file)
+      .then((dataUrl) => {
+        state.pendingPhoto = dataUrl;
+        updateCatchPhotoPreview(dataUrl);
+        if (status) status.textContent = "写真を添付しました。保存すると記録に残ります。";
+        return dataUrl;
+      })
+      .catch((error) => {
+        console.warn("catch photo failed", error);
+        state.pendingPhoto = "";
+        updateCatchPhotoPreview("");
+        if (status) status.textContent = "写真を読み込めませんでした。別の画像で試してください。";
+        return "";
+      });
+  }
+
+  function handleBackgroundFile(file) {
+    const status = $("backgroundStatus");
+    if (!file) {
+      if (status) status.textContent = "画像が選択されていません。";
+      return;
+    }
+    if (status) status.textContent = "背景画像を圧縮しています…";
+    compressImageFile(file, { maxDimension: 1600, maxLength: 700000, initialQuality: 0.8 })
+      .then((dataUrl) => {
+        try { localStorage.setItem(BACKGROUND_STORAGE_KEY, dataUrl); } catch (error) {}
+        applyMenuBackground(dataUrl);
+        if (status) status.textContent = "メニュー背景を変更しました。";
+      })
+      .catch(() => { if (status) status.textContent = "背景画像を読み込めませんでした。"; });
+  }
+
   function selectedSpeciesText() {
     const checked = [...document.querySelectorAll('[data-catch-species-option]:checked')].map((input) => input.value).filter(Boolean);
     const hiddenValue = String($("catchSpecies")?.value || "").trim();
@@ -512,6 +641,7 @@
     if ($("catchRecordType")) $("catchRecordType").value = options.recordType || "catch";
     if ($("catchTime") && !$("catchTime").value) $("catchTime").value = nowLocalInputValue();
     if ($("catchLocationStatus")) $("catchLocationStatus").textContent = options.locationLabel || "地図中央の位置で記録します。必要なら現在地を使ってください。";
+    resetCatchPhotoSelection();
     syncSpeciesHiddenFromChecks();
     setPanelOpen(panel, true);
     setTimeout(() => panel.querySelector("input, select, textarea, button")?.focus?.(), 80);
@@ -538,11 +668,16 @@
     );
   }
 
-  function saveCatch(event) {
+  async function saveCatch(event) {
     event?.preventDefault?.();
     const lat = Number($("catchLat")?.value || currentMapLatLng().lat);
     const lng = Number($("catchLng")?.value || currentMapLatLng().lng);
     const id = $("catchIdInput")?.value || `record-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+    if (state.pendingPhotoPromise) {
+      const status = $("catchPhotoStatus") || $("dataStatus");
+      if (status) status.textContent = "写真の処理完了を待っています…";
+      await state.pendingPhotoPromise;
+    }
     const record = normalizeRecord({
       id,
       recordType: $("catchRecordType")?.value || "catch",
@@ -569,18 +704,27 @@
       pressure: $("catchPressure")?.value || "",
       timeBand: $("catchTimeBand")?.value || "",
       memo: $("catchMemo")?.value || "",
+      photo: state.pendingPhoto || "",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     });
     const index = state.catches.findIndex((item) => item.id === id);
     if (index >= 0) state.catches[index] = record;
     else state.catches.unshift(record);
-    try { localStorage.setItem(CATCH_STORAGE_KEY, JSON.stringify(state.catches)); } catch (error) {}
+    let savedWithPhoto = true;
+    try {
+      localStorage.setItem(CATCH_STORAGE_KEY, JSON.stringify(state.catches));
+    } catch (error) {
+      savedWithPhoto = false;
+      record.photo = "";
+      try { localStorage.setItem(CATCH_STORAGE_KEY, JSON.stringify(state.catches)); } catch (error2) {}
+    }
+    resetCatchPhotoSelection();
     render();
     switchList("catches");
     closeCatchPanel();
     const status = $("dataStatus");
-    if (status) status.textContent = "記録を保存しました。釣果ピンと記録一覧を更新しました。";
+    if (status) status.textContent = savedWithPhoto ? "写真付きで記録を保存しました。釣果ピンと記録一覧を更新しました。" : "記録は保存しましたが、端末容量の都合で写真は保存できませんでした。";
   }
 
   function deleteSelectedCatch() {
@@ -640,6 +784,15 @@
       });
     });
     document.querySelectorAll("[data-catch-species-option]").forEach((input) => input.addEventListener("change", syncSpeciesHiddenFromChecks));
+    $("catchPhoto")?.addEventListener("change", () => handleCatchPhoto($("catchPhoto")?.files?.[0]));
+    $("catchCamera")?.addEventListener("change", () => handleCatchPhoto($("catchCamera")?.files?.[0]));
+    $("removeCatchPhoto")?.addEventListener("click", () => resetCatchPhotoSelection("写真を外しました。"));
+    $("changeBackgroundButton")?.addEventListener("click", () => setPanelOpen($("backgroundPanel"), true));
+    $("closeBackgroundPanel")?.addEventListener("click", () => setPanelOpen($("backgroundPanel"), false));
+    $("closeBackgroundDone")?.addEventListener("click", () => setPanelOpen($("backgroundPanel"), false));
+    $("backgroundCamera")?.addEventListener("change", () => handleBackgroundFile($("backgroundCamera")?.files?.[0]));
+    $("backgroundPicker")?.addEventListener("change", () => handleBackgroundFile($("backgroundPicker")?.files?.[0]));
+    $("resetBackgroundButton")?.addEventListener("click", () => { try { localStorage.removeItem(BACKGROUND_STORAGE_KEY); } catch (error) {} applyMenuBackground(MENU_BACKGROUND_URL); const status = $("backgroundStatus"); if (status) status.textContent = "初期背景に戻しました。"; });
     $("catchForm")?.addEventListener("submit", saveCatch);
     $("closeCatchPanel")?.addEventListener("click", closeCatchPanel);
     $("deleteCatch")?.addEventListener("click", deleteSelectedCatch);
@@ -651,9 +804,9 @@
   }
 
   function installRecoveryStyles() {
-    if (document.getElementById("v168RecordButtonFixStyle")) return;
+    if (document.getElementById("v169PhotoCameraFixStyle")) return;
     const style = document.createElement("style");
-    style.id = "v168RecordButtonFixStyle";
+    style.id = "v169PhotoCameraFixStyle";
     style.textContent = `
       #appStartScreen.is-hidden, body.start-screen-done #appStartScreen { display: none !important; pointer-events: none !important; visibility: hidden !important; opacity: 0 !important; }
       #map, .map-pane, #map.leaflet-container, .leaflet-container { background: #cfded8 !important; background-image: none !important; }
@@ -666,6 +819,12 @@
       .spot-pin-port span { background: #ea580c; }
       .leaflet-interactive { cursor: pointer; }
       .catch-item small { display: block; margin-top: 2px; font-size: .72rem; opacity: .78; }
+      .record-photo-thumb { width: 64px; height: 64px; object-fit: cover; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,.18); align-self: center; }
+      .popup-record-photo { display: block; width: 180px; max-width: 72vw; max-height: 180px; object-fit: cover; border-radius: 12px; margin: 0 0 8px; }
+      .catch-photo-preview { margin: 8px 0 0; }
+      .catch-photo-preview img { display: block; width: 100%; max-height: 260px; object-fit: contain; border-radius: 14px; background: #fff; }
+      .catch-photo-preview.is-hidden { display: none !important; }
+      .photo-picker input { display: block; width: 100%; margin-top: 6px; }
       .spot-item { width: 100%; display: grid; gap: 2px; text-align: left; margin: 0 0 8px; padding: 10px 12px; border-radius: 14px; border: 1px solid rgba(255,255,255,.35); background: rgba(255,255,255,.86); color: #073f33; }
       .spot-item strong { font-size: .95rem; }
       .spot-item span { font-size: .78rem; opacity: .86; }

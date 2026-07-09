@@ -1,10 +1,10 @@
 (() => {
   "use strict";
   window.__MIE_PWA_INSTALL_MANAGED__ = true;
-  const APP_VERSION = "v168-record-button-fix";
+  const APP_VERSION = "v169-photo-camera-fix";
   const PET_NAME = "爆釣にゃん師匠";
   const PET_IMAGE_SRC = `assets/turi-nyan-pose-front-v149.png?v=${APP_VERSION}`;
-  const PET_BUBBLE_IMAGE_SRC = `assets/turi-nyan-speech-bubble-comic-transparent-v168.png?v=${APP_VERSION}`;
+  const PET_BUBBLE_IMAGE_SRC = `assets/turi-nyan-speech-bubble-comic-transparent-v169.png?v=${APP_VERSION}`;
 
   function patchText(value) {
     if (typeof value !== "string") return value;
@@ -57,7 +57,7 @@
     if (document.getElementById("turiNyanPet")) return;
     const pet = document.createElement("aside");
     pet.id = "turiNyanPet";
-    pet.innerHTML = `<div class="pet-bubble"><strong>${PET_NAME}</strong><span id="turiNyanMessage">地図とピンを復旧したにゃ。</span><div class="pet-actions"><button type="button" data-pet-close>閉じる</button><button type="button" data-pet-map>地図</button></div></div><button class="pet-button" type="button" aria-label="${PET_NAME}"><img src="${PET_IMAGE_SRC}" alt="${PET_NAME}"></button>`;
+    pet.innerHTML = `<div class="pet-bubble"><strong>${PET_NAME}</strong><span id="turiNyanMessage">写真とカメラも復旧したにゃ。</span><div class="pet-actions"><button type="button" data-pet-close>閉じる</button><button type="button" data-pet-map>地図</button></div></div><button class="pet-button" type="button" aria-label="${PET_NAME}"><img src="${PET_IMAGE_SRC}" alt="${PET_NAME}"></button>`;
     document.body.appendChild(pet);
     pet.querySelector(".pet-button")?.addEventListener("click", () => pet.classList.toggle("is-speaking"));
     pet.querySelector("[data-pet-close]")?.addEventListener("click", () => pet.classList.remove("is-speaking"));
