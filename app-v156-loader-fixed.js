@@ -1,475 +1,366 @@
 (() => {
   "use strict";
 
-  const PATCH_VERSION = "v163-menu-points-fix";
-  const PATCH_STATUS_LABEL = "v163・メニュー開閉とポイント復旧修正版";
-  const MENU_BACKGROUND_URL = `assets/menu-bg-bakucho-nyanko-sensei-v163.png?v=${PATCH_VERSION}`;
+  const APP_VERSION = "v166-gsi-map-pins-fix";
+  const APP_STATUS_LABEL = "v166・国土地理院マップとピン復旧版";
+  const STORAGE_KEY = "mie-bass-map-v1";
+  const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
+  const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
   const BACKGROUND_STORAGE_KEY = "mie-fishing-map-sidebar-background-v1";
-  const MENU_BACKGROUND_FORCE_KEY = "mie-fishing-map-v163-menu-points-fix-installed";
-  const SOURCE_APP_URLS = [
-    "https://cdn.jsdelivr.net/gh/cichlid528/mie-fishing-map@486490f1fda171ba9dfdf8ac9a431d4b3b09c530/app.js",
-    "https://raw.githubusercontent.com/cichlid528/mie-fishing-map/486490f1fda171ba9dfdf8ac9a431d4b3b09c530/app.js"
+  const POSITION_STORAGE_KEY = "mie-fishing-map-position-overrides-v86";
+  const BACKUP_META_STORAGE_KEY = "mie-fishing-map-backup-meta-v1";
+  const MIE_CENTER = [34.55, 136.48];
+  const MIE_HOME_ZOOM = 9;
+  const MENU_BACKGROUND_URL = `assets/menu-bg-bakucho-nyanko-sensei-v166.png?v=${APP_VERSION}`;
+
+  const seedSpots = [
+    { id: "lake-shorenji", name: "青蓮寺湖", type: "ダム", area: "名張市", lat: 34.600869, lng: 136.11885, zoom: 15, source: "指定リスト", subtype: "レイク・ダム湖" },
+    { id: "lake-hinachi", name: "ひなち湖", type: "ダム", area: "名張市", lat: 34.614467, lng: 136.164028, zoom: 15, source: "指定リスト", subtype: "レイク・ダム湖" },
+    { id: "reservoir-isaka", name: "伊坂貯水池", type: "ダム", area: "四日市市", lat: 35.041625, lng: 136.616311, zoom: 15, source: "指定リスト", subtype: "レイク・ダム湖" },
+    { id: "lake-shakujo", name: "錫杖湖", type: "ダム", area: "津市芸濃町", lat: 34.806622, lng: 136.378553, zoom: 15, source: "指定リスト", subtype: "レイク・ダム湖" },
+    { id: "dam-kimigano", name: "君ヶ野ダム", type: "ダム", area: "津市美杉町", lat: 34.5971, lng: 136.313183, zoom: 15, source: "指定リスト", subtype: "レイク・ダム湖" },
+    { id: "lake-okukahada", name: "奥香肌湖", type: "ダム", area: "松阪市飯高町", lat: 34.376861, lng: 136.196586, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },
+    { id: "lake-okuise", name: "奥伊勢湖", type: "ダム", area: "多気郡大台町", lat: 34.3892, lng: 136.4011, zoom: 15, source: "指定リスト", subtype: "レイク・ダム湖" },
+    { id: "lake-osugi", name: "宮川ダム", type: "ダム", area: "多気郡大台町", lat: 34.286385, lng: 136.19336, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },
+    { id: "reservoir-nanairo", name: "七色ダム", type: "ダム", area: "熊野市・紀和町周辺", lat: 33.991304, lng: 136.004799, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },
+    { id: "dam-ikehara", name: "池原ダム", type: "ダム", area: "奈良県吉野郡下北山村", lat: 34.04694, lng: 135.97111, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },
+    { id: "pond-gokatsura", name: "五桂池", type: "池", area: "多気町五桂", lat: 34.466625, lng: 136.545533, zoom: 15, source: "指定リスト", candidate: true },
+    { id: "pond-ishigaki", name: "石垣池", type: "池", area: "鈴鹿市西玉垣町", lat: 34.856058, lng: 136.564767, zoom: 15, source: "指定リスト", candidate: true },
+    { id: "pond-madoro", name: "真泥池", type: "池", area: "伊賀市真泥", lat: 34.761728, lng: 136.193772, zoom: 16, source: "指定リスト", candidate: true },
+    { id: "pond-taisho", name: "大正池", type: "池", area: "伊賀市丸柱", lat: 34.856969, lng: 136.135019, zoom: 16, source: "指定リスト", candidate: true },
+    { id: "pond-nameri", name: "なめり湖", type: "池", area: "松阪市嬉野森本町", lat: 34.585853, lng: 136.429147, zoom: 16, source: "指定リスト", candidate: true },
+    { id: "pond-tsuga", name: "津賀池", type: "池", area: "鈴鹿市津賀町", lat: 34.897558, lng: 136.508433, zoom: 16, source: "指定リスト", candidate: true },
+    { id: "river-miyagawa", name: "宮川", type: "川", area: "伊勢市・大台町", lat: 34.514956, lng: 136.702382, zoom: 11, source: "指定リスト" },
+    { id: "river-kumozu", name: "雲出川", type: "川", area: "津市・松阪市", lat: 34.647855, lng: 136.523611, zoom: 12, source: "指定リスト" },
+    { id: "river-kushida", name: "櫛田川", type: "川", area: "松阪市・多気町", lat: 34.533946, lng: 136.579491, zoom: 12, source: "指定リスト" },
+    { id: "river-suzuka", name: "鈴鹿川", type: "川", area: "鈴鹿市・亀山市", lat: 34.894369, lng: 136.561703, zoom: 12, source: "指定リスト" },
+    { id: "river-ano", name: "安濃川", type: "川", area: "津市・芸濃町周辺", lat: 34.727056, lng: 136.515436, zoom: 13, source: "指定リスト" },
+    { id: "river-machiya", name: "町屋川", type: "川", area: "四日市市・桑名市", lat: 35.0128, lng: 136.661, zoom: 12, source: "指定リスト" },
+    { id: "river-ibi-nagara-estuary", name: "揖斐川・長良川河口", type: "川", area: "桑名市長島町周辺", lat: 35.0707, lng: 136.6917, zoom: 14, source: "指定リスト", subtype: "河口" },
+    { id: "river-inabe", name: "員弁川", type: "川", area: "いなべ市・桑名市周辺", lat: 35.0701, lng: 136.6338, zoom: 12, source: "指定リスト" },
+    { id: "river-choshi", name: "銚子川", type: "川", area: "紀北町", lat: 34.1165, lng: 136.2265, zoom: 13, source: "指定リスト" },
+    { id: "port-yokkaichi", name: "四日市港", type: "港", area: "四日市市", lat: 34.9577, lng: 136.6421, zoom: 15, source: "指定リスト" },
+    { id: "port-kasumigaura-wharf", name: "霞ヶ浦ふ頭", type: "港", area: "四日市市霞", lat: 34.9727, lng: 136.6483, zoom: 16, source: "指定リスト" },
+    { id: "port-tsu", name: "津港", type: "港", area: "津市なぎさまち周辺", lat: 34.7276, lng: 136.5311, zoom: 16, source: "指定リスト" },
+    { id: "port-matsusaka", name: "松阪港", type: "港", area: "松阪市大口町周辺", lat: 34.5987, lng: 136.5829, zoom: 16, source: "指定リスト" },
+    { id: "port-toba", name: "鳥羽港", type: "港", area: "鳥羽市鳥羽", lat: 34.4868, lng: 136.8462, zoom: 16, source: "指定リスト" },
+    { id: "port-owase", name: "尾鷲港", type: "港", area: "尾鷲市", lat: 34.0713, lng: 136.2025, zoom: 16, source: "指定リスト" },
+    { id: "port-kuwana", name: "桑名港", type: "港", area: "桑名市", lat: 35.0639, lng: 136.7005, zoom: 16, source: "指定リスト" },
+    { id: "port-tomisu-hara", name: "富洲原港", type: "港", area: "四日市市富洲原", lat: 35.0108, lng: 136.6639, zoom: 16, source: "指定リスト" },
+    { id: "port-shiroko", name: "白子漁港", type: "港", area: "鈴鹿市白子", lat: 34.8288, lng: 136.6048, zoom: 17, source: "指定リスト" },
+    { id: "port-isodu", name: "磯津漁港", type: "港", area: "四日市市磯津", lat: 34.9033, lng: 136.6402, zoom: 16, source: "指定リスト" },
+    { id: "port-kusu", name: "楠漁港", type: "港", area: "四日市市楠町", lat: 34.8969, lng: 136.6322, zoom: 16, source: "指定リスト" },
+    { id: "port-karasu", name: "香良洲漁港", type: "港", area: "津市香良洲町", lat: 34.6665, lng: 136.5386, zoom: 16, source: "指定リスト" },
+    { id: "port-anori", name: "安乗漁港", type: "港", area: "志摩市阿児町安乗", lat: 34.3606, lng: 136.9019, zoom: 17, source: "指定リスト" },
+    { id: "port-nakiri", name: "波切漁港", type: "港", area: "志摩市大王町波切", lat: 34.2761, lng: 136.899, zoom: 16, source: "指定リスト" },
+    { id: "port-goza", name: "御座漁港", type: "港", area: "志摩市志摩町御座", lat: 34.2752, lng: 136.7633, zoom: 17, source: "指定リスト" },
+    { id: "port-hamajima", name: "浜島港", type: "港", area: "志摩市浜島町", lat: 34.2975, lng: 136.758, zoom: 16, source: "指定リスト" },
+    { id: "port-gokasho", name: "五ヶ所浦漁港", type: "港", area: "南伊勢町五ヶ所浦", lat: 34.351, lng: 136.7013, zoom: 16, source: "指定リスト" },
+    { id: "port-nishiki", name: "錦漁港", type: "港", area: "大紀町錦", lat: 34.2116, lng: 136.3969, zoom: 16, source: "指定リスト" },
+    { id: "port-kiinagashima", name: "紀伊長島港", type: "港", area: "紀北町長島", lat: 34.208, lng: 136.3372, zoom: 16, source: "指定リスト" },
+    { id: "port-hikimoto", name: "引本港", type: "港", area: "紀北町引本浦", lat: 34.1306, lng: 136.2361, zoom: 16, source: "指定リスト" },
+    { id: "port-kuki", name: "九鬼漁港", type: "港", area: "尾鷲市九鬼町", lat: 33.9965, lng: 136.2517, zoom: 16, source: "指定リスト" },
+    { id: "port-kata", name: "賀田港", type: "港", area: "尾鷲市賀田町", lat: 33.9724, lng: 136.2214, zoom: 16, source: "指定リスト" },
+    { id: "port-atashika", name: "新鹿港", type: "港", area: "熊野市新鹿町", lat: 33.9309, lng: 136.1404, zoom: 16, source: "指定リスト" },
+    { id: "port-kinomoto", name: "木本港", type: "港", area: "熊野市木本町", lat: 33.8898, lng: 136.1016, zoom: 16, source: "指定リスト" },
+    { id: "port-udono", name: "鵜殿港", type: "港", area: "紀宝町鵜殿", lat: 33.7338, lng: 136.012, zoom: 16, source: "指定リスト" },
+    { id: "marina-tsu-yacht", name: "津ヨットハーバー", type: "マリーナ", area: "津市津興", lat: 34.708344, lng: 136.524048, zoom: 17, source: "指定リスト" },
+    { id: "marina-toba", name: "鳥羽マリーナ", type: "マリーナ", area: "鳥羽市千賀町", lat: 34.388732, lng: 136.880716, zoom: 17, source: "指定リスト" },
+    { id: "marina-nemu-resort", name: "NEMU RESORT マリーナ周辺", type: "マリーナ", area: "志摩市浜島町迫子", lat: 34.3116, lng: 136.7948, zoom: 17, source: "指定リスト" },
+    { id: "marina-shima-yacht", name: "志摩ヨットハーバー周辺", type: "マリーナ", area: "志摩市周辺", lat: 34.3063, lng: 136.7655, zoom: 17, source: "指定リスト" },
+    { id: "marina-isewan", name: "伊勢湾マリーナ周辺", type: "マリーナ", area: "三重県北中部沿岸", lat: 34.7979, lng: 136.5632, zoom: 17, source: "指定リスト" }
   ];
-  const SOURCE_CACHE_KEY = "mie-fishing-map-source-cache-486490f1-v163-menu-points-fix";
 
-  const oldOsugiLine = '    { id: "lake-osugi", name: "大杉湖", type: "ダム", area: "多気郡大台町", lat: 34.286385, lng: 136.19336, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },';
-  const newOsugiLine = '    { id: "lake-osugi", name: "宮川ダム", type: "ダム", area: "多気郡大台町", lat: 34.286385, lng: 136.19336, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },';
-  const oldNanairoLine = '    { id: "reservoir-nanairo", name: "七色貯水池", type: "ダム", area: "熊野市・紀和町周辺", lat: 33.991304, lng: 136.004799, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },';
-  const newNanairoLine = '    { id: "reservoir-nanairo", name: "七色ダム", type: "ダム", area: "熊野市・紀和町周辺", lat: 33.991304, lng: 136.004799, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },';
-  const ikeharaLine = '    { id: "dam-ikehara", name: "池原ダム", type: "ダム", area: "奈良県吉野郡下北山村", lat: 34.04694, lng: 135.97111, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },';
-
-  function patchVisibleText(value) {
-    return String(value || "")
-      .replaceAll("爆調ニャンコ視聴", "爆釣ツインニャンコ")
-      .replaceAll("爆調ツインニャンコ", "爆釣ツインニャンコ")
-      .replaceAll("爆釣ニャンコ師匠", "爆釣にゃん師匠")
-      .replaceAll("v131・中勢グリーンパーク削除版", PATCH_STATUS_LABEL)
-      .replaceAll("v133・宮川ダム・七色ダム・池原ダム追加版", PATCH_STATUS_LABEL)
-      .replaceAll("v134・宮川ダム・七色ダム・池原ダム反映版", PATCH_STATUS_LABEL)
-      .replaceAll("v135・釣りニャン追加版", PATCH_STATUS_LABEL)
-      .replaceAll("v136・釣りニャン後ろ姿モーション追加版", PATCH_STATUS_LABEL)
-      .replaceAll("v137・釣りニャン表情モーション採用版", PATCH_STATUS_LABEL)
-      .replaceAll("v138・釣りニャン丸アイコン撤去・漫画吹き出し版", PATCH_STATUS_LABEL)
-      .replaceAll("v139・釣りニャン口元透過修正版", PATCH_STATUS_LABEL)
-      .replaceAll("v140・釣りニャン指差し吹き出し採用版", PATCH_STATUS_LABEL)
-      .replaceAll("v141・釣りニャン吹き出し文字調整版", PATCH_STATUS_LABEL)
-      .replaceAll("v142・釣りニャン吹き出し右下しっぽ版", PATCH_STATUS_LABEL)
-      .replaceAll("v143・釣りニャン吹き出し文字内側調整版", PATCH_STATUS_LABEL)
-      .replaceAll("v144・釣りニャン吹き出し文字右寄せ調整版", PATCH_STATUS_LABEL)
-      .replaceAll("v145・釣りニャン吹き出し文字下げ調整版", PATCH_STATUS_LABEL)
-      .replaceAll("v146・釣りニャン反応モード追加版", PATCH_STATUS_LABEL)
-      .replaceAll("v147・釣りニャン釣果記録ボタン連動版", PATCH_STATUS_LABEL)
-      .replaceAll("v148・釣りニャン釣果記録高速化版", PATCH_STATUS_LABEL)
-      .replaceAll("v149・釣りニャン高速化・軽量化版", PATCH_STATUS_LABEL)
-      .replaceAll("v150・釣りニャン軽量ふわふわ復活版", PATCH_STATUS_LABEL)
-      .replaceAll("v151・釣りニャンスマホ表示少し大きめ版", PATCH_STATUS_LABEL)
-      .replaceAll("v152・釣りニャンスマホ表示さらに大きめ版", PATCH_STATUS_LABEL)
-      .replaceAll("v153・釣りニャンスマホ表示ほぼ倍サイズ版", PATCH_STATUS_LABEL)
-      .replaceAll("v154・釣りニャン初期背景採用版", PATCH_STATUS_LABEL)
-      .replaceAll("v155・釣りニャン初期背景強制反映版", PATCH_STATUS_LABEL)
-      .replaceAll("v156・メニュー背景と地図反映修正版", PATCH_STATUS_LABEL)
-      .replaceAll("v157・漫画風吹き出しとメニュー背景修正版", PATCH_STATUS_LABEL)
-      .replaceAll("v163・メニュー開閉とポイント復旧修正版", PATCH_STATUS_LABEL)
-      .replaceAll("v131-remove-chusei-green-park", PATCH_VERSION)
-      .replaceAll("v155-default-background-force", PATCH_VERSION)
-      .replaceAll("v163-menu-points-fix", PATCH_VERSION)
-      .replaceAll("v163-menu-points-fix", PATCH_VERSION)
-      .replaceAll("v163-menu-points-fix", PATCH_VERSION);
-  }
-
-  function installImmediateFixes() {
-    const menuCssValue = `url("${MENU_BACKGROUND_URL}")`;
-    try {
-      if (localStorage.getItem(MENU_BACKGROUND_FORCE_KEY) !== "1") {
-        localStorage.removeItem(BACKGROUND_STORAGE_KEY);
-        localStorage.setItem(MENU_BACKGROUND_FORCE_KEY, "1");
-      }
-    } catch (error) {}
-
-    const applyMenuBackground = () => {
-      try {
-        document.documentElement.style.setProperty("--menu-bg-image", menuCssValue);
-        document.documentElement.style.setProperty("--sidebar-bg-image", menuCssValue);
-      } catch (error) {}
-      document.querySelectorAll(".sidebar, #mobileMenu.sidebar").forEach((sidebar) => {
-        sidebar.style.setProperty("--menu-bg-image", menuCssValue);
-        sidebar.style.setProperty("--sidebar-bg-image", menuCssValue);
-        sidebar.style.setProperty("background", `linear-gradient(180deg, rgba(5,30,25,.08), rgba(5,44,36,.02)), ${menuCssValue}`, "important");
-        sidebar.style.setProperty("background-image", `linear-gradient(180deg, rgba(5,30,25,.08), rgba(5,44,36,.02)), ${menuCssValue}`, "important");
-        sidebar.style.setProperty("background-size", "cover", "important");
-        sidebar.style.setProperty("background-position", "center center", "important");
-        sidebar.style.setProperty("background-repeat", "no-repeat", "important");
-      });
-    };
-
-    if (!document.getElementById("v163MenuPointsFix")) {
-      const style = document.createElement("style");
-      style.id = "v163MenuPointsFix";
-      style.textContent = `
-        :root { --menu-bg-image: ${menuCssValue}; --sidebar-bg-image: ${menuCssValue}; }
-        .sidebar, #mobileMenu.sidebar {
-          background: linear-gradient(180deg, rgba(5,30,25,.08), rgba(5,44,36,.02)), var(--menu-bg-image) !important;
-          background-image: linear-gradient(180deg, rgba(5,30,25,.08), rgba(5,44,36,.02)), var(--menu-bg-image) !important;
-          background-size: cover !important;
-          background-position: center center !important;
-          background-repeat: no-repeat !important;
-          color: #fff !important;
-        }
-        .sidebar::before, #mobileMenu.sidebar::before { background: transparent !important; opacity: 0 !important; }
-        .map-pane, #map, #map.leaflet-container, .leaflet-container { background: #cfded8 !important; }
-        .leaflet-tile-pane, .leaflet-layer, .leaflet-tile-container, .leaflet-tile { background: transparent !important; }
-        #appStartScreen.is-hidden, body.start-screen-done #appStartScreen { display: none !important; pointer-events: none !important; visibility: hidden !important; opacity: 0 !important; }
-        #startScreenSkip { pointer-events: auto !important; touch-action: manipulation !important; }
-        /* v162: force menu background, transparent bubble, and start screen map fallback */
-        #turiNyanPet .pet-bubble {
-          width: min(304px, calc(100vw - 18px)) !important;
-          padding: 78px 68px 88px 62px !important;
-          font-size: .60rem !important;
-          line-height: 1.10 !important;
-        }
-        #turiNyanPet .pet-bubble strong { font-size: .62rem !important; line-height: 1.04 !important; margin-bottom: 2px !important; }
-        #turiNyanPet #turiNyanMessage { font-size: .52rem !important; line-height: 1.08 !important; max-height: 2.5em !important; overflow: hidden !important; }
-        #turiNyanPet .pet-actions { gap: 3px !important; margin-top: 4px !important; }
-        #turiNyanPet .pet-actions button { min-height: 21px !important; padding: 3px 5px !important; font-size: .50rem !important; }
-        @media (max-width: 920px) {
-          #turiNyanPet {
-            right: calc(6px + env(safe-area-inset-right)) !important;
-            bottom: calc(76px + env(safe-area-inset-bottom)) !important;
-            max-width: calc(100vw - 12px) !important;
-          }
-          #turiNyanPet .pet-button { width: 118px !important; height: 118px !important; }
-          #turiNyanPet .pet-button img { transform: scale(1.12) !important; transform-origin: center bottom !important; }
-          #turiNyanPet.is-lookout .pet-button img { transform: scale(1.16) !important; }
-          #turiNyanPet .pet-bubble { width: min(284px, calc(100vw - 14px)) !important; padding: 72px 64px 82px 56px !important; }
-          body.menu-open #turiNyanPet,
-          body.panel-open #turiNyanPet,
-          body.position-adjusting #turiNyanPet,
-          body.map-popup-open #turiNyanPet,
-          body.record-popup-open #turiNyanPet,
-          body.spot-card-open #turiNyanPet { display: none !important; }
-          #turiNyanPet .pet-bubble strong { font-size: .56rem !important; }
-          #turiNyanPet #turiNyanMessage { font-size: .48rem !important; line-height: 1.08 !important; max-height: 2.25em !important; }
-          #turiNyanPet .pet-actions button { min-height: 19px !important; padding: 2px 4px !important; font-size: .46rem !important; }
-        }
-      `;
-      document.head.appendChild(style);
-    }
-
-    const patchNodeText = (root = document.body) => {
-      if (!root) return;
-      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT);
-      let node = walker.currentNode;
-      while (node) {
-        if (node.nodeType === Node.TEXT_NODE) {
-          const next = patchVisibleText(node.nodeValue);
-          if (next !== node.nodeValue) node.nodeValue = next;
-        } else if (node.nodeType === Node.ELEMENT_NODE && node.attributes) {
-          for (const attr of Array.from(node.attributes)) {
-            const next = patchVisibleText(attr.value);
-            if (next !== attr.value) node.setAttribute(attr.name, next);
-          }
-        }
-        node = walker.nextNode();
-      }
-    };
-
-    const refreshMapLayout = () => {
-      try { window.dispatchEvent(new Event("resize")); } catch (error) {}
-    };
-    const run = () => {
-      applyMenuBackground();
-      patchNodeText(document.body);
-      [80, 250, 600, 1200].forEach((ms) => window.setTimeout(refreshMapLayout, ms));
-    };
-
-    run();
-    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", run, { once: true });
-    window.addEventListener("load", run);
-    try {
-      const observer = new MutationObserver(() => window.requestAnimationFrame?.(run) || window.setTimeout(run, 30));
-      if (document.body) observer.observe(document.body, { childList: true, subtree: true, characterData: true });
-      else document.addEventListener("DOMContentLoaded", () => observer.observe(document.body, { childList: true, subtree: true, characterData: true }), { once: true });
-    } catch (error) {}
-  }
-
-
-  // v162: 起動画面が閉じない時の緊急回避。アプリ本体の読込失敗時でも「地図を開く」で地図画面へ進める。
-  function forceOpenStartScreenMap(reason = "manual") {
-    try {
-      const screen = document.getElementById("appStartScreen");
-      if (screen) {
-        screen.classList.add("is-hidden", "is-closing");
-        screen.setAttribute("aria-hidden", "true");
-        screen.removeAttribute("aria-busy");
-        screen.style.setProperty("display", "none", "important");
-        screen.style.setProperty("pointer-events", "none", "important");
-      }
-      document.body?.classList?.remove("start-screen-active", "start-screen-launching");
-      document.body?.classList?.add("start-screen-done");
-      const status = document.getElementById("dataStatus");
-      if (status && reason !== "normal") status.textContent = "地図画面を開きました。表示が崩れる場合はキャッシュ削除後に再読み込みしてください。";
-      try { window.dispatchEvent(new Event("resize")); } catch (error) {}
-      [80, 250, 600, 1200].forEach((ms) => window.setTimeout(() => {
-        try { window.dispatchEvent(new Event("resize")); } catch (error) {}
-      }, ms));
-      // v163: fallback Leaflet mapは作らない。先に作ると本体initMapが「Map container is already initialized」で止まるため。
-    } catch (error) {
-      console.warn("start screen force open failed", error);
-    }
-  }
-
-  function removeOldFallbackMapIfAny() {
-    try {
-      if (window.__MIE_FALLBACK_MAP__) {
-        window.__MIE_FALLBACK_MAP__.remove?.();
-        window.__MIE_FALLBACK_MAP__ = null;
-      }
-      const mapElement = document.getElementById("map");
-      if (mapElement && mapElement.classList.contains("leaflet-container") && !window.__MIE_APP_READY__) {
-        mapElement.classList.remove("leaflet-container", "leaflet-touch", "leaflet-retina", "leaflet-fade-anim", "leaflet-grab", "leaflet-touch-drag", "leaflet-touch-zoom");
-        mapElement.removeAttribute("tabindex");
-        mapElement.innerHTML = "";
-      }
-    } catch (error) {
-      console.warn("old fallback map cleanup failed", error);
-    }
-  }
-
-
-  function installEmergencyMenuFallback() {
-    let lastFallbackAt = 0;
-    const openMenu = () => {
-      const menu = document.getElementById("mobileMenu");
-      const backdrop = document.getElementById("menuBackdrop");
-      const toggle = document.getElementById("menuToggle");
-      if (!menu) return;
-      menu.classList.add("is-open");
-      backdrop?.classList.add("is-open");
-      document.body?.classList?.add("menu-open");
-      toggle?.setAttribute("aria-expanded", "true");
-      try { window.dispatchEvent(new Event("resize")); } catch (error) {}
-    };
-    const closeMenu = () => {
-      const menu = document.getElementById("mobileMenu");
-      const backdrop = document.getElementById("menuBackdrop");
-      const toggle = document.getElementById("menuToggle");
-      menu?.classList.remove("is-open");
-      backdrop?.classList.remove("is-open");
-      document.body?.classList?.remove("menu-open");
-      toggle?.setAttribute("aria-expanded", "false");
-      try { window.dispatchEvent(new Event("resize")); } catch (error) {}
-    };
-    const toggleMenu = () => {
-      const menu = document.getElementById("mobileMenu");
-      if (!menu) return;
-      if (menu.classList.contains("is-open")) closeMenu(); else openMenu();
-    };
-    const bind = () => {
-      const toggle = document.getElementById("menuToggle");
-      const close = document.getElementById("closeMenuButton");
-      const backdrop = document.getElementById("menuBackdrop");
-      if (toggle && toggle.dataset.v163MenuFallback !== "1") {
-        toggle.dataset.v163MenuFallback = "1";
-        const handler = (event) => {
-          const now = Date.now();
-          if (now - lastFallbackAt < 260) return;
-          const menu = document.getElementById("mobileMenu");
-          const before = Boolean(menu?.classList.contains("is-open"));
-          if (!window.__MIE_APP_READY__) {
-            try { event.preventDefault(); event.stopPropagation(); } catch (error) {}
-            lastFallbackAt = now;
-            toggleMenu();
-            return;
-          }
-          window.setTimeout(() => {
-            const after = Boolean(menu?.classList.contains("is-open"));
-            if (after === before) {
-              lastFallbackAt = Date.now();
-              toggleMenu();
-            }
-          }, 90);
-        };
-        toggle.addEventListener("click", handler, { capture: true });
-        toggle.addEventListener("pointerup", handler, { capture: true });
-        toggle.addEventListener("touchend", handler, { passive: false, capture: true });
-      }
-      if (close && close.dataset.v163MenuFallback !== "1") {
-        close.dataset.v163MenuFallback = "1";
-        close.addEventListener("click", () => { if (!window.__MIE_APP_READY__) closeMenu(); }, { capture: true });
-      }
-      if (backdrop && backdrop.dataset.v163MenuFallback !== "1") {
-        backdrop.dataset.v163MenuFallback = "1";
-        backdrop.addEventListener("click", () => { if (!window.__MIE_APP_READY__) closeMenu(); }, { capture: true });
-      }
-    };
-    bind();
-    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bind, { once: true });
-    window.addEventListener("load", bind);
-  }
-
-  function installStartScreenFallback() {
-    const bind = () => {
-      const button = document.getElementById("startScreenSkip");
-      const screen = document.getElementById("appStartScreen");
-      if (!button || button.dataset.v162StartFix === "1") return;
-      button.dataset.v162StartFix = "1";
-      button.disabled = false;
-      button.style.setProperty("pointer-events", "auto", "important");
-      const handler = (event) => {
-        try { event.preventDefault(); } catch (error) {}
-        try { event.stopPropagation(); } catch (error) {}
-        forceOpenStartScreenMap("button");
-      };
-      button.addEventListener("click", handler, { capture: true });
-      button.addEventListener("pointerup", handler, { capture: true });
-      button.addEventListener("touchend", handler, { passive: false, capture: true });
-      if (screen) screen.style.setProperty("pointer-events", "auto", "important");
-    };
-    bind();
-    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bind, { once: true });
-    window.addEventListener("load", bind);
-    window.__MIE_FORCE_OPEN_MAP__ = forceOpenStartScreenMap;
-  }
-
-
-  window.__MIE_APP_READY__ = false;
-  installEmergencyMenuFallback();
-  installStartScreenFallback();
-  installImmediateFixes();
-
-  function showLoadError(error) {
-    console.error("Mie Fishing Map v163 menu points fix loader failed", error);
-    const message = "アプリ本体の読み込みに失敗しました。通信状況を確認して、reset-cache.html?auto=1 を開き直してください。";
-    const target = document.querySelector("#dataStatus") || document.body;
-    if (!target) return;
-    if (target === document.body) {
-      const notice = document.createElement("div");
-      notice.textContent = message;
-      notice.style.cssText = "position:fixed;left:12px;right:12px;bottom:12px;z-index:2147483647;padding:12px 14px;border-radius:14px;background:#fff3cd;color:#4d3b00;font-weight:800;box-shadow:0 12px 30px rgba(0,0,0,.25);line-height:1.5;";
-      document.body.appendChild(notice);
-    } else {
-      target.textContent = message;
-    }
-  }
-
-  async function fetchSourceApp() {
-    try {
-      const cached = localStorage.getItem(SOURCE_CACHE_KEY) || "";
-      if (cached.includes('const seedSpots = [')) return cached;
-    } catch (error) {}
-    let lastError = null;
-    for (const url of SOURCE_APP_URLS) {
-      try {
-        const response = await fetch(`${url}?v=${PATCH_VERSION}`, { cache: "reload" });
-        if (!response.ok) throw new Error(`HTTP ${response.status}: ${url}`);
-        const source = await response.text();
-        if (!source.includes('const seedSpots = [')) throw new Error(`Unexpected app source: ${url}`);
-        try { localStorage.setItem(SOURCE_CACHE_KEY, source); } catch (error) {}
-        return source;
-      } catch (error) {
-        lastError = error;
-      }
-    }
-    throw lastError || new Error("Source app could not be loaded.");
-  }
-
-  function patchSource(source) {
-    let patched = source
-      .replace('const APP_VERSION = "v131-remove-chusei-green-park";', `const APP_VERSION = "${PATCH_VERSION}";`)
-      .replace('const APP_STATUS_LABEL = "v131・中勢グリーンパーク削除版";', `const APP_STATUS_LABEL = "${PATCH_STATUS_LABEL}";`)
-      .replace('// v131: 中勢グリーンパーク池も除いた初期収録。', '// v159: メニュー背景と透明吹き出しを修正。')
-      .replace(oldOsugiLine, newOsugiLine)
-      .replace(oldNanairoLine, `${newNanairoLine}\n${ikeharaLine}`);
-
-    patched = patched
-      .replaceAll('"大杉湖"', '"宮川ダム"')
-      .replaceAll('"七色貯水池"', '"七色ダム"')
-      .replaceAll('>大杉湖<', '>宮川ダム<')
-      .replaceAll('>七色貯水池<', '>七色ダム<')
-      .replaceAll('v131-remove-chusei-green-park', PATCH_VERSION)
-      .replaceAll('v131・中勢グリーンパーク削除版', PATCH_STATUS_LABEL);
-
-    if (!patched.includes('id: "dam-ikehara"')) {
-      patched = patched.replace(newNanairoLine, `${newNanairoLine}\n${ikeharaLine}`);
-    }
-
-    const petCatchBridge = `
-  // v159: 釣りニャンの「釣果記録」ボタンから、アプリ本体の釣果記録画面をすぐ開くための橋渡し。
-  window.__MIE_OPEN_CATCH_PANEL_FROM_PET__ = function openCatchPanelFromPet() {
-    try {
-      state.positionAdjustSpotId = null;
-      updatePositionAdjustBanner();
-      if (state.spotMode) setSpotMode(false);
-      if (state.catchMode) setCatchMode(false);
-      try { hideSpotCard(); } catch (error) {}
-      try { map?.closePopup?.(); } catch (error) {}
-      document.body.classList.remove("map-popup-open", "record-popup-open", "spot-card-open");
-      let lat = MIE_CENTER[0];
-      let lng = MIE_CENTER[1];
-      const center = map?.getCenter?.();
-      if (center && isInsideMieNavBounds(center.lat, center.lng)) {
-        lat = Number(center.lat);
-        lng = Number(center.lng);
-      }
-      const latlng = (typeof L !== "undefined" && L.latLng) ? L.latLng(lat, lng) : { lat, lng };
-      openCatchPanel(null, latlng, { recordType: "catch", recordMode: "super" });
-      setCatchLocationStatus(lat, lng, "地図中央");
-      closeMobileMenu();
-      if (els?.dataStatus) els.dataStatus.textContent = "釣果記録を開きました。位置は地図中央です。必要なら現在地を使ってください。";
-      return true;
-    } catch (error) {
-      console.error("釣りニャンから釣果記録を開けませんでした", error);
-      return false;
-    }
+  const $ = (id) => document.getElementById(id);
+  const safeParse = (value, fallback) => {
+    try { const parsed = JSON.parse(value || ""); return parsed ?? fallback; } catch { return fallback; }
   };
-  window.__MIE_PET_CATCH_BRIDGE_READY__ = true;
-  try { window.dispatchEvent(new CustomEvent("mie:pet-catch-bridge-ready")); } catch (error) {}
-`;
-    if (!patched.includes("__MIE_OPEN_CATCH_PANEL_FROM_PET__")) {
-      patched = patched.replace("  function closeCatchPanel() {", `${petCatchBridge}\n  function closeCatchPanel() {`);
-    }
+  const validPosition = (spot) => spot && Number.isFinite(Number(spot.lat)) && Number.isFinite(Number(spot.lng));
+  const escapeHtml = (value) => String(value ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
 
-    const defaultBackgroundFunctionV156 = `  function applySidebarBackground(value) {
-    const source = String(value || "").trim();
-    const defaultBackground = "${MENU_BACKGROUND_URL}";
-    const background = source || defaultBackground;
-    const cssValue = "url(\"" + background + "\")";
-    try {
-      document.documentElement.style.setProperty("--menu-bg-image", cssValue);
-      document.documentElement.style.setProperty("--sidebar-bg-image", cssValue);
-    } catch (error) {}
-    document.querySelectorAll(".sidebar, #mobileMenu.sidebar").forEach((sidebar) => {
-      sidebar.style.setProperty("--menu-bg-image", cssValue);
-      sidebar.style.setProperty("--sidebar-bg-image", cssValue);
-    });
-  }`;
-    patched = patched.replace(/  function applySidebarBackground\(value\) \{[\s\S]*?\n  \}\n\n  async function handleBackgroundFile/, `${defaultBackgroundFunctionV156}\n\n  async function handleBackgroundFile`);
+  const state = {
+    spots: [],
+    savedState: {},
+    catches: [],
+    customSpots: [],
+    positionOverrides: {},
+    search: "",
+    activeFilter: "all",
+    activeList: "spots",
+    selectedSpotId: ""
+  };
 
-    patched = patched.replace(
-      '    applySidebarBackground(localStorage.getItem(BACKGROUND_STORAGE_KEY) || "");',
-      `    // v159: メニュー背景だけを指定画像に戻す。地図側には適用しない。
-    try {
-      const menuBackgroundForceKey = "${MENU_BACKGROUND_FORCE_KEY}";
-      if (localStorage.getItem(menuBackgroundForceKey) !== "1") {
-        localStorage.removeItem(BACKGROUND_STORAGE_KEY);
-        localStorage.setItem(menuBackgroundForceKey, "1");
-      }
-    } catch (error) {}
-    applySidebarBackground(localStorage.getItem(BACKGROUND_STORAGE_KEY) || "");`
-    );
+  let map = null;
+  let markers = new Map();
+  let catchMarkers = new Map();
 
-    patched = patched.replace(
-      `    // v129: スマホにv127の「ポイント初期化」状態が残っていても、指定リスト62件を確実に表示する。
-    // 釣果記録は安全のため残します。
-    if (!localStorage.getItem(POINTS_CLEARED_STORAGE_KEY)) {
-      localStorage.removeItem(STORAGE_KEY);
-      localStorage.removeItem(CUSTOM_SPOT_STORAGE_KEY);
-      localStorage.removeItem(POSITION_STORAGE_KEY);
-      localStorage.setItem(POINTS_CLEARED_STORAGE_KEY, JSON.stringify({ clearedAt: new Date().toISOString(), version: APP_VERSION }));
-    }`,
-      `    // v163: ポイントが消える事故を避けるため、保存済みポイント・追加ポイント・位置調整は削除しない。
-    // 初期収録リストは seedSpots から毎回復元されるので、ここでは版情報だけ記録する。
-    if (!localStorage.getItem(POINTS_CLEARED_STORAGE_KEY)) {
-      localStorage.setItem(POINTS_CLEARED_STORAGE_KEY, JSON.stringify({ checkedAt: new Date().toISOString(), version: APP_VERSION, preserveUserData: true }));
-    }`
-    );
-
-    patched = patched.replace(
-      '    window.addEventListener("resize", () => invalidateMapSize(120));',
-      '    window.addEventListener("resize", () => invalidateMapSize(120));\n    [80, 250, 600, 1200].forEach((ms) => invalidateMapSize(ms));'
-    );
-
-    return patched;
+  function normalizeRecord(raw = {}) {
+    return {
+      ...raw,
+      id: raw.id || `record-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+      lat: Number(raw.lat),
+      lng: Number(raw.lng),
+      species: raw.species || raw.fish || raw.fishSpecies || "",
+      memo: raw.memo || raw.note || "",
+      time: raw.time || raw.datetime || ""
+    };
   }
 
-  fetchSourceApp()
-    .then((source) => {
-      removeOldFallbackMapIfAny();
-      const patchedSource = patchSource(source);
-      const runPatchedApp = new Function(patchedSource);
-      runPatchedApp();
-      window.__MIE_APP_READY__ = true;
-      installImmediateFixes();
-    })
-    .catch(showLoadError);
+  function applyMenuBackground() {
+    const value = `url("${MENU_BACKGROUND_URL}")`;
+    document.documentElement.style.setProperty("--menu-bg-image", value);
+    document.documentElement.style.setProperty("--sidebar-bg-image", value);
+    document.querySelectorAll(".sidebar, #mobileMenu.sidebar").forEach((sidebar) => {
+      sidebar.style.setProperty("--menu-bg-image", value);
+      sidebar.style.setProperty("--sidebar-bg-image", value);
+      sidebar.style.setProperty("background", `linear-gradient(180deg, rgba(5,30,25,.08), rgba(5,44,36,.02)), ${value}`, "important");
+      sidebar.style.setProperty("background-size", "cover", "important");
+      sidebar.style.setProperty("background-position", "center", "important");
+      sidebar.style.setProperty("background-repeat", "no-repeat", "important");
+    });
+  }
+
+  function loadState() {
+    state.savedState = safeParse(localStorage.getItem(STORAGE_KEY), {});
+    state.customSpots = safeParse(localStorage.getItem(CUSTOM_SPOT_STORAGE_KEY), []).filter(validPosition);
+    state.catches = safeParse(localStorage.getItem(CATCH_STORAGE_KEY), []).map(normalizeRecord).filter(validPosition);
+    state.positionOverrides = safeParse(localStorage.getItem(POSITION_STORAGE_KEY), {});
+    const baseSpots = seedSpots.map((spot) => {
+      const override = state.positionOverrides?.[spot.id];
+      return validPosition(override) ? { ...spot, lat: Number(override.lat), lng: Number(override.lng), positionAdjusted: true } : spot;
+    });
+    state.spots = [...baseSpots, ...state.customSpots.map((spot) => ({ ...spot, custom: true }))].filter(validPosition);
+    if (!state.spots.length) state.spots = baseSpots;
+  }
+
+  function initMap() {
+    const mapElement = $("map");
+    if (!mapElement || typeof L === "undefined") {
+      const dataStatus = $("dataStatus");
+      if (dataStatus) dataStatus.textContent = "Leafletまたは地図コンテナを読み込めませんでした。通信状態を確認してください。";
+      return;
+    }
+    if (mapElement._leaflet_id) {
+      try { mapElement._leaflet_id = null; mapElement.innerHTML = ""; } catch (error) {}
+    }
+    map = L.map("map", {
+      zoomControl: true,
+      touchZoom: true,
+      scrollWheelZoom: true,
+      doubleClickZoom: true,
+      boxZoom: true,
+      keyboard: true,
+      preferCanvas: true,
+      minZoom: 5
+    }).setView(MIE_CENTER, MIE_HOME_ZOOM);
+    map.attributionControl.setPrefix("");
+    const tileOptions = {
+      maxZoom: 18,
+      noWrap: false,
+      keepBuffer: 2,
+      updateWhenIdle: true,
+      updateWhenZooming: false,
+      attribution: '地図出典：<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noopener">国土地理院（地理院タイル）</a>'
+    };
+    const standardMap = L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png", tileOptions).addTo(map);
+    const aerialMap = L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg", tileOptions);
+    L.control.layers({ "標準地図": standardMap, "航空写真": aerialMap }, null, { position: "topright" }).addTo(map);
+    [80, 250, 600, 1200].forEach((ms) => setTimeout(() => map?.invalidateSize?.({ animate: false }), ms));
+  }
+
+  function filteredSpots() {
+    const q = state.search.trim().toLowerCase();
+    return state.spots.filter((spot) => {
+      if (state.activeFilter !== "all" && spot.type !== state.activeFilter) return false;
+      if (!q) return true;
+      return [spot.name, spot.area, spot.type, spot.subtype].some((v) => String(v || "").toLowerCase().includes(q));
+    });
+  }
+
+  function markerColorClass(type) {
+    if (type === "ダム") return "dam";
+    if (type === "池") return "pond";
+    if (type === "川") return "river";
+    if (type === "港") return "port";
+    return "other";
+  }
+
+  function makeIcon(spot) {
+    const cls = markerColorClass(spot.type);
+    return L.divIcon({
+      className: `spot-pin spot-pin-${cls}`,
+      html: `<span>${escapeHtml(spot.type.slice(0, 1) || "釣")}</span>`,
+      iconSize: [30, 30],
+      iconAnchor: [15, 30],
+      popupAnchor: [0, -28]
+    });
+  }
+
+  function showSpot(spot) {
+    state.selectedSpotId = spot.id;
+    if (map) map.setView([Number(spot.lat), Number(spot.lng)], Number(spot.zoom || 15), { animate: true });
+    markers.get(spot.id)?.openPopup?.();
+    const card = $("spotCard");
+    if (card) {
+      card.classList.remove("is-hidden");
+      document.body.classList.add("spot-card-open");
+      card.innerHTML = `<header><p>${escapeHtml(spot.type)} / ${escapeHtml(spot.area || "")}</p><h2>${escapeHtml(spot.name)}</h2></header><p>${escapeHtml(spot.subtype || spot.source || "")}</p><div class="card-actions"><button type="button" data-action="close">閉じる</button></div>`;
+      card.querySelector('[data-action="close"]')?.addEventListener("click", () => { card.classList.add("is-hidden"); document.body.classList.remove("spot-card-open"); });
+    }
+  }
+
+  function renderSpotMarkers() {
+    if (!map) return;
+    markers.forEach((marker) => marker.remove());
+    markers = new Map();
+    filteredSpots().forEach((spot) => {
+      const marker = L.marker([Number(spot.lat), Number(spot.lng)], { icon: makeIcon(spot), title: spot.name })
+        .addTo(map)
+        .bindPopup(`<strong>${escapeHtml(spot.name)}</strong><br>${escapeHtml(spot.type)} / ${escapeHtml(spot.area || "")}`);
+      marker.on("click", () => showSpot(spot));
+      markers.set(spot.id, marker);
+    });
+  }
+
+  function renderCatchMarkers() {
+    if (!map) return;
+    catchMarkers.forEach((marker) => marker.remove());
+    catchMarkers = new Map();
+    state.catches.forEach((record) => {
+      const marker = L.circleMarker([Number(record.lat), Number(record.lng)], { radius: 7, weight: 3, color: "#f97316", fillColor: "#fed7aa", fillOpacity: .9 })
+        .addTo(map)
+        .bindPopup(`<strong>${escapeHtml(record.species || record.placeName || "釣果記録")}</strong><br>${escapeHtml(record.memo || "")}`);
+      catchMarkers.set(record.id, marker);
+    });
+  }
+
+  function renderSpotList() {
+    const list = $("spotList");
+    const spots = filteredSpots();
+    if (list) {
+      list.innerHTML = spots.map((spot) => `<button class="spot-item" type="button" data-spot-id="${escapeHtml(spot.id)}"><strong>${escapeHtml(spot.name)}</strong><span>${escapeHtml(spot.type)} / ${escapeHtml(spot.area || "")}</span></button>`).join("");
+      list.querySelectorAll("[data-spot-id]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const spot = state.spots.find((item) => item.id === button.dataset.spotId);
+          if (spot) { closeMobileMenu(); showSpot(spot); }
+        });
+      });
+    }
+    const visibleCount = $("visibleCount");
+    if (visibleCount) visibleCount.textContent = `${spots.length}件表示`;
+    const spotCount = $("spotCount");
+    if (spotCount) spotCount.textContent = String(state.spots.length);
+  }
+
+  function renderCatchList() {
+    const catchList = $("catchList");
+    if (catchList) {
+      catchList.innerHTML = state.catches.length ? state.catches.map((record) => `<article class="catch-item"><strong>${escapeHtml(record.species || record.placeName || "記録")}</strong><span>${escapeHtml(record.time || "")}</span></article>`).join("") : `<p class="empty-message">釣果記録はまだありません。</p>`;
+    }
+    const recordCount = $("recordCount");
+    if (recordCount) recordCount.textContent = String(state.catches.length);
+    const bigBassCount = $("bigBassCount");
+    if (bigBassCount) bigBassCount.textContent = String(state.catches.filter((r) => Number(r.sizeCm) >= 40).length);
+  }
+
+  function render() {
+    if (!state.spots.length) state.spots = seedSpots;
+    renderSpotList();
+    renderSpotMarkers();
+    renderCatchList();
+    renderCatchMarkers();
+    const status = $("dataStatus");
+    if (status) status.textContent = `${APP_STATUS_LABEL} / 釣り場${state.spots.length}件 / 記録${state.catches.length}件`;
+  }
+
+  function openMobileMenu() {
+    $("mobileMenu")?.classList.add("is-open");
+    $("menuBackdrop")?.classList.add("is-open");
+    document.body.classList.add("menu-open");
+    $("menuToggle")?.setAttribute("aria-expanded", "true");
+    setTimeout(() => map?.invalidateSize?.({ animate: false }), 120);
+  }
+
+  function closeMobileMenu() {
+    $("mobileMenu")?.classList.remove("is-open");
+    $("menuBackdrop")?.classList.remove("is-open");
+    document.body.classList.remove("menu-open");
+    $("menuToggle")?.setAttribute("aria-expanded", "false");
+    setTimeout(() => map?.invalidateSize?.({ animate: false }), 120);
+  }
+
+  function setupStartScreen() {
+    const screen = $("appStartScreen");
+    const button = $("startScreenSkip");
+    const close = () => {
+      screen?.classList.add("is-hidden", "is-closing");
+      screen?.setAttribute("aria-hidden", "true");
+      screen?.style.setProperty("display", "none", "important");
+      document.body.classList.remove("start-screen-active", "start-screen-launching");
+      document.body.classList.add("start-screen-done");
+      setTimeout(() => map?.invalidateSize?.({ animate: false }), 120);
+    };
+    button?.addEventListener("click", close);
+    button?.addEventListener("touchend", (event) => { event.preventDefault(); close(); }, { passive: false });
+    if (screen) document.body.classList.add("start-screen-active");
+  }
+
+  function bindEvents() {
+    $("menuToggle")?.addEventListener("click", () => {
+      const menu = $("mobileMenu");
+      if (menu?.classList.contains("is-open")) closeMobileMenu(); else openMobileMenu();
+    });
+    $("closeMenuButton")?.addEventListener("click", closeMobileMenu);
+    $("menuBackdrop")?.addEventListener("click", closeMobileMenu);
+    $("resetView")?.addEventListener("click", () => map?.setView?.(MIE_CENTER, MIE_HOME_ZOOM, { animate: false }));
+    $("searchInput")?.addEventListener("input", (event) => { state.search = event.target.value || ""; render(); });
+    document.querySelectorAll(".filter-chip").forEach((button) => {
+      button.addEventListener("click", () => {
+        state.activeFilter = button.dataset.filter || "all";
+        document.querySelectorAll(".filter-chip").forEach((b) => b.classList.toggle("is-active", b === button));
+        render();
+      });
+    });
+    $("spotTab")?.addEventListener("click", () => { state.activeList = "spots"; $("spotList")?.removeAttribute("hidden"); $("catchList")?.setAttribute("hidden", "hidden"); });
+    $("catchTab")?.addEventListener("click", () => { state.activeList = "catches"; $("catchList")?.removeAttribute("hidden"); $("spotList")?.setAttribute("hidden", "hidden"); });
+    $("addSpotMode")?.addEventListener("click", () => alert("釣り場追加機能は復旧作業中です。まずは地図とピン表示を優先して復旧しています。"));
+    $("addCatchMode")?.addEventListener("click", () => alert("記録ピン追加機能は復旧作業中です。既存記録は削除していません。"));
+    window.addEventListener("resize", () => map?.invalidateSize?.({ animate: false }));
+  }
+
+  function installRecoveryStyles() {
+    if (document.getElementById("v166GsiMapPinsFixStyle")) return;
+    const style = document.createElement("style");
+    style.id = "v166GsiMapPinsFixStyle";
+    style.textContent = `
+      #appStartScreen.is-hidden, body.start-screen-done #appStartScreen { display: none !important; pointer-events: none !important; visibility: hidden !important; opacity: 0 !important; }
+      #map, .map-pane, #map.leaflet-container, .leaflet-container { background: #cfded8 !important; background-image: none !important; }
+      .leaflet-tile-pane, .leaflet-layer, .leaflet-tile-container, .leaflet-tile { background: transparent !important; background-image: none !important; }
+      .spot-pin { border: 0 !important; background: transparent !important; }
+      .spot-pin span { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 999px; background: #0f7b63; color: #fff; border: 3px solid #fff; box-shadow: 0 3px 12px rgba(0,0,0,.35); font-weight: 900; font-size: .78rem; }
+      .spot-pin-dam span { background: #2563eb; }
+      .spot-pin-pond span { background: #16a34a; }
+      .spot-pin-river span { background: #0284c7; }
+      .spot-pin-port span { background: #ea580c; }
+      .spot-item { width: 100%; display: grid; gap: 2px; text-align: left; margin: 0 0 8px; padding: 10px 12px; border-radius: 14px; border: 1px solid rgba(255,255,255,.35); background: rgba(255,255,255,.86); color: #073f33; }
+      .spot-item strong { font-size: .95rem; }
+      .spot-item span { font-size: .78rem; opacity: .86; }
+      .sidebar, #mobileMenu.sidebar { background: linear-gradient(180deg, rgba(5,30,25,.08), rgba(5,44,36,.02)), var(--menu-bg-image) !important; background-size: cover !important; background-position: center !important; background-repeat: no-repeat !important; }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function init() {
+    installRecoveryStyles();
+    applyMenuBackground();
+    setupStartScreen();
+    loadState();
+    bindEvents();
+    initMap();
+    render();
+    window.__MIE_APP_READY__ = true;
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
+  else init();
 })();

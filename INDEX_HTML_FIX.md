@@ -1,14 +1,19 @@
-# index.html の置換
+# index.html の修正
 
-`index.html` に残っている古いバージョン指定を、すべて `v163-menu-points-fix` に置換してください。
+`index.html` 内の古い `v156-menu-bg-map-fix`、`v163-menu-points-fix` などを、すべて以下に置換してください。
 
-特にここが重要です。
-
-```html
-<link rel="manifest" href="manifest.json?v=v163-menu-points-fix">
-<link rel="stylesheet" href="style.css?v=v163-menu-points-fix">
-<script src="pwa-install.js?v=v163-menu-points-fix"></script>
-<script src="app-v156-loader-fixed.js?v=v163-menu-points-fix"></script>
+```text
+v166-gsi-map-pins-fix
 ```
 
-古い `v156-menu-bg-map-fix`、`v161-menu-bg-reapply`、`v162-start-screen-map-fix` が残ると、スマホ側で古いJS/CSSが読まれて、メニューが開かない・表示が戻る原因になります。
+特にここを確認してください。
+
+```html
+<link rel="manifest" href="manifest.json?v=v166-gsi-map-pins-fix">
+<link rel="stylesheet" href="style.css?v=v166-gsi-map-pins-fix">
+<script src="pwa-install.js?v=v166-gsi-map-pins-fix"></script>
+<script src="app.js?v=v166-gsi-map-pins-fix"></script>
+```
+
+もし今の `index.html` が `app-v156-loader-fixed.js` を読んでいる場合でも、このフォルダには同名ファイルを入れてあります。
+ただし、できれば最終的には `app.js` を直接読む形にしてください。
