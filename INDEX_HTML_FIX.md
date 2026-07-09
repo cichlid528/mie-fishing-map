@@ -1,19 +1,13 @@
-# index.html の修正
+# index.html 修正
 
-`index.html` 内の古い `v156-menu-bg-map-fix`、`v163-menu-points-fix` などを、すべて以下に置換してください。
-
-```text
-v166-gsi-map-pins-fix
-```
-
-特にここを確認してください。
+`index.html` の読み込みクエリをすべて `v167-catch-records-restore` に変更してください。
 
 ```html
-<link rel="manifest" href="manifest.json?v=v166-gsi-map-pins-fix">
-<link rel="stylesheet" href="style.css?v=v166-gsi-map-pins-fix">
-<script src="pwa-install.js?v=v166-gsi-map-pins-fix"></script>
-<script src="app.js?v=v166-gsi-map-pins-fix"></script>
+<link rel="manifest" href="manifest.json?v=v167-catch-records-restore">
+<link rel="stylesheet" href="style.css?v=v167-catch-records-restore">
+<script src="pwa-install.js?v=v167-catch-records-restore"></script>
+<script src="app.js?v=v167-catch-records-restore"></script>
 ```
 
-もし今の `index.html` が `app-v156-loader-fixed.js` を読んでいる場合でも、このフォルダには同名ファイルを入れてあります。
-ただし、できれば最終的には `app.js` を直接読む形にしてください。
+古い `app-v156-loader-fixed.js` を読む指定が残る場合でも、今回のZIPでは同ファイルにも同じ復旧コードを入れています。
+ただし推奨は `app.js` を直接読み込む形です。

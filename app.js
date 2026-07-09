@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v166-gsi-map-pins-fix";
-  const APP_STATUS_LABEL = "v166・国土地理院マップとピン復旧版";
+  const APP_VERSION = "v167-catch-records-restore";
+  const APP_STATUS_LABEL = "v167・釣果記録と釣果ピン復旧版";
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
   const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
@@ -11,7 +11,7 @@
   const BACKUP_META_STORAGE_KEY = "mie-fishing-map-backup-meta-v1";
   const MIE_CENTER = [34.55, 136.48];
   const MIE_HOME_ZOOM = 9;
-  const MENU_BACKGROUND_URL = `assets/menu-bg-bakucho-nyanko-sensei-v166.png?v=${APP_VERSION}`;
+  const MENU_BACKGROUND_URL = `assets/menu-bg-bakucho-nyanko-sensei-v167.png?v=${APP_VERSION}`;
 
   const seedSpots = [
     { id: "lake-shorenji", name: "青蓮寺湖", type: "ダム", area: "名張市", lat: 34.600869, lng: 136.11885, zoom: 15, source: "指定リスト", subtype: "レイク・ダム湖" },
@@ -94,16 +94,114 @@
   let markers = new Map();
   let catchMarkers = new Map();
 
+  function firstFiniteNumber(...values) {
+    for (const value of values) {
+      const number = Number(value);
+      if (Number.isFinite(number)) return number;
+    }
+    return NaN;
+  }
+
+  function recordIdentity(record) {
+    return [record.id, record.createdAt, record.updatedAt, record.time, record.lat, record.lng, record.species, record.memo]
+      .map((value) => String(value ?? "").trim())
+      .join("|");
+  }
+
   function normalizeRecord(raw = {}) {
+    const position = raw.position || raw.location || raw.coords || raw.latlng || raw.coordinate || {};
+    const lat = firstFiniteNumber(raw.lat, raw.latitude, raw.y, position.lat, position.latitude, position.y);
+    const lng = firstFiniteNumber(raw.lng, raw.lon, raw.long, raw.longitude, raw.x, position.lng, position.lon, position.long, position.longitude, position.x);
     return {
       ...raw,
-      id: raw.id || `record-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
-      lat: Number(raw.lat),
-      lng: Number(raw.lng),
-      species: raw.species || raw.fish || raw.fishSpecies || "",
+      id: raw.id || raw.recordId || raw.uuid || `record-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+      recordType: raw.recordType || raw.type || (raw.species || raw.size || raw.sizeCm || raw.bait || raw.lureName ? "catch" : "note"),
+      placeKind: raw.placeKind || raw.kind || "",
+      placeName: raw.placeName || raw.title || raw.name || "",
+      spotId: raw.spotId || raw.spot || "",
+      lat,
+      lng,
+      species: raw.species || raw.fish || raw.fishSpecies || raw.speciesList || "",
+      bait: raw.bait || raw.lureCategory || raw.lure || "",
+      lureName: raw.lureName || "",
+      lureColor: raw.lureColor || raw.color || "",
+      lureWeight: raw.lureWeight || raw.weight || "",
+      size: raw.size || raw.sizeClass || "",
+      sizeCm: raw.sizeCm || raw.actualSizeCm || raw.lengthCm || "",
       memo: raw.memo || raw.note || "",
-      time: raw.time || raw.datetime || ""
+      photo: raw.photo || raw.photoData || raw.image || "",
+      time: raw.time || raw.datetime || raw.createdAt || "",
+      createdAt: raw.createdAt || raw.time || raw.datetime || new Date().toISOString(),
+      updatedAt: raw.updatedAt || raw.createdAt || raw.time || raw.datetime || new Date().toISOString()
     };
+  }
+
+  function collectRecordCandidatesFromValue(value, source = "") {
+    const records = [];
+    const pushArray = (array) => {
+      array.forEach((item) => {
+        if (item && typeof item === "object") records.push({ ...item, __recoveredFrom: source });
+      });
+    };
+    if (Array.isArray(value)) pushArray(value);
+    if (value && typeof value === "object") {
+      ["records", "catches", "catchRecords", "catchList", "items", "data"].forEach((key) => {
+        if (Array.isArray(value[key])) pushArray(value[key]);
+      });
+      if (value.backup && typeof value.backup === "object") {
+        ["records", "catches", "catchRecords"].forEach((key) => {
+          if (Array.isArray(value.backup[key])) pushArray(value.backup[key]);
+        });
+      }
+    }
+    return records;
+  }
+
+  function recoverCatchRecords() {
+    const keys = [
+      CATCH_STORAGE_KEY,
+      "mieFishingMap.v1",
+      "mieFishingMap.v1.records",
+      "mieFishingMap.v1.catches",
+      "mie-fishing-map-catches-v1",
+      "mie-fishing-map-records-v1",
+      "mie-bass-catch-records-v1",
+      "mie-bass-records-v1",
+      "mieFishingMap.backup",
+      "mie-fishing-map-backup"
+    ];
+    const candidates = [];
+    keys.forEach((key) => {
+      try {
+        const raw = localStorage.getItem(key);
+        if (!raw) return;
+        candidates.push(...collectRecordCandidatesFromValue(safeParse(raw, null), key));
+      } catch (error) {}
+    });
+
+    const merged = new Map();
+    candidates.map(normalizeRecord).forEach((record) => {
+      if (record.spotId && !validPosition(record)) {
+        const spot = state.spots.find((item) => item.id === record.spotId || item.name === record.spotId);
+        if (spot) {
+          record.lat = Number(spot.lat);
+          record.lng = Number(spot.lng);
+          record.__positionRecoveredFromSpot = true;
+        }
+      }
+      const key = record.id || recordIdentity(record);
+      if (!merged.has(key)) merged.set(key, record);
+    });
+
+    const list = [...merged.values()]
+      .filter((record) => record && (record.id || record.species || record.memo || record.placeName || record.time || validPosition(record)))
+      .sort((a, b) => String(b.time || b.createdAt || "").localeCompare(String(a.time || a.createdAt || "")));
+
+    try {
+      const current = collectRecordCandidatesFromValue(safeParse(localStorage.getItem(CATCH_STORAGE_KEY), []), CATCH_STORAGE_KEY);
+      if (list.length > current.length) localStorage.setItem(CATCH_STORAGE_KEY, JSON.stringify(list));
+    } catch (error) {}
+    return list;
   }
 
   function applyMenuBackground() {
@@ -123,7 +221,6 @@
   function loadState() {
     state.savedState = safeParse(localStorage.getItem(STORAGE_KEY), {});
     state.customSpots = safeParse(localStorage.getItem(CUSTOM_SPOT_STORAGE_KEY), []).filter(validPosition);
-    state.catches = safeParse(localStorage.getItem(CATCH_STORAGE_KEY), []).map(normalizeRecord).filter(validPosition);
     state.positionOverrides = safeParse(localStorage.getItem(POSITION_STORAGE_KEY), {});
     const baseSpots = seedSpots.map((spot) => {
       const override = state.positionOverrides?.[spot.id];
@@ -131,6 +228,7 @@
     });
     state.spots = [...baseSpots, ...state.customSpots.map((spot) => ({ ...spot, custom: true }))].filter(validPosition);
     if (!state.spots.length) state.spots = baseSpots;
+    state.catches = recoverCatchRecords();
   }
 
   function initMap() {
@@ -227,9 +325,16 @@
     catchMarkers.forEach((marker) => marker.remove());
     catchMarkers = new Map();
     state.catches.forEach((record) => {
-      const marker = L.circleMarker([Number(record.lat), Number(record.lng)], { radius: 7, weight: 3, color: "#f97316", fillColor: "#fed7aa", fillOpacity: .9 })
+      if (!validPosition(record)) return;
+      const marker = L.circleMarker([Number(record.lat), Number(record.lng)], {
+        radius: 8,
+        weight: 3,
+        color: "#f97316",
+        fillColor: "#fed7aa",
+        fillOpacity: .95
+      })
         .addTo(map)
-        .bindPopup(`<strong>${escapeHtml(record.species || record.placeName || "釣果記録")}</strong><br>${escapeHtml(record.memo || "")}`);
+        .bindPopup(`<strong>${escapeHtml(record.species || record.placeName || "釣果記録")}</strong><br>${escapeHtml(record.time || "")}<br>${escapeHtml(record.memo || "")}`);
       catchMarkers.set(record.id, marker);
     });
   }
@@ -255,7 +360,12 @@
   function renderCatchList() {
     const catchList = $("catchList");
     if (catchList) {
-      catchList.innerHTML = state.catches.length ? state.catches.map((record) => `<article class="catch-item"><strong>${escapeHtml(record.species || record.placeName || "記録")}</strong><span>${escapeHtml(record.time || "")}</span></article>`).join("") : `<p class="empty-message">釣果記録はまだありません。</p>`;
+      catchList.innerHTML = state.catches.length
+        ? state.catches.map((record) => {
+            const pinText = validPosition(record) ? "釣果ピンあり" : "位置情報なし";
+            return `<article class="catch-item"><strong>${escapeHtml(record.species || record.placeName || "釣果記録")}</strong><span>${escapeHtml(record.time || "")}</span><small>${pinText}${record.__recoveredFrom ? ` / 復旧元:${escapeHtml(record.__recoveredFrom)}` : ""}</small></article>`;
+          }).join("")
+        : `<p class="empty-message">釣果記録はまだ見つかりません。端末内に旧形式の記録が残っていれば、自動復旧します。</p>`;
     }
     const recordCount = $("recordCount");
     if (recordCount) recordCount.textContent = String(state.catches.length);
@@ -342,6 +452,8 @@
       .spot-pin-pond span { background: #16a34a; }
       .spot-pin-river span { background: #0284c7; }
       .spot-pin-port span { background: #ea580c; }
+      .leaflet-interactive { cursor: pointer; }
+      .catch-item small { display: block; margin-top: 2px; font-size: .72rem; opacity: .78; }
       .spot-item { width: 100%; display: grid; gap: 2px; text-align: left; margin: 0 0 8px; padding: 10px 12px; border-radius: 14px; border: 1px solid rgba(255,255,255,.35); background: rgba(255,255,255,.86); color: #073f33; }
       .spot-item strong { font-size: .95rem; }
       .spot-item span { font-size: .78rem; opacity: .86; }
