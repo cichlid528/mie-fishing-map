@@ -3,33 +3,28 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>キャッシュ削除 - 三重県釣りマップ</title>
-  <style>body{font-family:system-ui,sans-serif;padding:24px;line-height:1.7;background:#edf4f0;color:#17221f}a,button{display:inline-block;margin-top:12px;padding:12px 16px;border-radius:12px;border:0;background:#0f7b63;color:#fff;text-decoration:none;font-weight:800}code{background:#fff;padding:2px 6px;border-radius:6px}</style>
+  <title>キャッシュ削除</title>
 </head>
 <body>
-  <h1>キャッシュを削除しています</h1>
-  <p id="status">少し待ってください。</p>
-  <a id="openApp" href="./?v=v172-spot-checklist-restore">アプリを開く</a>
+  <p>三重県釣りマップのキャッシュを削除しています...</p>
   <script>
-    (async () => {
-      const status = document.getElementById('status');
+    const nextUrl = "./?v=v173-motion-nyan-sensei";
+    async function clearAll() {
       try {
-        if ('serviceWorker' in navigator) {
+        if ("serviceWorker" in navigator) {
           const regs = await navigator.serviceWorker.getRegistrations();
-          await Promise.all(regs.map((r) => r.unregister()));
+          await Promise.all(regs.map((reg) => reg.unregister()));
         }
+      } catch (error) {}
+      try {
         if (window.caches) {
           const keys = await caches.keys();
           await Promise.all(keys.map((key) => caches.delete(key)));
         }
-        status.textContent = 'キャッシュを削除しました。アプリを開きます。';
-      } catch (error) {
-        status.textContent = 'キャッシュ削除中にエラーが出ましたが、アプリは開けます。';
-      }
-      if (new URL(location.href).searchParams.get('auto') === '1') {
-        setTimeout(() => location.replace('./?v=v172-spot-checklist-restore'), 500);
-      }
-    })();
+      } catch (error) {}
+      setTimeout(() => location.replace(nextUrl), 500);
+    }
+    clearAll();
   </script>
 </body>
 </html>

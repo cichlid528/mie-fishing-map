@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v172-spot-checklist-restore";
-  const APP_STATUS_LABEL = "v172・釣り場チェック欄復旧版";
+  const APP_VERSION = "v173-motion-nyan-sensei";
+  const APP_STATUS_LABEL = "v173・爆釣にゃん師匠モーション版";
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
   const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
@@ -11,7 +11,7 @@
   const BACKUP_META_STORAGE_KEY = "mie-fishing-map-backup-meta-v1";
   const MIE_CENTER = [34.55, 136.48];
   const MIE_HOME_ZOOM = 9;
-  const MENU_BACKGROUND_URL = `assets/menu-bg-bakucho-nyanko-sensei-v172.png?v=${APP_VERSION}`;
+  const MENU_BACKGROUND_URL = `assets/menu-bg-bakucho-nyanko-sensei-v173.png?v=${APP_VERSION}`;
 
   const seedSpots = [
     { id: "lake-shorenji", name: "青蓮寺湖", type: "ダム", area: "名張市", lat: 34.600869, lng: 136.11885, zoom: 15, source: "指定リスト", subtype: "レイク・ダム湖" },
@@ -1097,9 +1097,9 @@
   }
 
   function installRecoveryStyles() {
-    if (document.getElementById("v172SpotChecklistRestoreStyle")) return;
+    if (document.getElementById("v173MotionNyanSenseiStyle")) return;
     const style = document.createElement("style");
-    style.id = "v172SpotChecklistRestoreStyle";
+    style.id = "v173MotionNyanSenseiStyle";
     style.textContent = `
       #appStartScreen.is-hidden, body.start-screen-done #appStartScreen { display: none !important; pointer-events: none !important; visibility: hidden !important; opacity: 0 !important; }
       #map, .map-pane, #map.leaflet-container, .leaflet-container { background: #cfded8 !important; background-image: none !important; }

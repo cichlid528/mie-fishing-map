@@ -1,10 +1,20 @@
 (() => {
   "use strict";
   window.__MIE_PWA_INSTALL_MANAGED__ = true;
-  const APP_VERSION = "v172-spot-checklist-restore";
+  const APP_VERSION = "v173-motion-nyan-sensei";
   const PET_NAME = "爆釣にゃん師匠";
-  const PET_IMAGE_SRC = `assets/turi-nyan-pose-front-v149.png?v=${APP_VERSION}`;
-  const PET_BUBBLE_IMAGE_SRC = `assets/turi-nyan-speech-bubble-comic-transparent-v172.png?v=${APP_VERSION}`;
+  const PET_MOTION_IMAGES = [
+    `assets/turi-nyan-motion-idle-v173.png?v=${APP_VERSION}`,
+    `assets/turi-nyan-motion-kiriri-v173.png?v=${APP_VERSION}`,
+    `assets/turi-nyan-motion-wink-v173.png?v=${APP_VERSION}`,
+    `assets/turi-nyan-motion-happy-v173.png?v=${APP_VERSION}`,
+    `assets/turi-nyan-motion-surprise-v173.png?v=${APP_VERSION}`,
+    `assets/turi-nyan-motion-think-v173.png?v=${APP_VERSION}`,
+    `assets/turi-nyan-motion-angry-v173.png?v=${APP_VERSION}`,
+    `assets/turi-nyan-motion-sleepy-v173.png?v=${APP_VERSION}`
+  ];
+  const PET_IMAGE_SRC = PET_MOTION_IMAGES[0];
+  const PET_BUBBLE_IMAGE_SRC = `assets/turi-nyan-speech-bubble-comic-transparent-v173.png?v=${APP_VERSION}`;
 
   function patchText(value) {
     if (typeof value !== "string") return value;
@@ -12,7 +22,8 @@
       .replaceAll("爆調ニャンコ視聴", PET_NAME)
       .replaceAll("爆調ツインニャンコ", "爆釣ツインニャンコ")
       .replaceAll("v156-menu-bg-map-fix", APP_VERSION)
-      .replaceAll("v163-menu-points-fix", APP_VERSION);
+      .replaceAll("v163-menu-points-fix", APP_VERSION)
+      .replaceAll("v172-spot-checklist-restore", APP_VERSION);
   }
 
   function patchNode(root = document.body) {
@@ -46,20 +57,71 @@
       #turiNyanPet #turiNyanMessage { display: block; max-height: 2.25em; overflow: hidden; overflow-wrap: anywhere; }
       #turiNyanPet .pet-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px; margin-top: 4px; }
       #turiNyanPet .pet-actions button { min-height: 19px; padding: 2px 4px; border-radius: 999px; font-size: .46rem; font-weight: 900; pointer-events: auto; }
-      #turiNyanPet .pet-button { width: 118px; height: 118px; padding: 0; border: 0; border-radius: 999px; background: transparent; pointer-events: auto; }
-      #turiNyanPet .pet-button img { width: 100%; height: 100%; object-fit: contain; transform: scale(1.12); transform-origin: center bottom; }
+      #turiNyanPet .pet-button { width: 124px; height: 124px; padding: 0; border: 0; border-radius: 999px; background: transparent; pointer-events: auto; filter: drop-shadow(0 10px 18px rgba(0,0,0,.20)); }
+      #turiNyanPet .pet-button img { width: 100%; height: 100%; object-fit: contain; transform: scale(1.10); transform-origin: center bottom; transition: opacity .16s ease, transform .22s ease; animation: turiNyanFloat 3.2s ease-in-out infinite; will-change: transform, opacity; }
+      #turiNyanPet.is-motioning .pet-button img { transform: scale(1.18) translateY(-4px) rotate(-2deg); }
+      #turiNyanPet.is-speaking .pet-button img { animation-duration: 2.2s; }
+      @keyframes turiNyanFloat {
+        0%, 100% { transform: scale(1.10) translateY(0) rotate(0deg); }
+        35% { transform: scale(1.13) translateY(-5px) rotate(-1deg); }
+        70% { transform: scale(1.11) translateY(-1px) rotate(1deg); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #turiNyanPet .pet-button img { animation: none !important; transition: none !important; }
+      }
       body.menu-open #turiNyanPet, body.panel-open #turiNyanPet, body.position-adjusting #turiNyanPet, body.map-popup-open #turiNyanPet, body.record-popup-open #turiNyanPet, body.spot-card-open #turiNyanPet { display: none !important; }
     `;
     document.head.appendChild(style);
   }
 
+  function preloadMotionImages() {
+    PET_MOTION_IMAGES.forEach((src) => {
+      try { const img = new Image(); img.src = src; } catch (error) {}
+    });
+  }
+
   function installPet() {
     if (document.getElementById("turiNyanPet")) return;
+    preloadMotionImages();
     const pet = document.createElement("aside");
     pet.id = "turiNyanPet";
-    pet.innerHTML = `<div class="pet-bubble"><strong>${PET_NAME}</strong><span id="turiNyanMessage">地図ボタンも復旧したにゃ。</span><div class="pet-actions"><button type="button" data-pet-close>閉じる</button><button type="button" data-pet-map>地図</button></div></div><button class="pet-button" type="button" aria-label="${PET_NAME}"><img src="${PET_IMAGE_SRC}" alt="${PET_NAME}"></button>`;
+    pet.innerHTML = `<div class="pet-bubble"><strong>${PET_NAME}</strong><span id="turiNyanMessage">表情が動くようになったにゃ。</span><div class="pet-actions"><button type="button" data-pet-close>閉じる</button><button type="button" data-pet-map>地図</button></div></div><button class="pet-button" type="button" aria-label="${PET_NAME}"><img id="turiNyanPetImage" src="${PET_IMAGE_SRC}" alt="${PET_NAME}"></button>`;
     document.body.appendChild(pet);
-    pet.querySelector(".pet-button")?.addEventListener("click", () => pet.classList.toggle("is-speaking"));
+
+    const petButton = pet.querySelector(".pet-button");
+    const petImage = pet.querySelector("#turiNyanPetImage");
+    let motionIndex = 0;
+    let motionTimer = null;
+    let lastManualMotionAt = 0;
+
+    const setMotionFrame = (index, lively = true) => {
+      if (!petImage) return;
+      motionIndex = ((index % PET_MOTION_IMAGES.length) + PET_MOTION_IMAGES.length) % PET_MOTION_IMAGES.length;
+      const nextSrc = PET_MOTION_IMAGES[motionIndex];
+      if (petImage.getAttribute("src") !== nextSrc) petImage.setAttribute("src", nextSrc);
+      if (lively) {
+        pet.classList.add("is-motioning");
+        window.setTimeout(() => pet.classList.remove("is-motioning"), 360);
+      }
+    };
+
+    const advanceMotion = (manual = false) => {
+      if (document.hidden && !manual) return;
+      setMotionFrame(motionIndex + 1, true);
+    };
+
+    motionTimer = window.setInterval(() => advanceMotion(false), 2600);
+    window.addEventListener("pagehide", () => { if (motionTimer) window.clearInterval(motionTimer); }, { once: true });
+
+    petButton?.addEventListener("click", () => {
+      const now = Date.now();
+      if (now - lastManualMotionAt > 260) {
+        lastManualMotionAt = now;
+        advanceMotion(true);
+      }
+      pet.classList.toggle("is-speaking");
+    });
+    petButton?.addEventListener("pointerenter", () => advanceMotion(true));
     pet.querySelector("[data-pet-close]")?.addEventListener("click", () => pet.classList.remove("is-speaking"));
 
     // v170: 吹き出し内の「地図」ボタンを、タップ/クリックどちらでも確実に地図画面へ戻す。
@@ -103,6 +165,7 @@
         }, ms));
       }
       pet.classList.remove("is-speaking");
+      setMotionFrame(3, true);
     };
     mapButton?.addEventListener("click", openMapFromPet, { capture: true });
     mapButton?.addEventListener("pointerup", openMapFromPet, { capture: true });

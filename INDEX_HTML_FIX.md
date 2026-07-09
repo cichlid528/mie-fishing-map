@@ -1,13 +1,20 @@
-# index.html の修正
+# index.html 修正内容
 
-`index.html` に古い `v156` や `v171` が残っていると、新しい修正が読み込まれません。
+`index.html` 内の古い `v156-menu-bg-map-fix` や `app-v156-loader-fixed.js` を残さないでください。
+
 以下のように変更してください。
 
 ```html
-<link rel="manifest" href="manifest.json?v=v172-spot-checklist-restore">
-<link rel="stylesheet" href="style.css?v=v172-spot-checklist-restore">
-<script src="pwa-install.js?v=v172-spot-checklist-restore"></script>
-<script src="app.js?v=v172-spot-checklist-restore"></script>
+<link rel="manifest" href="manifest.json?v=v173-motion-nyan-sensei">
+<link rel="stylesheet" href="style.css?v=v173-motion-nyan-sensei">
+<script src="pwa-install.js?v=v173-motion-nyan-sensei"></script>
+<script src="app.js?v=v173-motion-nyan-sensei"></script>
 ```
 
-古い `app-v156-loader-fixed.js` の読み込みは使わず、`app.js` を直接読み込んでください。
+特に重要：
+
+```html
+<script src="app.js?v=v173-motion-nyan-sensei"></script>
+```
+
+古いローダーではなく `app.js` を直接読み込んでください。
