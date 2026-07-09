@@ -1,13 +1,13 @@
 (() => {
   "use strict";
 
-  const PATCH_VERSION = "v154-default-background";
-  const PATCH_STATUS_LABEL = "v154・釣りニャン初期背景採用版";
+  const PATCH_VERSION = "v155-default-background-force";
+  const PATCH_STATUS_LABEL = "v155・釣りニャン初期背景強制反映版";
   const SOURCE_APP_URLS = [
     "https://cdn.jsdelivr.net/gh/cichlid528/mie-fishing-map@486490f1fda171ba9dfdf8ac9a431d4b3b09c530/app.js",
     "https://raw.githubusercontent.com/cichlid528/mie-fishing-map/486490f1fda171ba9dfdf8ac9a431d4b3b09c530/app.js"
   ];
-  const SOURCE_CACHE_KEY = "mie-fishing-map-source-cache-486490f1-v154";
+  const SOURCE_CACHE_KEY = "mie-fishing-map-source-cache-486490f1-v155";
 
   const oldOsugiLine = '    { id: "lake-osugi", name: "大杉湖", type: "ダム", area: "多気郡大台町", lat: 34.286385, lng: 136.19336, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },';
   const newOsugiLine = '    { id: "lake-osugi", name: "宮川ダム", type: "ダム", area: "多気郡大台町", lat: 34.286385, lng: 136.19336, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },';
@@ -16,7 +16,7 @@
   const ikeharaLine = '    { id: "dam-ikehara", name: "池原ダム", type: "ダム", area: "奈良県吉野郡下北山村", lat: 34.04694, lng: 135.97111, zoom: 14, source: "指定リスト", subtype: "レイク・ダム湖" },';
 
   function showLoadError(error) {
-    console.error("Mie Fishing Map v154 loader failed", error);
+    console.error("Mie Fishing Map v155 loader failed", error);
     const message = "アプリ本体の読み込みに失敗しました。通信状況を確認して、reset-cache.html?auto=1 を開き直してください。";
     const target = document.querySelector("#dataStatus") || document.body;
     if (!target) return;
@@ -55,7 +55,7 @@
     let patched = source
       .replace('const APP_VERSION = "v131-remove-chusei-green-park";', `const APP_VERSION = "${PATCH_VERSION}";`)
       .replace('const APP_STATUS_LABEL = "v131・中勢グリーンパーク削除版";', `const APP_STATUS_LABEL = "${PATCH_STATUS_LABEL}";`)
-      .replace('// v131: 中勢グリーンパーク池も除いた初期収録。', '// v154: 指定画像をアプリの初期背景として採用。')
+      .replace('// v131: 中勢グリーンパーク池も除いた初期収録。', '// v155: 指定画像を初期背景として既存端末にも反映。')
       .replace(oldOsugiLine, newOsugiLine)
       .replace(oldNanairoLine, `${newNanairoLine}\n${ikeharaLine}`);
 
@@ -109,18 +109,31 @@
     }
 
 
-    // v154: 指定画像を初期背景にする。ユーザーが背景を選んだ場合はその画像を優先し、リセット時はこの背景へ戻す。
-    const defaultBackgroundFunctionV154 = `  function applySidebarBackground(value) {
+    // v155: 指定画像を初期背景にする。既存端末に残った古い背景も一度だけ解除して、この背景を反映する。
+    const defaultBackgroundFunctionV155 = `  function applySidebarBackground(value) {
     const source = String(value || "").trim();
-    const background = source || "assets/default-app-background-turi-nyan-v154.jpg?v=v154-default-background";
-    const sidebar = document.querySelector(".sidebar");
-    if (sidebar && background) {
-      sidebar.style.setProperty("--sidebar-bg-image", "url(\"" + background + "\")");
-    } else if (sidebar) {
-      sidebar.style.removeProperty("--sidebar-bg-image");
-    }
+    const defaultBackground = "assets/default-app-background-turi-nyan-v155.jpg?v=v155-default-background-force";
+    const background = source || defaultBackground;
+    const cssValue = "url(\"" + background + "\")";
+    try { document.documentElement.style.setProperty("--sidebar-bg-image", cssValue); } catch (error) {}
+    document.querySelectorAll(".sidebar, #mobileMenu.sidebar").forEach((sidebar) => {
+      sidebar.style.setProperty("--sidebar-bg-image", cssValue);
+    });
   }`;
-    patched = patched.replace(/  function applySidebarBackground\(value\) \{[\s\S]*?\n  \}\n\n  async function handleBackgroundFile/, `${defaultBackgroundFunctionV154}\n\n  async function handleBackgroundFile`);
+    patched = patched.replace(/  function applySidebarBackground\(value\) \{[\s\S]*?\n  \}\n\n  async function handleBackgroundFile/, `${defaultBackgroundFunctionV155}\n\n  async function handleBackgroundFile`);
+
+    patched = patched.replace(
+      '    applySidebarBackground(localStorage.getItem(BACKGROUND_STORAGE_KEY) || "");',
+      `    // v155: 既存ユーザーの端末に残っている古い背景を一度だけ解除し、指定の初期背景を反映する。
+    try {
+      const defaultBackgroundForceKey = "mie-fishing-map-v155-default-background-force-installed";
+      if (localStorage.getItem(defaultBackgroundForceKey) !== "1") {
+        localStorage.removeItem(BACKGROUND_STORAGE_KEY);
+        localStorage.setItem(defaultBackgroundForceKey, "1");
+      }
+    } catch (error) {}
+    applySidebarBackground(localStorage.getItem(BACKGROUND_STORAGE_KEY) || "");`
+    );
 
     return patched;
   }

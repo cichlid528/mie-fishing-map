@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bass-spot-log-";
-const VERSION = "v154-default-background";
+const VERSION = "v155-default-background-force";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());
