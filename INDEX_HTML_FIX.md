@@ -1,13 +1,18 @@
-# index.html 修正
+# index.html の修正
 
-`index.html` の読み込みクエリをすべて `v167-catch-records-restore` に変更してください。
+古い `v156-menu-bg-map-fix` や `v167-catch-records-restore` を、すべて次に置換してください。
 
-```html
-<link rel="manifest" href="manifest.json?v=v167-catch-records-restore">
-<link rel="stylesheet" href="style.css?v=v167-catch-records-restore">
-<script src="pwa-install.js?v=v167-catch-records-restore"></script>
-<script src="app.js?v=v167-catch-records-restore"></script>
+```text
+v168-record-button-fix
 ```
 
-古い `app-v156-loader-fixed.js` を読む指定が残る場合でも、今回のZIPでは同ファイルにも同じ復旧コードを入れています。
-ただし推奨は `app.js` を直接読み込む形です。
+特に下記を確認してください。
+
+```html
+<link rel="manifest" href="manifest.json?v=v168-record-button-fix">
+<link rel="stylesheet" href="style.css?v=v168-record-button-fix">
+<script src="pwa-install.js?v=v168-record-button-fix"></script>
+<script src="app.js?v=v168-record-button-fix"></script>
+```
+
+`app-v156-loader-fixed.js` ではなく、できれば `app.js` を直接読み込んでください。

@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v167-catch-records-restore";
-  const APP_STATUS_LABEL = "v167・釣果記録と釣果ピン復旧版";
+  const APP_VERSION = "v168-record-button-fix";
+  const APP_STATUS_LABEL = "v168・記録ボタン動作修正版";
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
   const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
@@ -11,7 +11,7 @@
   const BACKUP_META_STORAGE_KEY = "mie-fishing-map-backup-meta-v1";
   const MIE_CENTER = [34.55, 136.48];
   const MIE_HOME_ZOOM = 9;
-  const MENU_BACKGROUND_URL = `assets/menu-bg-bakucho-nyanko-sensei-v167.png?v=${APP_VERSION}`;
+  const MENU_BACKGROUND_URL = `assets/menu-bg-bakucho-nyanko-sensei-v168.png?v=${APP_VERSION}`;
 
   const seedSpots = [
     { id: "lake-shorenji", name: "青蓮寺湖", type: "ダム", area: "名張市", lat: 34.600869, lng: 136.11885, zoom: 15, source: "指定リスト", subtype: "レイク・ダム湖" },
@@ -87,7 +87,8 @@
     search: "",
     activeFilter: "all",
     activeList: "spots",
-    selectedSpotId: ""
+    selectedSpotId: "",
+    catchMode: false
   };
 
   let map = null;
@@ -357,15 +358,47 @@
     if (spotCount) spotCount.textContent = String(state.spots.length);
   }
 
+  function recordTitle(record) {
+    return record.species || record.placeName || record.memo || "釣果記録";
+  }
+
+  function recordSubText(record) {
+    const parts = [];
+    if (record.time) parts.push(record.time);
+    if (record.sizeCm) parts.push(`${record.sizeCm}cm`);
+    if (record.bait) parts.push(record.bait);
+    if (validPosition(record)) parts.push("釣果ピンあり");
+    else parts.push("位置情報なし");
+    return parts.join(" / ");
+  }
+
+  function focusCatchRecord(recordId) {
+    const record = state.catches.find((item) => item.id === recordId);
+    if (!record) return;
+    closeMobileMenu();
+    if (validPosition(record) && map) {
+      map.setView([Number(record.lat), Number(record.lng)], 16, { animate: true });
+      const marker = catchMarkers.get(record.id);
+      setTimeout(() => marker?.openPopup?.(), 220);
+    } else {
+      const status = $("dataStatus");
+      if (status) status.textContent = "この記録には位置情報がありません。記録一覧には残しています。";
+    }
+  }
+
   function renderCatchList() {
     const catchList = $("catchList");
     if (catchList) {
       catchList.innerHTML = state.catches.length
-        ? state.catches.map((record) => {
+        ? state.catches.map((record, index) => {
             const pinText = validPosition(record) ? "釣果ピンあり" : "位置情報なし";
-            return `<article class="catch-item"><strong>${escapeHtml(record.species || record.placeName || "釣果記録")}</strong><span>${escapeHtml(record.time || "")}</span><small>${pinText}${record.__recoveredFrom ? ` / 復旧元:${escapeHtml(record.__recoveredFrom)}` : ""}</small></article>`;
+            const recovered = record.__recoveredFrom ? ` / 復旧元:${escapeHtml(record.__recoveredFrom)}` : "";
+            return `<button class="catch-item" type="button" data-catch-id="${escapeHtml(record.id)}"><span class="catch-num ${record.recordType === "note" ? "note" : ""}">${index + 1}</span><span class="catch-main"><strong>${escapeHtml(recordTitle(record))}${Number(record.sizeCm) >= 40 ? '<span class="big-bass-badge">40up</span>' : ''}</strong><small>${escapeHtml(recordSubText(record))}</small><small>${pinText}${recovered}</small></span></button>`;
           }).join("")
         : `<p class="empty-message">釣果記録はまだ見つかりません。端末内に旧形式の記録が残っていれば、自動復旧します。</p>`;
+      catchList.querySelectorAll("[data-catch-id]").forEach((button) => {
+        button.addEventListener("click", () => focusCatchRecord(button.dataset.catchId));
+      });
     }
     const recordCount = $("recordCount");
     if (recordCount) recordCount.textContent = String(state.catches.length);
@@ -415,6 +448,173 @@
     if (screen) document.body.classList.add("start-screen-active");
   }
 
+  function nowLocalInputValue() {
+    const date = new Date();
+    date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+    return date.toISOString().slice(0, 16);
+  }
+
+  function currentMapLatLng() {
+    const center = map?.getCenter?.();
+    if (center && Number.isFinite(Number(center.lat)) && Number.isFinite(Number(center.lng))) return center;
+    return { lat: MIE_CENTER[0], lng: MIE_CENTER[1] };
+  }
+
+  function setPanelOpen(panel, open) {
+    if (!panel) return;
+    panel.classList.toggle("is-open", Boolean(open));
+    panel.classList.toggle("is-hidden", !open);
+    panel.setAttribute("aria-hidden", open ? "false" : "true");
+    if (open) {
+      panel.removeAttribute("hidden");
+      panel.style.setProperty("display", "grid", "important");
+      document.body.classList.add("panel-open");
+    } else {
+      panel.style.removeProperty("display");
+      document.body.classList.remove("panel-open");
+    }
+  }
+
+  function closeCatchPanel() {
+    setPanelOpen($("catchPanel"), false);
+    state.catchMode = false;
+    $("addCatchMode")?.classList.remove("is-active");
+  }
+
+  function selectedSpeciesText() {
+    const checked = [...document.querySelectorAll('[data-catch-species-option]:checked')].map((input) => input.value).filter(Boolean);
+    const hiddenValue = String($("catchSpecies")?.value || "").trim();
+    return checked.length ? [...new Set(checked)].join("、") : (hiddenValue || "ブラックバス");
+  }
+
+  function syncSpeciesHiddenFromChecks() {
+    const species = selectedSpeciesText();
+    if ($("catchSpecies")) $("catchSpecies").value = species;
+    return species;
+  }
+
+  function openCatchPanel(latlng = null, options = {}) {
+    const panel = $("catchPanel");
+    if (!panel) {
+      const status = $("dataStatus");
+      if (status) status.textContent = "記録パネルが見つかりません。index.htmlのcatchPanelを確認してください。";
+      return;
+    }
+    const pos = latlng || currentMapLatLng();
+    const lat = Number(pos.lat);
+    const lng = Number(pos.lng);
+    closeMobileMenu();
+    state.catchMode = false;
+    $("addCatchMode")?.classList.remove("is-active");
+    if ($("catchIdInput")) $("catchIdInput").value = "";
+    if ($("catchLat")) $("catchLat").value = Number.isFinite(lat) ? String(lat) : String(MIE_CENTER[0]);
+    if ($("catchLng")) $("catchLng").value = Number.isFinite(lng) ? String(lng) : String(MIE_CENTER[1]);
+    if ($("catchRecordType")) $("catchRecordType").value = options.recordType || "catch";
+    if ($("catchTime") && !$("catchTime").value) $("catchTime").value = nowLocalInputValue();
+    if ($("catchLocationStatus")) $("catchLocationStatus").textContent = options.locationLabel || "地図中央の位置で記録します。必要なら現在地を使ってください。";
+    syncSpeciesHiddenFromChecks();
+    setPanelOpen(panel, true);
+    setTimeout(() => panel.querySelector("input, select, textarea, button")?.focus?.(), 80);
+  }
+
+  function useCurrentLocationForCatch() {
+    if (!navigator.geolocation) {
+      openCatchPanel(currentMapLatLng(), { recordType: "catch", locationLabel: "位置情報が使えないため、地図中央で記録します。" });
+      return;
+    }
+    const status = $("catchLocationStatus") || $("dataStatus");
+    if (status) status.textContent = "現在地を取得しています…";
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const latlng = { lat: position.coords.latitude, lng: position.coords.longitude };
+        if ($("catchLat")) $("catchLat").value = String(latlng.lat);
+        if ($("catchLng")) $("catchLng").value = String(latlng.lng);
+        if ($("catchLocationStatus")) $("catchLocationStatus").textContent = "現在地で記録します。";
+        if (map) map.setView([latlng.lat, latlng.lng], Math.max(map.getZoom() || 15, 15), { animate: true });
+        openCatchPanel(latlng, { recordType: "catch", locationLabel: "現在地で記録します。" });
+      },
+      () => openCatchPanel(currentMapLatLng(), { recordType: "catch", locationLabel: "現在地を取得できなかったため、地図中央で記録します。" }),
+      { enableHighAccuracy: true, timeout: 9000, maximumAge: 30000 }
+    );
+  }
+
+  function saveCatch(event) {
+    event?.preventDefault?.();
+    const lat = Number($("catchLat")?.value || currentMapLatLng().lat);
+    const lng = Number($("catchLng")?.value || currentMapLatLng().lng);
+    const id = $("catchIdInput")?.value || `record-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+    const record = normalizeRecord({
+      id,
+      recordType: $("catchRecordType")?.value || "catch",
+      placeKind: $("catchPlaceKind")?.value || "",
+      placeName: $("catchPlaceName")?.value || "",
+      spotId: $("catchSpot")?.value || "",
+      time: $("catchTime")?.value || nowLocalInputValue(),
+      lat,
+      lng,
+      species: syncSpeciesHiddenFromChecks(),
+      bait: $("catchBait")?.value || "",
+      lureName: $("catchLureName")?.value || "",
+      lureColor: $("catchLureColor")?.value || "",
+      lureWeight: $("catchLureWeight")?.value || "",
+      sizeCm: $("catchSizeCm")?.value || "",
+      size: $("catchSize")?.value || "",
+      weather: $("catchWeather")?.value || "",
+      wind: $("catchWind")?.value || "",
+      water: $("catchWater")?.value || "",
+      waterLevel: $("catchWaterLevel")?.value || "",
+      baitfish: $("catchBaitfish")?.value || "",
+      cover: $("catchCover")?.value || "",
+      reaction: $("catchReaction")?.value || "",
+      pressure: $("catchPressure")?.value || "",
+      timeBand: $("catchTimeBand")?.value || "",
+      memo: $("catchMemo")?.value || "",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    });
+    const index = state.catches.findIndex((item) => item.id === id);
+    if (index >= 0) state.catches[index] = record;
+    else state.catches.unshift(record);
+    try { localStorage.setItem(CATCH_STORAGE_KEY, JSON.stringify(state.catches)); } catch (error) {}
+    render();
+    switchList("catches");
+    closeCatchPanel();
+    const status = $("dataStatus");
+    if (status) status.textContent = "記録を保存しました。釣果ピンと記録一覧を更新しました。";
+  }
+
+  function deleteSelectedCatch() {
+    const id = $("catchIdInput")?.value;
+    if (!id) { closeCatchPanel(); return; }
+    state.catches = state.catches.filter((record) => record.id !== id);
+    try { localStorage.setItem(CATCH_STORAGE_KEY, JSON.stringify(state.catches)); } catch (error) {}
+    render();
+    closeCatchPanel();
+  }
+
+  function switchList(listName) {
+    state.activeList = listName === "catches" ? "catches" : "spots";
+    const showCatches = state.activeList === "catches";
+    $("spotTab")?.classList.toggle("is-active", !showCatches);
+    $("catchTab")?.classList.toggle("is-active", showCatches);
+    $("spotTab")?.setAttribute("aria-selected", showCatches ? "false" : "true");
+    $("catchTab")?.setAttribute("aria-selected", showCatches ? "true" : "false");
+    $("spotList")?.classList.toggle("is-hidden", showCatches);
+    $("catchList")?.classList.toggle("is-hidden", !showCatches);
+    $("spotListHead")?.classList.toggle("is-hidden", showCatches);
+    $("catchListHead")?.classList.toggle("is-hidden", !showCatches);
+    $("recordFilterRow")?.classList.toggle("is-hidden", !showCatches);
+    if (showCatches) {
+      $("catchList")?.removeAttribute("hidden");
+      $("spotList")?.setAttribute("hidden", "hidden");
+    } else {
+      $("spotList")?.removeAttribute("hidden");
+      $("catchList")?.setAttribute("hidden", "hidden");
+    }
+    renderCatchList();
+  }
+
+
   function bindEvents() {
     $("menuToggle")?.addEventListener("click", () => {
       const menu = $("mobileMenu");
@@ -431,17 +631,29 @@
         render();
       });
     });
-    $("spotTab")?.addEventListener("click", () => { state.activeList = "spots"; $("spotList")?.removeAttribute("hidden"); $("catchList")?.setAttribute("hidden", "hidden"); });
-    $("catchTab")?.addEventListener("click", () => { state.activeList = "catches"; $("catchList")?.removeAttribute("hidden"); $("spotList")?.setAttribute("hidden", "hidden"); });
-    $("addSpotMode")?.addEventListener("click", () => alert("釣り場追加機能は復旧作業中です。まずは地図とピン表示を優先して復旧しています。"));
-    $("addCatchMode")?.addEventListener("click", () => alert("記録ピン追加機能は復旧作業中です。既存記録は削除していません。"));
+    $("spotTab")?.addEventListener("click", () => switchList("spots"));
+    $("catchTab")?.addEventListener("click", () => switchList("catches"));
+    document.querySelectorAll("[data-record-filter]").forEach((button) => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll("[data-record-filter]").forEach((b) => b.classList.toggle("is-active", b === button));
+        switchList("catches");
+      });
+    });
+    document.querySelectorAll("[data-catch-species-option]").forEach((input) => input.addEventListener("change", syncSpeciesHiddenFromChecks));
+    $("catchForm")?.addEventListener("submit", saveCatch);
+    $("closeCatchPanel")?.addEventListener("click", closeCatchPanel);
+    $("deleteCatch")?.addEventListener("click", deleteSelectedCatch);
+    $("useCurrentLocationButton")?.addEventListener("click", useCurrentLocationForCatch);
+    $("addSpotMode")?.addEventListener("click", () => alert("釣り場追加機能は復旧作業中です。釣果記録ボタンは使えるように修正しました。"));
+    $("addCatchMode")?.addEventListener("click", () => openCatchPanel(currentMapLatLng(), { recordType: "catch", locationLabel: "地図中央の位置で釣果記録を作成します。" }));
+    $("locateCatchButton")?.addEventListener("click", useCurrentLocationForCatch);
     window.addEventListener("resize", () => map?.invalidateSize?.({ animate: false }));
   }
 
   function installRecoveryStyles() {
-    if (document.getElementById("v166GsiMapPinsFixStyle")) return;
+    if (document.getElementById("v168RecordButtonFixStyle")) return;
     const style = document.createElement("style");
-    style.id = "v166GsiMapPinsFixStyle";
+    style.id = "v168RecordButtonFixStyle";
     style.textContent = `
       #appStartScreen.is-hidden, body.start-screen-done #appStartScreen { display: none !important; pointer-events: none !important; visibility: hidden !important; opacity: 0 !important; }
       #map, .map-pane, #map.leaflet-container, .leaflet-container { background: #cfded8 !important; background-image: none !important; }
@@ -470,6 +682,7 @@
     bindEvents();
     initMap();
     render();
+    switchList("spots");
     window.__MIE_APP_READY__ = true;
   }
 
