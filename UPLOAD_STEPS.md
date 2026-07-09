@@ -1,15 +1,14 @@
 # アップロード手順
 
-1. ZIPを解凍します。
-2. GitHub の `mie-fishing-map` リポジトリを開きます。
-3. 解凍したファイルを、同じ場所・同じ名前でアップロードします。
-4. `assets` フォルダ内の画像もすべてアップロードします。
-5. `index.html` を `INDEX_HTML_FIX.md` の内容に合わせて修正します。
-6. コミット名は `魚種選択と釣況入力を復旧` にします。
-7. 反映後、下記URLでキャッシュ削除します。
+1. このフォルダ内のファイルをGitHubリポジトリの同じ場所へアップロードしてください。
+2. `app.js`, `pwa-install.js`, `manifest.json`, `sw.js`, `reset-cache.html` を上書きします。
+3. `assets` フォルダ内の画像もアップロードしてください。
+4. `index.html` の読み込みを `v176-spot-species-picker-fix` に変更してください。
+5. コミット名は `釣り場魚種選択を選択式に修正` で大丈夫です。
+6. 反映後、キャッシュ削除URLを開いてから確認してください。
 
+キャッシュ削除:
 https://cichlid528.github.io/mie-fishing-map/reset-cache.html?auto=1
 
-8. そのあと確認します。
-
-https://cichlid528.github.io/mie-fishing-map/?v=v175-species-condition-fix
+確認URL:
+https://cichlid528.github.io/mie-fishing-map/?v=v176-spot-species-picker-fix

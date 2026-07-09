@@ -1,21 +1,21 @@
 (() => {
   "use strict";
   window.__MIE_PWA_INSTALL_MANAGED__ = true;
-  const APP_VERSION = "v175-species-condition-fix";
+  const APP_VERSION = "v176-spot-species-picker-fix";
   const PET_NAME = "爆釣にゃん師匠";
   const PET_MOTION_IMAGES = [
-    `assets/turi-nyan-motion-idle-v175.png?v=${APP_VERSION}`,
-    `assets/turi-nyan-motion-kiriri-v175.png?v=${APP_VERSION}`,
-    `assets/turi-nyan-motion-wink-v175.png?v=${APP_VERSION}`,
-    `assets/turi-nyan-motion-happy-v175.png?v=${APP_VERSION}`,
-    `assets/turi-nyan-motion-surprise-v175.png?v=${APP_VERSION}`,
-    `assets/turi-nyan-motion-think-v175.png?v=${APP_VERSION}`,
-    `assets/turi-nyan-motion-angry-v175.png?v=${APP_VERSION}`,
-    `assets/turi-nyan-motion-sleepy-v175.png?v=${APP_VERSION}`
+    `assets/turi-nyan-motion-idle-v176.png?v=${APP_VERSION}`,
+    `assets/turi-nyan-motion-kiriri-v176.png?v=${APP_VERSION}`,
+    `assets/turi-nyan-motion-wink-v176.png?v=${APP_VERSION}`,
+    `assets/turi-nyan-motion-happy-v176.png?v=${APP_VERSION}`,
+    `assets/turi-nyan-motion-surprise-v176.png?v=${APP_VERSION}`,
+    `assets/turi-nyan-motion-think-v176.png?v=${APP_VERSION}`,
+    `assets/turi-nyan-motion-angry-v176.png?v=${APP_VERSION}`,
+    `assets/turi-nyan-motion-sleepy-v176.png?v=${APP_VERSION}`
   ];
-  const PET_IMAGE_SRC = `assets/turi-nyan-motion-animated-v175.webp?v=${APP_VERSION}`;
+  const PET_IMAGE_SRC = `assets/turi-nyan-motion-animated-v176.webp?v=${APP_VERSION}`;
   const PET_IMAGE_FALLBACK_SRC = PET_MOTION_IMAGES[0];
-  const PET_BUBBLE_IMAGE_SRC = `assets/turi-nyan-speech-bubble-comic-transparent-v175.png?v=${APP_VERSION}`;
+  const PET_BUBBLE_IMAGE_SRC = `assets/turi-nyan-speech-bubble-comic-transparent-v176.png?v=${APP_VERSION}`;
 
   function patchText(value) {
     if (typeof value !== "string") return value;
@@ -87,7 +87,7 @@
     preloadMotionImages();
     const pet = document.createElement("aside");
     pet.id = "turiNyanPet";
-    pet.innerHTML = `<div class="pet-bubble"><strong>${PET_NAME}</strong><span id="turiNyanMessage">魚種と釣況も選べるにゃ。</span><div class="pet-actions"><button type="button" data-pet-close>閉じる</button><button type="button" data-pet-map>地図</button></div></div><button class="pet-button" type="button" aria-label="${PET_NAME}"><img id="turiNyanPetImage" src="${PET_IMAGE_SRC}" alt="${PET_NAME}" data-motion-animated="1"></button>`;
+    pet.innerHTML = `<div class="pet-bubble"><strong>${PET_NAME}</strong><span id="turiNyanMessage">魚種をボタンで選べるにゃ。</span><div class="pet-actions"><button type="button" data-pet-close>閉じる</button><button type="button" data-pet-map>地図</button></div></div><button class="pet-button" type="button" aria-label="${PET_NAME}"><img id="turiNyanPetImage" src="${PET_IMAGE_SRC}" alt="${PET_NAME}" data-motion-animated="1"></button>`;
     document.body.appendChild(pet);
 
     const petButton = pet.querySelector(".pet-button");

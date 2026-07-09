@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v175-species-condition-fix";
-  const APP_STATUS_LABEL = "v175・魚種と釣況選択復旧版";
+  const APP_VERSION = "v176-spot-species-picker-fix";
+  const APP_STATUS_LABEL = "v176・魚種と釣況選択復旧版";
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
   const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
@@ -11,7 +11,7 @@
   const BACKUP_META_STORAGE_KEY = "mie-fishing-map-backup-meta-v1";
   const MIE_CENTER = [34.55, 136.48];
   const MIE_HOME_ZOOM = 9;
-  const MENU_BACKGROUND_URL = `assets/menu-bg-bakucho-nyanko-sensei-v175.png?v=${APP_VERSION}`;
+  const MENU_BACKGROUND_URL = `assets/menu-bg-bakucho-nyanko-sensei-v176.png?v=${APP_VERSION}`;
 
   const seedSpots = [
     { id: "lake-shorenji", name: "青蓮寺湖", type: "ダム", area: "名張市", lat: 34.600869, lng: 136.11885, zoom: 15, source: "指定リスト", subtype: "レイク・ダム湖" },
@@ -1242,9 +1242,9 @@
   }
 
   function installRecoveryStyles() {
-    if (document.getElementById("v175SpeciesConditionFixStyle")) return;
+    if (document.getElementById("v176SpeciesConditionFixStyle")) return;
     const style = document.createElement("style");
-    style.id = "v175SpeciesConditionFixStyle";
+    style.id = "v176SpeciesConditionFixStyle";
     style.textContent = `
       #appStartScreen.is-hidden, body.start-screen-done #appStartScreen { display: none !important; pointer-events: none !important; visibility: hidden !important; opacity: 0 !important; }
       #map, .map-pane, #map.leaflet-container, .leaflet-container { background: #cfded8 !important; background-image: none !important; }

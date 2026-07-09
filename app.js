@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v175-species-condition-fix";
-  const APP_STATUS_LABEL = "v175・魚種と釣況選択復旧版";
+  const APP_VERSION = "v176-spot-species-picker-fix";
+  const APP_STATUS_LABEL = "v176・釣り場魚種選択式復旧版";
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
   const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
@@ -11,7 +11,7 @@
   const BACKUP_META_STORAGE_KEY = "mie-fishing-map-backup-meta-v1";
   const MIE_CENTER = [34.55, 136.48];
   const MIE_HOME_ZOOM = 9;
-  const MENU_BACKGROUND_URL = `assets/menu-bg-bakucho-nyanko-sensei-v175.png?v=${APP_VERSION}`;
+  const MENU_BACKGROUND_URL = `assets/menu-bg-bakucho-nyanko-sensei-v176.png?v=${APP_VERSION}`;
 
   const seedSpots = [
     { id: "lake-shorenji", name: "青蓮寺湖", type: "ダム", area: "名張市", lat: 34.600869, lng: 136.11885, zoom: 15, source: "指定リスト", subtype: "レイク・ダム湖" },
@@ -126,17 +126,145 @@
     return `${list[0]}ほか${list.length - 1}`;
   }
 
-  function editSpotSpecies(spotId) {
+  function speciesListFromText(value = "") {
+    return [...new Set(String(value || "").split(/[、,，/／]+/u).map((item) => item.trim()).filter(Boolean))];
+  }
+
+  const SPOT_FRESHWATER_SPECIES_LIST = ["ブラックバス", "スモールマウスバス", "ブルーギル", "ナマズ", "ライギョ", "コイ", "フナ", "ヘラブナ", "ニゴイ", "ウグイ", "オイカワ", "カワムツ", "ハス", "モロコ", "タナゴ", "ワカサギ", "アユ", "アマゴ", "イワナ", "ニジマス", "ウナギ"];
+  const SPOT_SALTWATER_SPECIES_LIST = ["シーバス", "キス", "アジ", "メバル", "カサゴ", "チヌ", "キビレ", "マゴチ", "ヒラメ", "ハゼ", "ボラ", "サヨリ", "イワシ", "サバ", "カマス", "タチウオ", "サゴシ", "ツバス", "ハマチ", "ブリ", "マダイ", "グレ", "アイナメ", "ベラ", "ソイ", "タケノコメバル"];
+  const SPOT_SQUID_SPECIES_LIST = ["アオリイカ", "コウイカ", "タコ", "テナガエビ", "エビ", "カニ"];
+  const SPOT_SPECIES_GROUPS = [
+    { id: "freshwater", label: "淡水", items: SPOT_FRESHWATER_SPECIES_LIST },
+    { id: "saltwater", label: "海水", items: SPOT_SALTWATER_SPECIES_LIST },
+    { id: "squid", label: "イカ・タコ・エビ", items: SPOT_SQUID_SPECIES_LIST },
+    { id: "all", label: "すべて", items: [] }
+  ];
+
+  function allSpotSpeciesOptions() {
+    const names = [];
+    SPOT_SPECIES_GROUPS.forEach((group) => names.push(...group.items));
+    try {
+      Object.values(state.savedState || {}).forEach((saved) => names.push(...speciesListFromText(saved?.species)));
+      state.catches.forEach((record) => names.push(...speciesListFromText(record?.species)));
+    } catch (error) {}
+    names.push("その他");
+    return [...new Set(names.map((name) => String(name || "").trim()).filter(Boolean))];
+  }
+
+  function spotSpeciesCategory(name) {
+    if (SPOT_FRESHWATER_SPECIES_LIST.includes(name)) return "freshwater";
+    if (SPOT_SQUID_SPECIES_LIST.includes(name)) return "squid";
+    if (SPOT_SALTWATER_SPECIES_LIST.includes(name)) return "saltwater";
+    return "all";
+  }
+
+  function ensureSpotSpeciesPanel() {
+    let panel = $("spotSpeciesPanel");
+    if (panel) return panel;
+    panel = document.createElement("section");
+    panel.id = "spotSpeciesPanel";
+    panel.className = "catch-panel spot-species-panel is-hidden";
+    panel.setAttribute("aria-label", "釣り場の魚種選択");
+    panel.setAttribute("aria-hidden", "true");
+    panel.innerHTML = `<form class="catch-form spot-species-form" onsubmit="return false;">
+      <header class="catch-form-header"><div><p class="kicker">Species</p><h2 data-spot-species-title>魚種を選択</h2></div><button id="closeSpotSpeciesPanel" class="icon-button" type="button" title="閉じる" aria-label="閉じる">×</button></header>
+      <p class="panel-help">文字入力ではなく、下の魚種ボタンをタップして選択してください。複数選択できます。</p>
+      <div class="species-category-row spot-species-tabs" role="group" aria-label="魚種カテゴリ">
+        ${SPOT_SPECIES_GROUPS.map((group) => `<button class="species-category-chip" type="button" data-spot-species-filter="${group.id}" aria-pressed="false">${group.label}</button>`).join("")}
+      </div>
+      <div class="species-search-row"><input id="spotSpeciesSearch" type="search" inputmode="search" autocomplete="off" placeholder="絞り込み：例 バス、アジ、イカ"><small id="spotSpeciesStatus" class="species-search-status">淡水・海水を切り替えて選択できます。</small></div>
+      <div id="spotSpeciesChoices" class="multi-choice-grid spot-species-choice-grid" aria-label="釣り場の魚種を複数選択"></div>
+      <div class="catch-actions"><button id="clearSpotSpecies" class="delete-button" type="button">未設定に戻す</button><button id="saveSpotSpecies" class="save-button" type="button">保存</button></div>
+    </form>`;
+    document.body.appendChild(panel);
+    panel.querySelector("#closeSpotSpeciesPanel")?.addEventListener("click", () => setPanelOpen(panel, false));
+    panel.querySelector("#clearSpotSpecies")?.addEventListener("click", () => {
+      panel.querySelectorAll("[data-spot-species-option]").forEach((input) => { input.checked = false; input.closest("label")?.classList.remove("is-selected"); });
+      updateSpotSpeciesPickerStatus(panel);
+    });
+    panel.querySelector("#saveSpotSpecies")?.addEventListener("click", () => saveSpotSpeciesPicker(panel));
+    panel.querySelector("#spotSpeciesSearch")?.addEventListener("input", () => applySpotSpeciesPickerFilter(panel));
+    panel.querySelectorAll("[data-spot-species-filter]").forEach((button) => {
+      button.addEventListener("click", () => {
+        panel.dataset.speciesFilter = button.dataset.spotSpeciesFilter || "freshwater";
+        applySpotSpeciesPickerFilter(panel);
+      });
+    });
+    return panel;
+  }
+
+  function renderSpotSpeciesChoices(panel, selectedNames = []) {
+    const box = panel.querySelector("#spotSpeciesChoices");
+    if (!box) return;
+    const selected = new Set(selectedNames);
+    const options = allSpotSpeciesOptions();
+    box.innerHTML = options.map((name) => {
+      const category = spotSpeciesCategory(name);
+      const checked = selected.has(name) ? "checked" : "";
+      const selectedClass = selected.has(name) ? " is-selected" : "";
+      return `<label class="spot-species-choice${selectedClass}" data-species-category="${escapeHtml(category)}" data-species-name="${escapeHtml(name)}"><input type="checkbox" data-spot-species-option value="${escapeHtml(name)}" ${checked}><span>${escapeHtml(name)}</span></label>`;
+    }).join("");
+    box.querySelectorAll("[data-spot-species-option]").forEach((input) => {
+      input.addEventListener("change", () => {
+        input.closest("label")?.classList.toggle("is-selected", input.checked);
+        updateSpotSpeciesPickerStatus(panel);
+      });
+    });
+  }
+
+  function updateSpotSpeciesPickerStatus(panel) {
+    const selected = Array.from(panel.querySelectorAll("[data-spot-species-option]:checked")).map((input) => input.value);
+    const status = panel.querySelector("#spotSpeciesStatus");
+    if (status) status.textContent = selected.length ? `選択中：${selected.join("、")}` : "淡水・海水を切り替えて魚種を選択できます。";
+  }
+
+  function applySpotSpeciesPickerFilter(panel) {
+    const filter = panel.dataset.speciesFilter || "freshwater";
+    const q = speciesSearchValue(panel.querySelector("#spotSpeciesSearch")?.value || "");
+    panel.querySelectorAll("[data-spot-species-filter]").forEach((button) => {
+      const active = (button.dataset.spotSpeciesFilter || "freshwater") === filter;
+      button.classList.toggle("is-active", active);
+      button.setAttribute("aria-pressed", active ? "true" : "false");
+    });
+    panel.querySelectorAll(".spot-species-choice").forEach((label) => {
+      const name = label.dataset.speciesName || "";
+      const category = label.dataset.speciesCategory || "all";
+      const checked = Boolean(label.querySelector("input")?.checked);
+      const categoryOk = filter === "all" || category === filter || category === "all";
+      const searchOk = !q || speciesSearchValue(name).includes(q);
+      const visible = checked || (q ? searchOk : categoryOk);
+      label.classList.toggle("is-hidden", !visible);
+    });
+    updateSpotSpeciesPickerStatus(panel);
+  }
+
+  function saveSpotSpeciesPicker(panel) {
+    const spotId = panel.dataset.spotId || "";
     const spot = state.spots.find((item) => item.id === spotId);
     const saved = spotState(spotId);
-    const next = window.prompt(`「${spot?.name || "釣り場"}」で釣れた魚種を入力してください。例：ブラックバス、シーバス、アジ`, saved.species || "");
-    if (next === null) return;
-    saved.species = String(next || "").trim();
+    const selected = Array.from(panel.querySelectorAll("[data-spot-species-option]:checked")).map((input) => input.value).filter(Boolean);
+    saved.species = [...new Set(selected)].join("、");
     persistSavedState();
+    setPanelOpen(panel, false);
     renderSpotList();
     if (state.selectedSpotId === spotId && spot) renderSpotCard(spot);
     const status = $("dataStatus");
-    if (status) status.textContent = saved.species ? `「${spot?.name || "釣り場"}」の魚種を保存しました。` : `「${spot?.name || "釣り場"}」の魚種を未設定に戻しました。`;
+    if (status) status.textContent = saved.species ? `「${spot?.name || "釣り場"}」の魚種を選択保存しました。` : `「${spot?.name || "釣り場"}」の魚種を未設定に戻しました。`;
+  }
+
+  function editSpotSpecies(spotId) {
+    const spot = state.spots.find((item) => item.id === spotId);
+    const saved = spotState(spotId);
+    const panel = ensureSpotSpeciesPanel();
+    panel.dataset.spotId = spotId || "";
+    panel.dataset.speciesFilter = "freshwater";
+    const title = panel.querySelector("[data-spot-species-title]");
+    if (title) title.textContent = `魚種を選択：${spot?.name || "釣り場"}`;
+    const search = panel.querySelector("#spotSpeciesSearch");
+    if (search) search.value = "";
+    renderSpotSpeciesChoices(panel, speciesListFromText(saved.species));
+    applySpotSpeciesPickerFilter(panel);
+    setPanelOpen(panel, true);
   }
 
   function updateSpotFlag(spotId, flag, value) {
@@ -846,8 +974,8 @@
   }
 
 
-  const FRESHWATER_SPECIES = new Set("ブラックバス ブルーギル ナマズ ライギョ コイ フナ ヘラブナ スモールマウスバス ニゴイ ウグイ オイカワ カワムツ ハス モロコ タナゴ ワカサギ アユ アマゴ イワナ ニジマス ウナギ".split(" "));
-  const SQUID_SPECIES = new Set("アオリイカ タコ テナガエビ".split(" "));
+  const FRESHWATER_SPECIES = new Set(SPOT_FRESHWATER_SPECIES_LIST);
+  const SQUID_SPECIES = new Set(SPOT_SQUID_SPECIES_LIST);
   const POPULAR_SPECIES = new Set("ブラックバス ブルーギル シーバス キス アジ メバル カサゴ チヌ マゴチ ヒラメ アオリイカ".split(" "));
 
   function speciesCategory(value) {
@@ -1134,7 +1262,7 @@
         screen.style.setProperty("pointer-events", "none", "important");
       }
 
-      ["catchPanel", "spotPanel", "backgroundPanel", "installPanel", "infoPanel"].forEach((id) => {
+      ["catchPanel", "spotPanel", "spotSpeciesPanel", "backgroundPanel", "installPanel", "infoPanel"].forEach((id) => {
         const panel = $(id);
         if (!panel) return;
         panel.classList.remove("is-open");
@@ -1242,9 +1370,9 @@
   }
 
   function installRecoveryStyles() {
-    if (document.getElementById("v175SpeciesConditionFixStyle")) return;
+    if (document.getElementById("v176SpotSpeciesPickerFixStyle")) return;
     const style = document.createElement("style");
-    style.id = "v175SpeciesConditionFixStyle";
+    style.id = "v176SpotSpeciesPickerFixStyle";
     style.textContent = `
       #appStartScreen.is-hidden, body.start-screen-done #appStartScreen { display: none !important; pointer-events: none !important; visibility: hidden !important; opacity: 0 !important; }
       #map, .map-pane, #map.leaflet-container, .leaflet-container { background: #cfded8 !important; background-image: none !important; }
@@ -1272,6 +1400,12 @@
       .multi-choice-grid label.is-selected { background: #e6f4ef; color: #095a48; border-color: rgba(15,123,99,.35); box-shadow: inset 0 0 0 2px rgba(15,123,99,.12); }
       .multi-choice-grid label.is-hidden { display: none !important; }
       .multi-choice-grid input { width: auto; margin: 0; }
+
+      .spot-species-panel .spot-species-form { max-width: min(760px, 96vw); }
+      .spot-species-tabs { position: sticky; top: 0; z-index: 2; background: rgba(255,255,255,.98); padding-bottom: 4px; }
+      .spot-species-choice-grid { max-height: min(46vh, 430px); }
+      .spot-species-choice span { pointer-events: none; }
+      .spot-species-choice.is-selected { background: #e6f4ef !important; color: #095a48 !important; border-color: rgba(15,123,99,.35) !important; box-shadow: inset 0 0 0 2px rgba(15,123,99,.12); }
       .species-search-row { display: grid; gap: 5px; margin: 8px 0; }
       .species-search-status { color: #64736e; font-size: .78rem; }
       #catchPanel[data-record-entry-mode="super"] .super-record-hidden-field, #catchPanel[data-record-entry-mode="super"] .advanced-fishing-field { display: none !important; }
