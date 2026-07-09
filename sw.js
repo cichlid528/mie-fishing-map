@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "bass-spot-log-";
-const VERSION = "v150-pet-light-float";
+const VERSION = "v151-pet-mobile-size-up";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(self.skipWaiting());
