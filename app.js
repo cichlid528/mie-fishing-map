@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v177-species-catch-detail-nyan-motion";
-  const APP_STATUS_LABEL = "v177・魚種選択と釣果詳細と師匠モーション改善版";
+  const APP_VERSION = "v178-catch-detail-view";
+  const APP_STATUS_LABEL = "v178・釣果詳細表示改善版";
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
   const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
@@ -247,6 +247,7 @@
   function saveSpotSpeciesPicker(panel) {
     const spotId = panel.dataset.spotId || "";
     const spot = state.spots.find((item) => item.id === spotId);
+
     const saved = spotState(spotId);
     const selected = Array.from(panel.querySelectorAll("[data-spot-species-option]:checked")).map((input) => input.value).filter(Boolean);
     saved.species = [...new Set(selected)].join("、");
@@ -582,6 +583,26 @@
     });
   }
 
+  function popupSummaryRow(label, value) {
+    const text = displayValue(value);
+    return text ? `<span><b>${escapeHtml(label)}</b> ${escapeHtml(text)}</span>` : "";
+  }
+
+  function catchPopupMarkup(record) {
+    const spotName = recordSpotName(record);
+    const summary = [
+      popupSummaryRow("サイズ", record.sizeCm ? `${displayValue(record.sizeCm)}cm` : record.size),
+      popupSummaryRow("釣り場", spotName),
+      popupSummaryRow("日時", record.time),
+      popupSummaryRow("何で釣れたか", record.bait),
+      popupSummaryRow("ルアー", record.lureName),
+      popupSummaryRow("カバー", record.cover),
+      popupSummaryRow("反応場所", record.reaction),
+      popupSummaryRow("メモ", record.memo)
+    ].filter(Boolean).join("");
+    return `<div class="record-popup-summary">${photoMarkup(record, "popup-record-photo")}<strong>${escapeHtml(recordTitle(record))}</strong>${summary ? `<div class="record-popup-rows">${summary}</div>` : ""}<button class="record-popup-detail-button" type="button" data-catch-detail-id="${escapeHtml(record.id)}">詳細を見る</button></div>`;
+  }
+
   function renderCatchMarkers() {
     if (!map) return;
     catchMarkers.forEach((marker) => marker.remove());
@@ -592,11 +613,17 @@
         radius: 8,
         weight: 3,
         color: "#f97316",
+
         fillColor: "#fed7aa",
         fillOpacity: .95
       })
         .addTo(map)
         .bindPopup(`${photoMarkup(record, "popup-record-photo")}<strong>${escapeHtml(record.species || record.placeName || "釣果記録")}</strong><br>${escapeHtml(record.time || "")}<br>${escapeHtml(record.memo || "")}`);
+      marker.bindPopup(catchPopupMarkup(record), { className: "record-info-popup", maxWidth: 280 });
+      marker.on("popupopen", () => {
+        const popupElement = marker.getPopup()?.getElement?.();
+        popupElement?.querySelector("[data-catch-detail-id]")?.addEventListener("click", () => openCatchDetail(record.id), { once: true });
+      });
       catchMarkers.set(record.id, marker);
     });
   }
@@ -646,6 +673,113 @@
     return record.species || record.placeName || record.memo || "釣果記録";
   }
 
+  function displayValue(value) {
+    const text = String(value ?? "").trim();
+    if (!text || /^(undefined|null|nan)$/i.test(text)) return "";
+    return text;
+  }
+
+  function recordSpotName(record) {
+    const spotId = displayValue(record?.spotId);
+    if (!spotId) return "";
+    return displayValue(state.spots.find((spot) => spot.id === spotId || spot.name === spotId)?.name);
+  }
+
+  function recordDetailRow(label, value) {
+    const text = displayValue(value);
+    return text ? `<div class="catch-detail-row"><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(text)}</dd></div>` : "";
+  }
+
+  function recordDetailSection(title, rows) {
+    const content = rows.filter(Boolean).join("");
+    return content ? `<section class="catch-detail-section"><h3>${escapeHtml(title)}</h3><dl>${content}</dl></section>` : "";
+  }
+
+  function renderCatchDetail(record) {
+    const content = $("catchDetailContent");
+    const mapButton = $("catchDetailMapButton");
+    const locationNote = $("catchDetailLocationNote");
+    if (!content || !record) return;
+    const hasPosition = validPosition(record);
+    const spotName = recordSpotName(record);
+    const sizeText = displayValue(record.sizeCm) ? `${displayValue(record.sizeCm)}cm` : "";
+    const photo = safePhotoSrc(record.photo);
+    const sections = [
+      recordDetailSection("釣果", [
+        recordDetailRow("魚種", record.species),
+        recordDetailRow("サイズ実寸", sizeText),
+        recordDetailRow("サイズ分類", record.size),
+        recordDetailRow("日時", record.time),
+        recordDetailRow("記録タイプ", record.recordType)
+      ]),
+      recordDetailSection("釣れた場所", [
+        recordDetailRow("近くの釣り場", spotName),
+        recordDetailRow("場所名", record.placeName),
+        recordDetailRow("周辺メモ種別", record.placeKind),
+        recordDetailRow("位置情報", hasPosition ? "あり" : "なし")
+      ]),
+      recordDetailSection("ルアー・仕掛け", [
+        recordDetailRow("何で釣れたか", record.bait),
+        recordDetailRow("ルアー名", record.lureName),
+        recordDetailRow("色", record.lureColor),
+        recordDetailRow("重さ", record.lureWeight)
+      ]),
+      recordDetailSection("釣れた環境", [
+        recordDetailRow("天気", record.weather),
+        recordDetailRow("風", record.wind),
+        recordDetailRow("水の状態", record.water),
+        recordDetailRow("水位", record.waterLevel),
+        recordDetailRow("ベイト確認", record.baitfish),
+        recordDetailRow("カバー・地形", record.cover),
+        recordDetailRow("反応場所", record.reaction),
+        recordDetailRow("プレッシャー", record.pressure),
+        recordDetailRow("時間帯", record.timeBand)
+      ]),
+      recordDetailSection("写真・メモ", [
+        recordDetailRow("メモ", record.memo),
+        recordDetailRow("作成日時", record.createdAt),
+        recordDetailRow("更新日時", record.updatedAt)
+      ])
+    ].filter(Boolean).join("");
+    content.innerHTML = `${photo ? `<img class="catch-detail-photo" src="${escapeHtml(photo)}" alt="釣果写真" loading="lazy">` : ""}${sections || '<p class="catch-detail-empty">この記録には表示できる詳細情報がありません。</p>'}`;
+    if (mapButton) mapButton.disabled = !hasPosition;
+    if (locationNote) locationNote.textContent = hasPosition ? "地図で位置を確認できます。" : "この記録には位置情報がありません";
+  }
+
+  function closeCatchDetail() {
+    const panel = $("catchDetailPanel");
+    if (!panel) return;
+    panel.classList.remove("is-open");
+    panel.classList.add("is-hidden");
+    panel.setAttribute("aria-hidden", "true");
+    panel.dataset.catchId = "";
+    document.body.classList.remove("catch-detail-open");
+  }
+
+  function openCatchDetail(recordId) {
+    const record = state.catches.find((item) => item.id === recordId);
+    const panel = $("catchDetailPanel");
+    if (!record || !panel) return;
+    renderCatchDetail(record);
+    panel.dataset.catchId = record.id;
+    panel.classList.remove("is-hidden");
+    panel.classList.add("is-open");
+    panel.setAttribute("aria-hidden", "false");
+    document.body.classList.add("catch-detail-open");
+    try { window.__MIE_NYAN_MOTION__?.("doya", "詳しい釣果を見るにゃ！"); } catch (error) {}
+    setTimeout(() => $("closeCatchDetail")?.focus?.(), 80);
+  }
+
+  function viewCatchDetailOnMap() {
+    const record = state.catches.find((item) => item.id === $("catchDetailPanel")?.dataset.catchId);
+    if (!record || !validPosition(record) || !map) return;
+    closeCatchDetail();
+    closeMobileMenu();
+    map.setView([Number(record.lat), Number(record.lng)], 16, { animate: true });
+    [120, 260].forEach((delay) => setTimeout(() => map?.invalidateSize?.({ animate: false }), delay));
+    setTimeout(() => catchMarkers.get(record.id)?.openPopup?.(), 260);
+  }
+
   function recordSubText(record) {
     const parts = [];
     if (record.time) parts.push(record.time);
@@ -680,6 +814,8 @@
   }
 
   function focusCatchRecord(recordId) {
+    openCatchDetail(recordId);
+    return;
     const record = state.catches.find((item) => item.id === recordId);
     if (!record) return;
     closeMobileMenu();
@@ -977,6 +1113,7 @@
     compressImageFile(file, { maxDimension: 1600, maxLength: 700000, initialQuality: 0.8 })
       .then((dataUrl) => {
         try { localStorage.setItem(BACKGROUND_STORAGE_KEY, dataUrl); } catch (error) {}
+
         applyMenuBackground(dataUrl);
         if (status) status.textContent = "メニュー背景を変更しました。";
       })
@@ -1072,6 +1209,7 @@
           ? "かんたん記録では、よく使う項目を中心に入力できます。"
           : "超かんたんは、魚種・サイズ・写真・メモだけで素早く保存できます。";
     }
+
   }
 
   function setSelectOptions(selectId, values) {
@@ -1242,6 +1380,7 @@
   function switchList(listName) {
     state.activeList = listName === "catches" ? "catches" : "spots";
     const showCatches = state.activeList === "catches";
+
     $("spotTab")?.classList.toggle("is-active", !showCatches);
     $("catchTab")?.classList.toggle("is-active", showCatches);
     $("spotTab")?.setAttribute("aria-selected", showCatches ? "false" : "true");
@@ -1273,7 +1412,7 @@
         screen.style.setProperty("pointer-events", "none", "important");
       }
 
-      ["catchPanel", "spotPanel", "spotSpeciesPanel", "backgroundPanel", "installPanel", "infoPanel"].forEach((id) => {
+      ["catchPanel", "spotPanel", "spotSpeciesPanel", "backgroundPanel", "installPanel", "infoPanel", "catchDetailPanel"].forEach((id) => {
         const panel = $(id);
         if (!panel) return;
         panel.classList.remove("is-open");
@@ -1301,7 +1440,8 @@
         "position-adjusting",
         "map-popup-open",
         "record-popup-open",
-        "spot-card-open"
+        "spot-card-open",
+        "catch-detail-open"
       );
       document.body.classList.add("start-screen-done");
 
@@ -1372,6 +1512,15 @@
     $("catchForm")?.addEventListener("submit", saveCatch);
     $("closeCatchPanel")?.addEventListener("click", closeCatchPanel);
     $("deleteCatch")?.addEventListener("click", deleteSelectedCatch);
+    $("closeCatchDetail")?.addEventListener("click", closeCatchDetail);
+    document.querySelectorAll("[data-catch-detail-close]").forEach((button) => button.addEventListener("click", closeCatchDetail));
+    $("catchDetailMapButton")?.addEventListener("click", viewCatchDetailOnMap);
+    $("catchDetailPanel")?.addEventListener("click", (event) => {
+      if (event.target === $("catchDetailPanel")) closeCatchDetail();
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && $("catchDetailPanel")?.classList.contains("is-open")) closeCatchDetail();
+    });
     $("useCurrentLocationButton")?.addEventListener("click", useCurrentLocationForCatch);
     $("spotForm")?.addEventListener("submit", saveSpot);
     $("closeSpotPanel")?.addEventListener("click", closeSpotPanel);
