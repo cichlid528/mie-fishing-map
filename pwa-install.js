@@ -1,7 +1,7 @@
 (() => {
   "use strict";
   window.__MIE_PWA_INSTALL_MANAGED__ = true;
-  const APP_VERSION = "v178-catch-detail-view";
+  const APP_VERSION = "v179-iphone-small-nyan-ui";
   const PET_NAME = "爆釣にゃん師匠";
   const PET_MOTION_NAMES = ["idle", "kiriri", "wink", "happy", "surprise", "think", "angry", "sleepy", "doya", "guide", "smile", "sad", "dreamy", "focus", "side", "back"];
   const PET_MOTION_IMAGES = PET_MOTION_NAMES.map((name) => `assets/nyan-motion-${name}-v177.png?v=${APP_VERSION}`);
@@ -45,14 +45,14 @@
     style.id = "turiNyanPetStyles";
     style.textContent = `
       :root { --turi-nyan-bubble-image: url("${PET_BUBBLE_IMAGE_SRC}"); }
-      #turiNyanPet { position: fixed; right: calc(10px + env(safe-area-inset-right)); bottom: calc(78px + env(safe-area-inset-bottom)); z-index: 2147483200; display: grid; justify-items: end; pointer-events: none; }
-      #turiNyanPet .pet-bubble { display: none; width: min(284px, calc(100vw - 14px)); aspect-ratio: 1 / 1; padding: 72px 64px 82px 56px; box-sizing: border-box; background-color: transparent !important; background-image: var(--turi-nyan-bubble-image) !important; background-repeat: no-repeat !important; background-size: 100% 100% !important; background-position: center !important; border: 0 !important; box-shadow: none !important; color: #17120d; font-size: .50rem; font-weight: 900; line-height: 1.08; pointer-events: auto; overflow: hidden; }
+      #turiNyanPet { --nyan-icon-size: 124px; --nyan-bubble-size: 284px; --nyan-edge-gap: 10px; position: fixed; right: calc(var(--nyan-edge-gap) + env(safe-area-inset-right)); bottom: calc(78px + env(safe-area-inset-bottom)); z-index: 2147483200; display: grid; justify-items: end; pointer-events: none; }
+      #turiNyanPet .pet-bubble { display: none; width: min(var(--nyan-bubble-size), calc(100vw - 14px)); max-height: calc(100dvh - 120px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); aspect-ratio: 1 / 1; padding: 72px 64px 82px 56px; box-sizing: border-box; background-color: transparent !important; background-image: var(--turi-nyan-bubble-image) !important; background-repeat: no-repeat !important; background-size: 100% 100% !important; background-position: center !important; border: 0 !important; box-shadow: none !important; color: #17120d; font-size: .50rem; font-weight: 900; line-height: 1.08; pointer-events: auto; overflow: hidden; }
       #turiNyanPet.is-speaking .pet-bubble { display: block; }
       #turiNyanPet .pet-bubble strong { display: block; color: #8d321d; font-size: .56rem; line-height: 1.04; margin-bottom: 2px; white-space: nowrap; }
-      #turiNyanPet #turiNyanMessage { display: block; max-height: 2.25em; overflow: hidden; overflow-wrap: anywhere; }
+      #turiNyanPet #turiNyanMessage { display: -webkit-box; max-height: 3.54em; overflow: hidden; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
       #turiNyanPet .pet-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3px; margin-top: 4px; }
       #turiNyanPet .pet-actions button { min-height: 19px; padding: 2px 4px; border-radius: 999px; font-size: .46rem; font-weight: 900; pointer-events: auto; }
-      #turiNyanPet .pet-button { width: 124px; height: 124px; padding: 0; border: 0; border-radius: 999px; background: transparent; pointer-events: auto; filter: drop-shadow(0 10px 18px rgba(0,0,0,.20)); }
+      #turiNyanPet .pet-button { width: var(--nyan-icon-size); height: var(--nyan-icon-size); padding: 0; border: 0; border-radius: 999px; background: transparent; pointer-events: auto; filter: drop-shadow(0 10px 18px rgba(0,0,0,.20)); }
       #turiNyanPet .pet-button img { width: 100%; height: 100%; object-fit: contain; transform: scale(1.10); transform-origin: center bottom; transition: opacity .12s ease, transform .18s ease; animation: turiNyanFloat 1.9s ease-in-out infinite; will-change: transform, opacity; }
       #turiNyanPet.is-motioning .pet-button img { transform: scale(1.18) translateY(-4px) rotate(-2deg); }
       #turiNyanPet.is-speaking .pet-button img { animation-duration: 2.2s; }
@@ -64,7 +64,27 @@
       @media (prefers-reduced-motion: reduce) {
         #turiNyanPet .pet-button img { animation: none !important; transition: none !important; }
       }
-      body.menu-open #turiNyanPet, body.panel-open #turiNyanPet, body.position-adjusting #turiNyanPet, body.map-popup-open #turiNyanPet, body.record-popup-open #turiNyanPet, body.spot-card-open #turiNyanPet { display: none !important; }
+      @media (max-width: 480px) {
+        #turiNyanPet { --nyan-icon-size: 108px; --nyan-bubble-size: 260px; --nyan-edge-gap: 8px; right: calc(var(--nyan-edge-gap) + env(safe-area-inset-right)); bottom: calc(70px + env(safe-area-inset-bottom)); }
+        #turiNyanPet .pet-bubble { width: min(var(--nyan-bubble-size), calc(100vw - 20px)); padding: 52px 45px 58px 40px; font-size: clamp(.64rem, 2.6vw, .76rem); line-height: 1.18; }
+        #turiNyanPet .pet-bubble strong { font-size: clamp(.68rem, 2.8vw, .82rem); line-height: 1.12; margin-bottom: 2px; white-space: normal; }
+        #turiNyanPet .pet-actions { gap: 4px; margin-top: 4px; }
+        #turiNyanPet .pet-actions button { min-height: 28px; padding: 3px 6px; font-size: clamp(.60rem, 2.4vw, .72rem); touch-action: manipulation; }
+      }
+      @media (max-width: 390px) {
+        #turiNyanPet { --nyan-icon-size: 84px; --nyan-bubble-size: 218px; --nyan-edge-gap: 7px; right: calc(var(--nyan-edge-gap) + env(safe-area-inset-right)); bottom: calc(68px + env(safe-area-inset-bottom)); }
+        #turiNyanPet .pet-bubble { padding: 48px 41px 54px 37px; }
+        #turiNyanPet .pet-button img { transform: scale(1.04); }
+        #turiNyanPet.is-motioning .pet-button img { transform: scale(1.07) translateY(-2px) rotate(-1deg); }
+      }
+      @media (max-width: 360px) {
+        #turiNyanPet { --nyan-icon-size: 72px; --nyan-bubble-size: 190px; --nyan-edge-gap: 5px; right: calc(var(--nyan-edge-gap) + env(safe-area-inset-right)); bottom: calc(62px + env(safe-area-inset-bottom)); }
+        #turiNyanPet .pet-bubble { padding: 45px 38px 50px 34px; }
+      }
+      @media (max-height: 620px) {
+        #turiNyanPet { --nyan-icon-size: 70px; --nyan-bubble-size: 184px; bottom: calc(54px + env(safe-area-inset-bottom)); }
+      }
+      body.menu-open #turiNyanPet, body.panel-open #turiNyanPet, body.position-adjusting #turiNyanPet, body.map-popup-open #turiNyanPet, body.record-popup-open #turiNyanPet, body.spot-card-open #turiNyanPet, body.catch-detail-open #turiNyanPet { display: none !important; }
     `;
     document.head.appendChild(style);
   }
