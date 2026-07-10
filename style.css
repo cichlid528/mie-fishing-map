@@ -3855,3 +3855,28 @@ body.catch-detail-open #turiNyanPet {
     animation: none !important;
   }
 }
+
+
+/* v180: 釣果ピンと詳細操作をiPhoneでも確実にタップできるようにする。 */
+.catch-record-pin-wrap { display: grid !important; place-items: center !important; width: 44px !important; height: 44px !important; margin: 0 !important; background: transparent !important; border: 0 !important; cursor: pointer !important; touch-action: manipulation !important; -webkit-tap-highlight-color: transparent !important; }
+.catch-record-pin-dot { width: 20px !important; height: 20px !important; border: 3px solid #f97316 !important; border-radius: 50% !important; background: #fed7aa !important; box-shadow: 0 4px 12px rgba(0,0,0,.28) !important; pointer-events: none !important; }
+.record-popup-detail-button { position: relative !important; z-index: 10 !important; display: flex !important; align-items: center !important; justify-content: center !important; width: 100% !important; min-height: 48px !important; margin-top: 10px !important; padding: 11px 14px !important; border-radius: 999px !important; cursor: pointer !important; touch-action: manipulation !important; pointer-events: auto !important; -webkit-tap-highlight-color: transparent !important; }
+.record-popup-detail-button > * { pointer-events: none !important; }
+.catch-detail-panel { pointer-events: none !important; }
+.catch-detail-panel.is-open { display: grid !important; pointer-events: auto !important; }
+.catch-detail-panel.is-hidden { display: none !important; pointer-events: none !important; }
+body.catch-detail-open { overflow: hidden !important; touch-action: none !important; }
+.catch-detail-card { max-height: calc(100dvh - 20px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch !important; overscroll-behavior: contain !important; touch-action: pan-y !important; }
+.catch-detail-header { position: sticky !important; top: 0 !important; z-index: 20 !important; background: rgba(255,255,255,.98) !important; padding-bottom: 8px !important; }
+#closeCatchDetail { position: relative !important; z-index: 30 !important; display: grid !important; flex: 0 0 auto !important; place-items: center !important; width: 44px !important; height: 44px !important; min-width: 44px !important; min-height: 44px !important; border-radius: 50% !important; touch-action: manipulation !important; pointer-events: auto !important; }
+.catch-detail-actions { position: sticky !important; bottom: 0 !important; z-index: 20 !important; padding-top: 10px !important; padding-bottom: calc(8px + env(safe-area-inset-bottom)) !important; background: linear-gradient(180deg, rgba(255,255,255,.72), rgba(255,255,255,.99) 35%) !important; }
+.catch-detail-actions button { min-height: 48px !important; touch-action: manipulation !important; }
+
+
+/* v181: 釣果詳細から安全に削除できる操作を追加。 */
+.catch-detail-actions { grid-template-columns: 1fr 1fr 1fr !important; }
+#deleteCatchFromDetail { min-height: 48px !important; touch-action: manipulation !important; }
+@media (max-width: 420px) {
+  .catch-detail-actions { grid-template-columns: 1fr 1fr !important; }
+  .catch-detail-actions #deleteCatchFromDetail { grid-column: 1 / -1; }
+}
