@@ -1,19 +1,11 @@
 (() => {
   "use strict";
   window.__MIE_PWA_INSTALL_MANAGED__ = true;
-  const APP_VERSION = "v176-spot-species-picker-fix";
+  const APP_VERSION = "v177-species-catch-detail-nyan-motion";
   const PET_NAME = "爆釣にゃん師匠";
-  const PET_MOTION_IMAGES = [
-    `assets/turi-nyan-motion-idle-v176.png?v=${APP_VERSION}`,
-    `assets/turi-nyan-motion-kiriri-v176.png?v=${APP_VERSION}`,
-    `assets/turi-nyan-motion-wink-v176.png?v=${APP_VERSION}`,
-    `assets/turi-nyan-motion-happy-v176.png?v=${APP_VERSION}`,
-    `assets/turi-nyan-motion-surprise-v176.png?v=${APP_VERSION}`,
-    `assets/turi-nyan-motion-think-v176.png?v=${APP_VERSION}`,
-    `assets/turi-nyan-motion-angry-v176.png?v=${APP_VERSION}`,
-    `assets/turi-nyan-motion-sleepy-v176.png?v=${APP_VERSION}`
-  ];
-  const PET_IMAGE_SRC = `assets/turi-nyan-motion-animated-v176.webp?v=${APP_VERSION}`;
+  const PET_MOTION_NAMES = ["idle", "kiriri", "wink", "happy", "surprise", "think", "angry", "sleepy", "doya", "guide", "smile", "sad", "dreamy", "focus", "side", "back"];
+  const PET_MOTION_IMAGES = PET_MOTION_NAMES.map((name) => `assets/nyan-motion-${name}-v177.png?v=${APP_VERSION}`);
+  const PET_IMAGE_SRC = PET_MOTION_IMAGES[0];
   const PET_IMAGE_FALLBACK_SRC = PET_MOTION_IMAGES[0];
   const PET_BUBBLE_IMAGE_SRC = `assets/turi-nyan-speech-bubble-comic-transparent-v176.png?v=${APP_VERSION}`;
 
@@ -25,7 +17,8 @@
       .replaceAll("v156-menu-bg-map-fix", APP_VERSION)
       .replaceAll("v163-menu-points-fix", APP_VERSION)
       .replaceAll("v172-spot-checklist-restore", APP_VERSION)
-      .replaceAll("v173-motion-nyan-sensei", APP_VERSION);
+      .replaceAll("v173-motion-nyan-sensei", APP_VERSION)
+      .replaceAll("v176-spot-species-picker-fix", APP_VERSION);
   }
 
   function patchNode(root = document.body) {
@@ -87,19 +80,19 @@
     preloadMotionImages();
     const pet = document.createElement("aside");
     pet.id = "turiNyanPet";
-    pet.innerHTML = `<div class="pet-bubble"><strong>${PET_NAME}</strong><span id="turiNyanMessage">魚種をボタンで選べるにゃ。</span><div class="pet-actions"><button type="button" data-pet-close>閉じる</button><button type="button" data-pet-map>地図</button></div></div><button class="pet-button" type="button" aria-label="${PET_NAME}"><img id="turiNyanPetImage" src="${PET_IMAGE_SRC}" alt="${PET_NAME}" data-motion-animated="1"></button>`;
+    pet.innerHTML = `<div class="pet-bubble"><strong>${PET_NAME}</strong><span id="turiNyanMessage">魚種をボタンで選べるにゃ。</span><div class="pet-actions"><button type="button" data-pet-close>閉じる</button><button type="button" data-pet-map>地図</button></div></div><button class="pet-button" type="button" aria-label="${PET_NAME}"><img id="turiNyanPetImage" src="${PET_IMAGE_SRC}" alt="${PET_NAME}" data-motion-animated="0"></button>`;
     document.body.appendChild(pet);
 
     const petButton = pet.querySelector(".pet-button");
     const petImage = pet.querySelector("#turiNyanPetImage");
+    const messageEl = pet.querySelector("#turiNyanMessage");
     let motionIndex = 0;
     let motionTimer = null;
+    let hideSpeechTimer = null;
     let lastManualMotionAt = 0;
     petImage?.addEventListener("error", () => {
-      if (petImage.dataset.motionAnimated === "1") {
-        petImage.dataset.motionAnimated = "0";
-        petImage.src = PET_IMAGE_FALLBACK_SRC;
-      }
+      petImage.dataset.motionAnimated = "0";
+      if (petImage.getAttribute("src") !== PET_IMAGE_FALLBACK_SRC) petImage.src = PET_IMAGE_FALLBACK_SRC;
     }, { once: true });
 
     const setMotionFrame = (index, lively = true) => {
@@ -110,6 +103,17 @@
       if (lively) {
         pet.classList.add("is-motioning");
         window.setTimeout(() => pet.classList.remove("is-motioning"), 360);
+      }
+    };
+
+    window.__MIE_NYAN_MOTION__ = (motionName = "idle", message = "", autoHideMs = 4200) => {
+      const index = PET_MOTION_NAMES.indexOf(String(motionName || "idle"));
+      setMotionFrame(index >= 0 ? index : 0, true);
+      if (messageEl && message) messageEl.textContent = message;
+      if (message) {
+        pet.classList.add("is-speaking");
+        if (hideSpeechTimer) window.clearTimeout(hideSpeechTimer);
+        hideSpeechTimer = window.setTimeout(() => pet.classList.remove("is-speaking"), Math.max(Number(autoHideMs) || 4200, 1200));
       }
     };
 

@@ -3629,3 +3629,35 @@ body.map-popup-open.spot-card-open #spotCard.spot-card:not(.is-hidden) {
   }
 }
 
+
+
+/* v177: menu background and Turi Nyan motion images. */
+.sidebar,
+#mobileMenu.sidebar {
+  background:
+    linear-gradient(180deg, rgba(5,30,25,.08), rgba(5,44,36,.02)),
+    url("assets/menu-bg-bakucho-nyanko-sensei-v177.png?v=v177-species-catch-detail-nyan-motion") !important;
+  background-size: cover !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+}
+
+#turiNyanPet .pet-bubble {
+  background-color: transparent !important;
+  background-image: var(--turi-nyan-bubble-image) !important;
+  background-repeat: no-repeat !important;
+  background-size: 100% 100% !important;
+  background-position: center !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+#turiNyanPet .pet-button img {
+  object-fit: contain !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #turiNyanPet .pet-button {
+    animation: none !important;
+  }
+}

@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v176-spot-species-picker-fix";
-  const APP_STATUS_LABEL = "v176・釣り場魚種選択式復旧版";
+  const APP_VERSION = "v177-species-catch-detail-nyan-motion";
+  const APP_STATUS_LABEL = "v177・魚種選択と釣果詳細と師匠モーション改善版";
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
   const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
@@ -11,7 +11,7 @@
   const BACKUP_META_STORAGE_KEY = "mie-fishing-map-backup-meta-v1";
   const MIE_CENTER = [34.55, 136.48];
   const MIE_HOME_ZOOM = 9;
-  const MENU_BACKGROUND_URL = `assets/menu-bg-bakucho-nyanko-sensei-v176.png?v=${APP_VERSION}`;
+  const MENU_BACKGROUND_URL = `assets/menu-bg-bakucho-nyanko-sensei-v177.png?v=${APP_VERSION}`;
 
   const seedSpots = [
     { id: "lake-shorenji", name: "青蓮寺湖", type: "ダム", area: "名張市", lat: 34.600869, lng: 136.11885, zoom: 15, source: "指定リスト", subtype: "レイク・ダム湖" },
@@ -119,6 +119,12 @@
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state.savedState || {})); } catch (error) {}
   }
 
+  function notifyNyanMotion(motionName = "idle", message = "", autoHideMs = 4200) {
+    try {
+      if (typeof window.__MIE_NYAN_MOTION__ === "function") window.__MIE_NYAN_MOTION__(motionName, message, autoHideMs);
+    } catch (error) {}
+  }
+
   function spotSpeciesSummary(value, fallback = "魚種") {
     const list = String(value || "").split(/[、,，/／]+/u).map((item) => item.trim()).filter(Boolean);
     if (!list.length) return fallback;
@@ -130,8 +136,8 @@
     return [...new Set(String(value || "").split(/[、,，/／]+/u).map((item) => item.trim()).filter(Boolean))];
   }
 
-  const SPOT_FRESHWATER_SPECIES_LIST = ["ブラックバス", "スモールマウスバス", "ブルーギル", "ナマズ", "ライギョ", "コイ", "フナ", "ヘラブナ", "ニゴイ", "ウグイ", "オイカワ", "カワムツ", "ハス", "モロコ", "タナゴ", "ワカサギ", "アユ", "アマゴ", "イワナ", "ニジマス", "ウナギ"];
-  const SPOT_SALTWATER_SPECIES_LIST = ["シーバス", "キス", "アジ", "メバル", "カサゴ", "チヌ", "キビレ", "マゴチ", "ヒラメ", "ハゼ", "ボラ", "サヨリ", "イワシ", "サバ", "カマス", "タチウオ", "サゴシ", "ツバス", "ハマチ", "ブリ", "マダイ", "グレ", "アイナメ", "ベラ", "ソイ", "タケノコメバル"];
+  const SPOT_FRESHWATER_SPECIES_LIST = ["ブラックバス", "スモールマウスバス", "ブルーギル", "ナマズ", "ライギョ", "コイ", "フナ", "ヘラブナ", "ニゴイ", "ウグイ", "オイカワ", "カワムツ", "ハス", "モロコ", "タナゴ", "ワカサギ", "アユ", "アマゴ", "イワナ", "ニジマス", "ウナギ", "テナガエビ"];
+  const SPOT_SALTWATER_SPECIES_LIST = ["シーバス", "キス", "アジ", "メバル", "カサゴ", "キジハタ", "クロダイ", "チヌ", "キビレ", "マゴチ", "ヒラメ", "ハゼ", "カレイ", "ボラ", "サヨリ", "イワシ", "サバ", "カマス", "タチウオ", "サゴシ", "ツバス", "ハマチ", "ブリ", "マダイ", "グレ", "アイナメ", "ベラ", "ソイ", "タケノコメバル"];
   const SPOT_SQUID_SPECIES_LIST = ["アオリイカ", "コウイカ", "タコ", "テナガエビ", "エビ", "カニ"];
   const SPOT_SPECIES_GROUPS = [
     { id: "freshwater", label: "淡水", items: SPOT_FRESHWATER_SPECIES_LIST },
@@ -250,6 +256,7 @@
     if (state.selectedSpotId === spotId && spot) renderSpotCard(spot);
     const status = $("dataStatus");
     if (status) status.textContent = saved.species ? `「${spot?.name || "釣り場"}」の魚種を選択保存しました。` : `「${spot?.name || "釣り場"}」の魚種を未設定に戻しました。`;
+    notifyNyanMotion(saved.species ? "doya" : "think", saved.species ? "魚種を保存したにゃ。" : "魚種を未設定に戻したにゃ。");
   }
 
   function editSpotSpecies(spotId) {
@@ -277,6 +284,8 @@
     const label = flag === "caught" ? "釣れた" : flag === "noFishing" ? "禁止/注意" : flag === "parking" ? "駐車" : flag;
     const status = $("dataStatus");
     if (status) status.textContent = `「${spot?.name || "釣り場"}」の${label}を${value ? "オン" : "オフ"}にしました。`;
+    const motion = flag === "caught" ? (value ? "happy" : "think") : flag === "noFishing" ? "kiriri" : flag === "parking" ? "guide" : "idle";
+    notifyNyanMotion(motion, `「${label}」を${value ? "オン" : "オフ"}にしたにゃ。`);
   }
 
   let map = null;
@@ -843,6 +852,7 @@
     showSpot(spot);
     const status = $("dataStatus");
     if (status) status.textContent = `釣り場「${spot.name}」を追加しました。`;
+    notifyNyanMotion("happy", "釣り場を追加したにゃ。");
   }
 
   function deleteSelectedSpot() {
@@ -1217,6 +1227,7 @@
     closeCatchPanel();
     const status = $("dataStatus");
     if (status) status.textContent = savedWithPhoto ? "写真付きで記録を保存しました。釣果ピンと記録一覧を更新しました。" : "記録は保存しましたが、端末容量の都合で写真は保存できませんでした。";
+    notifyNyanMotion(savedWithPhoto ? "happy" : "focus", savedWithPhoto ? "釣果を保存したにゃ。" : "写真なしで記録したにゃ。");
   }
 
   function deleteSelectedCatch() {
@@ -1301,9 +1312,11 @@
 
       const status = $("dataStatus");
       if (status) status.textContent = `${APP_STATUS_LABEL} / 地図画面を開きました。`;
+      notifyNyanMotion("guide", "地図を案内するにゃ。");
       return true;
     } catch (error) {
       console.warn("open map view failed", error);
+      notifyNyanMotion("focus", "地図表示をもう一度ためしてにゃ。");
       return false;
     }
   }
