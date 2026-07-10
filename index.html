@@ -8,11 +8,11 @@
     <meta name="apple-mobile-web-app-title" content="釣りマップ">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>三重県釣りマップ</title>
-    <link rel="manifest" href="manifest.json?v=v178-catch-detail-view">
+    <link rel="manifest" href="manifest.json?v=v179-iphone-small-nyan-ui">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon-v103.png">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQDP4nD8xQV9qVtAkM5M5OgFHJt0f9I=" crossorigin="">
-    <link rel="stylesheet" href="style.css?v=v178-catch-detail-view">
-    <style id="v178-catch-detail-view-fix">
+    <link rel="stylesheet" href="style.css?v=v179-iphone-small-nyan-ui">
+    <style id="v179-iphone-small-nyan-ui-fix">
       @media (max-width: 920px) {
         #menuToggle.mobile-menu-button { display: inline-flex !important; position: fixed !important; top: calc(12px + env(safe-area-inset-top)) !important; left: calc(12px + env(safe-area-inset-left)) !important; z-index: 2147483600 !important; pointer-events: auto !important; touch-action: manipulation !important; background: rgba(255,255,255,.99) !important; color: #073f33 !important; -webkit-text-fill-color: #073f33 !important; }
         .map-tools { position: fixed !important; top: calc(68px + env(safe-area-inset-top)) !important; right: calc(10px + env(safe-area-inset-right)) !important; z-index: 2147483400 !important; pointer-events: none !important; }
@@ -20,7 +20,6 @@
         #mobileMenu.sidebar { z-index: 2147483500 !important; pointer-events: auto !important; }
         #menuBackdrop.menu-backdrop { z-index: 2147483450 !important; }
         body.menu-open #menuToggle.mobile-menu-button { display: none !important; }
-
       }
       @media (min-width: 921px) {
         #menuToggle.mobile-menu-button { display: none !important; }
@@ -212,7 +211,6 @@
   .multi-choice-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 7px;
-
   }
   .multi-choice-grid label {
     min-height: 40px;
@@ -275,6 +273,7 @@
   border-radius: 18px;
   background: rgba(15, 111, 95, .08);
   border: 1px solid rgba(15,111,95,.14);
+
 }
 .quick-record-hint {
   color: rgba(25, 71, 63, .78);
@@ -1014,7 +1013,6 @@ label span {
   padding-left: 6px !important;
   padding-right: 14px !important;
   font-size: .66rem !important;
-
 }
 .catch-item {
   grid-template-columns: 40px 1fr !important;
@@ -1204,6 +1202,7 @@ body {
 .catch-list,
 .spot-card,
 .catch-form,
+
 .record-info-popup .leaflet-popup-content {
   touch-action: pan-y !important;
   overscroll-behavior: contain !important;
@@ -1307,7 +1306,6 @@ button,
     text-size-adjust: 100% !important;
   }
   .spot-species-select {
-
     font-size: 16px !important;
     transform: scale(.78) !important;
     transform-origin: center center !important;
@@ -2132,7 +2130,6 @@ button,
             <label><input type="checkbox" data-catch-species-option value="ワカサギ"><span>ワカサギ</span></label>
             <label><input type="checkbox" data-catch-species-option value="アユ"><span>アユ</span></label>
             <label><input type="checkbox" data-catch-species-option value="アマゴ"><span>アマゴ</span></label>
-
             <label><input type="checkbox" data-catch-species-option value="イワナ"><span>イワナ</span></label>
             <label><input type="checkbox" data-catch-species-option value="ニジマス"><span>ニジマス</span></label>
             <label><input type="checkbox" data-catch-species-option value="ウナギ"><span>ウナギ</span></label>
@@ -2222,7 +2219,6 @@ button,
       <form class="catch-form info-form">
         <header class="catch-form-header"><div><p class="kicker">Install App</p><h2>アプリをダウンロード</h2></div><button id="closeInstallPanel" class="icon-button" type="button" title="閉じる" aria-label="閉じる">×</button></header>
         <div class="info-content install-content"><section><h3>Android / Chrome</h3><p>この画面のボタンでインストール画面が出る場合は、そのまま進めてください。出ない場合はChrome右上の「︙」から「アプリをインストール」または「ホーム画面に追加」を選んでください。</p></section><section><h3>iPhone / Safari</h3><p>Safariで開いて、共有ボタンから「ホーム画面に追加」を選んでください。</p></section><section><h3>現在の状態</h3><p id="installStatus" class="catch-photo-status" aria-live="polite">端末の状態を確認しています。</p></section></div>
-
         <div class="catch-actions"><button class="save-button" type="button" id="closeInstallDone">閉じる</button></div>
       </form>
     </section>
@@ -2241,7 +2237,7 @@ button,
     </section>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="pwa-install.js?v=v178-catch-detail-view"></script>
-    <script src="app.js?v=v178-catch-detail-view"></script>
+    <script src="pwa-install.js?v=v179-iphone-small-nyan-ui"></script>
+    <script src="app.js?v=v179-iphone-small-nyan-ui"></script>
   </body>
 </html>
