@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v178-catch-detail-view";
-  const APP_STATUS_LABEL = "v178・釣果詳細表示改善版";
+  const APP_VERSION = "v179-iphone-small-nyan-ui";
+  const APP_STATUS_LABEL = "v179・iPhone小画面にゃん師匠表示改善版";
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
   const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
@@ -247,7 +247,6 @@
   function saveSpotSpeciesPicker(panel) {
     const spotId = panel.dataset.spotId || "";
     const spot = state.spots.find((item) => item.id === spotId);
-
     const saved = spotState(spotId);
     const selected = Array.from(panel.querySelectorAll("[data-spot-species-option]:checked")).map((input) => input.value).filter(Boolean);
     saved.species = [...new Set(selected)].join("、");
@@ -481,6 +480,7 @@
       scrollWheelZoom: true,
       doubleClickZoom: true,
       boxZoom: true,
+
       keyboard: true,
       preferCanvas: true,
       minZoom: 5
@@ -613,7 +613,6 @@
         radius: 8,
         weight: 3,
         color: "#f97316",
-
         fillColor: "#fed7aa",
         fillOpacity: .95
       })
@@ -1113,7 +1112,6 @@
     compressImageFile(file, { maxDimension: 1600, maxLength: 700000, initialQuality: 0.8 })
       .then((dataUrl) => {
         try { localStorage.setItem(BACKGROUND_STORAGE_KEY, dataUrl); } catch (error) {}
-
         applyMenuBackground(dataUrl);
         if (status) status.textContent = "メニュー背景を変更しました。";
       })
@@ -1209,7 +1207,6 @@
           ? "かんたん記録では、よく使う項目を中心に入力できます。"
           : "超かんたんは、魚種・サイズ・写真・メモだけで素早く保存できます。";
     }
-
   }
 
   function setSelectOptions(selectId, values) {
@@ -1380,7 +1377,6 @@
   function switchList(listName) {
     state.activeList = listName === "catches" ? "catches" : "spots";
     const showCatches = state.activeList === "catches";
-
     $("spotTab")?.classList.toggle("is-active", !showCatches);
     $("catchTab")?.classList.toggle("is-active", showCatches);
     $("spotTab")?.setAttribute("aria-selected", showCatches ? "false" : "true");
