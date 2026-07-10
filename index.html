@@ -8,11 +8,11 @@
     <meta name="apple-mobile-web-app-title" content="釣りマップ">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>三重県釣りマップ</title>
-    <link rel="manifest" href="manifest.json?v=v179-iphone-small-nyan-ui">
+    <link rel="manifest" href="manifest.json?v=v181-catch-detail-delete">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon-v103.png">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQDP4nD8xQV9qVtAkM5M5OgFHJt0f9I=" crossorigin="">
-    <link rel="stylesheet" href="style.css?v=v179-iphone-small-nyan-ui">
-    <style id="v179-iphone-small-nyan-ui-fix">
+    <link rel="stylesheet" href="style.css?v=v181-catch-detail-delete">
+    <style id="v181-catch-detail-delete-fix">
       @media (max-width: 920px) {
         #menuToggle.mobile-menu-button { display: inline-flex !important; position: fixed !important; top: calc(12px + env(safe-area-inset-top)) !important; left: calc(12px + env(safe-area-inset-left)) !important; z-index: 2147483600 !important; pointer-events: auto !important; touch-action: manipulation !important; background: rgba(255,255,255,.99) !important; color: #073f33 !important; -webkit-text-fill-color: #073f33 !important; }
         .map-tools { position: fixed !important; top: calc(68px + env(safe-area-inset-top)) !important; right: calc(10px + env(safe-area-inset-right)) !important; z-index: 2147483400 !important; pointer-events: none !important; }
@@ -273,8 +273,8 @@
   border-radius: 18px;
   background: rgba(15, 111, 95, .08);
   border: 1px solid rgba(15,111,95,.14);
-
 }
+
 .quick-record-hint {
   color: rgba(25, 71, 63, .78);
   font-size: .82rem;
@@ -419,6 +419,7 @@
     font-size: .92rem;
   }
   .species-search-status {
+
     font-size: .76rem;
   }
 }
@@ -442,6 +443,7 @@
     bottom: calc(12px + env(safe-area-inset-bottom)) !important;
     max-height: min(74dvh, calc(100dvh - 88px - env(safe-area-inset-top) - env(safe-area-inset-bottom))) !important;
     padding: 14px !important;
+
     overflow-y: auto !important;
     overscroll-behavior: contain !important;
     -webkit-overflow-scrolling: touch !important;
@@ -650,6 +652,7 @@
 .catch-spot-native-list,
 #catchSpot.catch-spot-native-list {
   display: block !important;
+
   width: 100% !important;
   box-sizing: border-box !important;
   height: 310px !important;
@@ -1202,7 +1205,6 @@ body {
 .catch-list,
 .spot-card,
 .catch-form,
-
 .record-info-popup .leaflet-popup-content {
   touch-action: pan-y !important;
   overscroll-behavior: contain !important;
@@ -1875,6 +1877,7 @@ button,
   }
   .spot-species-panel .spot-species-form {
     width: min(100%, 720px) !important;
+
   }
   .spot-species-choice-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
@@ -2196,6 +2199,7 @@ button,
         <div id="catchDetailContent" class="catch-detail-content"></div>
         <p id="catchDetailLocationNote" class="catch-detail-location-note" aria-live="polite"></p>
         <footer class="catch-detail-actions">
+          <button id="deleteCatchFromDetail" class="delete-button" type="button">この釣果を削除</button>
           <button id="catchDetailMapButton" class="save-button" type="button">地図で見る</button>
           <button class="secondary-button" type="button" data-catch-detail-close>閉じる</button>
         </footer>
@@ -2237,7 +2241,7 @@ button,
     </section>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="pwa-install.js?v=v179-iphone-small-nyan-ui"></script>
-    <script src="app.js?v=v179-iphone-small-nyan-ui"></script>
+    <script src="pwa-install.js?v=v181-catch-detail-delete"></script>
+    <script src="app.js?v=v181-catch-detail-delete"></script>
   </body>
 </html>
