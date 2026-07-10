@@ -8,11 +8,11 @@
     <meta name="apple-mobile-web-app-title" content="釣りマップ">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>三重県釣りマップ</title>
-    <link rel="manifest" href="manifest.json?v=v177-species-catch-detail-nyan-motion">
+    <link rel="manifest" href="manifest.json?v=v178-catch-detail-view">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon-v103.png">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQDP4nD8xQV9qVtAkM5M5OgFHJt0f9I=" crossorigin="">
-    <link rel="stylesheet" href="style.css?v=v177-species-catch-detail-nyan-motion">
-    <style id="v177-species-catch-detail-nyan-motion-fix">
+    <link rel="stylesheet" href="style.css?v=v178-catch-detail-view">
+    <style id="v178-catch-detail-view-fix">
       @media (max-width: 920px) {
         #menuToggle.mobile-menu-button { display: inline-flex !important; position: fixed !important; top: calc(12px + env(safe-area-inset-top)) !important; left: calc(12px + env(safe-area-inset-left)) !important; z-index: 2147483600 !important; pointer-events: auto !important; touch-action: manipulation !important; background: rgba(255,255,255,.99) !important; color: #073f33 !important; -webkit-text-fill-color: #073f33 !important; }
         .map-tools { position: fixed !important; top: calc(68px + env(safe-area-inset-top)) !important; right: calc(10px + env(safe-area-inset-right)) !important; z-index: 2147483400 !important; pointer-events: none !important; }
@@ -20,6 +20,7 @@
         #mobileMenu.sidebar { z-index: 2147483500 !important; pointer-events: auto !important; }
         #menuBackdrop.menu-backdrop { z-index: 2147483450 !important; }
         body.menu-open #menuToggle.mobile-menu-button { display: none !important; }
+
       }
       @media (min-width: 921px) {
         #menuToggle.mobile-menu-button { display: none !important; }
@@ -211,6 +212,7 @@
   .multi-choice-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 7px;
+
   }
   .multi-choice-grid label {
     min-height: 40px;
@@ -1012,6 +1014,7 @@ label span {
   padding-left: 6px !important;
   padding-right: 14px !important;
   font-size: .66rem !important;
+
 }
 .catch-item {
   grid-template-columns: 40px 1fr !important;
@@ -1304,6 +1307,7 @@ button,
     text-size-adjust: 100% !important;
   }
   .spot-species-select {
+
     font-size: 16px !important;
     transform: scale(.78) !important;
     transform-origin: center center !important;
@@ -1996,7 +2000,7 @@ button,
             <button class="filter-chip" type="button" data-filter="港">港・漁港</button>
             <button class="filter-chip" type="button" data-filter="マリーナ">マリーナ</button>
           </div>
-          <p id="dataStatus" class="data-status" aria-live="polite">v177・魚種選択と釣果詳細と師匠モーション改善版</p>
+          <p id="dataStatus" class="data-status" aria-live="polite">v178・釣果詳細表示改善版</p>
           <p class="notice-banner">掲載情報は釣りの許可を意味しません。現地看板・管理者・自治体・漁協の最新情報を必ず確認してください。</p>
           <div class="stats-grid" aria-label="記録集計">
             <span><strong id="spotCount">0</strong><small>釣り場</small></span>
@@ -2029,7 +2033,7 @@ button,
 
         <footer class="sidebar-footer">
           <span id="visibleCount">0件</span>
-          <span>v177・魚種選択と釣果詳細と師匠モーション改善版</span>
+          <span>v178・釣果詳細表示改善版</span>
         </footer>
 
         <section class="settings-row sidebar-actions" aria-label="設定">
@@ -2128,6 +2132,7 @@ button,
             <label><input type="checkbox" data-catch-species-option value="ワカサギ"><span>ワカサギ</span></label>
             <label><input type="checkbox" data-catch-species-option value="アユ"><span>アユ</span></label>
             <label><input type="checkbox" data-catch-species-option value="アマゴ"><span>アマゴ</span></label>
+
             <label><input type="checkbox" data-catch-species-option value="イワナ"><span>イワナ</span></label>
             <label><input type="checkbox" data-catch-species-option value="ニジマス"><span>ニジマス</span></label>
             <label><input type="checkbox" data-catch-species-option value="ウナギ"><span>ウナギ</span></label>
@@ -2185,6 +2190,21 @@ button,
       </form>
     </section>
 
+    <section id="catchDetailPanel" class="catch-detail-panel is-hidden" aria-label="釣果詳細" aria-hidden="true">
+      <article class="catch-detail-card" role="dialog" aria-modal="true" aria-labelledby="catchDetailTitle">
+        <header class="catch-detail-header">
+          <div><p class="kicker">Catch Detail</p><h2 id="catchDetailTitle">釣果詳細</h2></div>
+          <button id="closeCatchDetail" class="icon-button" type="button" title="閉じる" aria-label="閉じる">×</button>
+        </header>
+        <div id="catchDetailContent" class="catch-detail-content"></div>
+        <p id="catchDetailLocationNote" class="catch-detail-location-note" aria-live="polite"></p>
+        <footer class="catch-detail-actions">
+          <button id="catchDetailMapButton" class="save-button" type="button">地図で見る</button>
+          <button class="secondary-button" type="button" data-catch-detail-close>閉じる</button>
+        </footer>
+      </article>
+    </section>
+
     <section id="backgroundPanel" class="catch-panel" aria-label="背景画像変更" aria-hidden="true">
       <form id="backgroundForm" class="catch-form">
         <header class="catch-form-header"><div><p class="kicker">Background</p><h2>背景画像を変更</h2></div><button id="closeBackgroundPanel" class="icon-button" type="button" title="閉じる" aria-label="閉じる">×</button></header>
@@ -2202,6 +2222,7 @@ button,
       <form class="catch-form info-form">
         <header class="catch-form-header"><div><p class="kicker">Install App</p><h2>アプリをダウンロード</h2></div><button id="closeInstallPanel" class="icon-button" type="button" title="閉じる" aria-label="閉じる">×</button></header>
         <div class="info-content install-content"><section><h3>Android / Chrome</h3><p>この画面のボタンでインストール画面が出る場合は、そのまま進めてください。出ない場合はChrome右上の「︙」から「アプリをインストール」または「ホーム画面に追加」を選んでください。</p></section><section><h3>iPhone / Safari</h3><p>Safariで開いて、共有ボタンから「ホーム画面に追加」を選んでください。</p></section><section><h3>現在の状態</h3><p id="installStatus" class="catch-photo-status" aria-live="polite">端末の状態を確認しています。</p></section></div>
+
         <div class="catch-actions"><button class="save-button" type="button" id="closeInstallDone">閉じる</button></div>
       </form>
     </section>
@@ -2220,7 +2241,7 @@ button,
     </section>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="pwa-install.js?v=v177-species-catch-detail-nyan-motion"></script>
-    <script src="app.js?v=v177-species-catch-detail-nyan-motion"></script>
+    <script src="pwa-install.js?v=v178-catch-detail-view"></script>
+    <script src="app.js?v=v178-catch-detail-view"></script>
   </body>
 </html>
