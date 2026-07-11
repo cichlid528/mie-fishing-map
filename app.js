@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v181-catch-detail-delete";
-  const APP_STATUS_LABEL = "v181・釣果詳細から削除できる版";
+  const APP_VERSION = "v182-spot-current-location-position-adjust";
+  const APP_STATUS_LABEL = "v182・現在地釣り場追加とピン位置調整版";
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
   const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
@@ -1697,4 +1697,198 @@
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
   else init();
+
+  // v182: 現在地での釣り場追加と、ユーザー追加ピンの位置調整。
+  let pendingSpotMarkerV182 = null;
+  state.positionAdjustSpotId = "";
+  state.positionAdjustOriginal = null;
+  state.positionAdjustPending = null;
+
+  function setSpotCoordinatesV182(latlng) {
+    const lat = Number(latlng?.lat); const lng = Number(latlng?.lng);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return false;
+    if ($("spotLat")) $("spotLat").value = String(lat);
+    if ($("spotLng")) $("spotLng").value = String(lng);
+    return true;
+  }
+
+  function setSpotLocationStatusV182(message) {
+    const status = $("spotLocationStatus") || $("dataStatus");
+    if (status) status.textContent = message;
+  }
+
+  function clearPendingSpotMarkerV182() {
+    if (pendingSpotMarkerV182 && map) { try { map.removeLayer(pendingSpotMarkerV182); } catch (error) {} }
+    pendingSpotMarkerV182 = null;
+  }
+
+  function showPendingSpotMarkerV182(latlng) {
+    if (!map || !setSpotCoordinatesV182(latlng)) return;
+    const position = [Number(latlng.lat), Number(latlng.lng)];
+    if (!pendingSpotMarkerV182) {
+      const icon = L.divIcon({ className: "pending-spot-pin", html: '<span>追加予定</span>', iconSize: [76, 44], iconAnchor: [38, 40], popupAnchor: [0, -38] });
+      pendingSpotMarkerV182 = L.marker(position, { draggable: true, title: "追加する釣り場の位置", icon, keyboard: true }).addTo(map);
+      pendingSpotMarkerV182.on("dragend", () => {
+        setSpotCoordinatesV182(pendingSpotMarkerV182.getLatLng());
+        setSpotLocationStatusV182("ピンを動かした位置で追加します。");
+      });
+    } else pendingSpotMarkerV182.setLatLng(position);
+  }
+
+  function useMapCenterForSpot() {
+    const latlng = currentMapLatLng();
+    showPendingSpotMarkerV182(latlng);
+    setSpotLocationStatusV182("地図中央の位置で追加します。ピンを動かして微調整できます。");
+  }
+
+  function spotGeolocationMessageV182(error) {
+    if (error?.code === 1) return "位置情報の使用が許可されていません。iPhoneの設定からSafariまたはアプリの位置情報を許可してください。";
+    if (error?.code === 3) return "現在地の取得に時間がかかっています。空が見える場所で、もう一度お試しください。";
+    return "現在地を取得できませんでした。地図中央の位置を使うか、もう一度お試しください。";
+  }
+
+  function useCurrentLocationForSpot() {
+    const button = $("useCurrentLocationForSpot");
+    if (!navigator.geolocation) { setSpotLocationStatusV182("この端末では現在地を取得できません。地図中央の位置を使ってください。"); notifyNyanMotion("focus", "現在地をもう一度ためしてにゃ。"); return; }
+    if (button) { button.disabled = true; button.textContent = "取得中…"; }
+    setSpotLocationStatusV182("現在地を取得しています…");
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const latlng = { lat: Number(position.coords.latitude), lng: Number(position.coords.longitude) };
+        if (setSpotCoordinatesV182(latlng)) {
+          map?.setView?.([latlng.lat, latlng.lng], Math.max(Number(map?.getZoom?.() || 15), 15), { animate: true });
+          showPendingSpotMarkerV182(latlng);
+          setSpotLocationStatusV182("現在地を追加位置に設定しました。ピンを動かして微調整できます。");
+          notifyNyanMotion("guide", "現在地を釣り場の位置にしたにゃ！");
+        }
+        if (button) { button.disabled = false; button.textContent = "現在地を追加"; }
+      },
+      (error) => { setSpotLocationStatusV182(spotGeolocationMessageV182(error)); notifyNyanMotion("focus", "現在地をもう一度ためしてにゃ。"); if (button) { button.disabled = false; button.textContent = "現在地を追加"; } },
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 15000 }
+    );
+  }
+
+  function makeIcon(spot) {
+    const cls = markerColorClass(spot.type);
+    const adjusting = state.positionAdjustSpotId === spot.id ? " is-adjusting" : "";
+    return L.divIcon({ className: `spot-pin spot-pin-${cls}${adjusting}`, html: `<span>${escapeHtml(spot.type.slice(0, 1) || "釣")}</span>`, iconSize: [44, 44], iconAnchor: [22, 38], popupAnchor: [0, -36] });
+  }
+
+  function renderSpotMarkers() {
+    if (!map) return;
+    markers.forEach((marker) => marker.remove());
+    markers = new Map();
+    filteredSpots().forEach((spot) => {
+      const marker = L.marker([Number(spot.lat), Number(spot.lng)], { icon: makeIcon(spot), title: spot.name, draggable: false, keyboard: true })
+        .addTo(map).bindPopup(`<strong>${escapeHtml(spot.name)}</strong><br>${escapeHtml(spot.type)} / ${escapeHtml(spot.area || "")}`);
+      marker.on("click", () => { if (state.positionAdjustSpotId !== spot.id) showSpot(spot); });
+      marker.on("dragend", () => { if (state.positionAdjustSpotId === spot.id) updatePendingSpotPosition(marker.getLatLng()); });
+      markers.set(spot.id, marker);
+    });
+  }
+
+  function hideSpotCard() { $("spotCard")?.classList.add("is-hidden"); document.body.classList.remove("spot-card-open"); }
+
+  function renderSpotCard(spot) {
+    const card = $("spotCard"); if (!card || !spot) return;
+    const saved = spotState(spot.id); card.classList.remove("is-hidden"); document.body.classList.add("spot-card-open");
+    card.innerHTML = `<header><p>${escapeHtml(spot.type)} / ${escapeHtml(spot.area || "")}</p><h2>${escapeHtml(spot.name)}</h2></header>
+      <p>${escapeHtml(spot.subtype || spot.source || "")}</p>${spot.memo ? `<p>${escapeHtml(spot.memo)}</p>` : ""}
+      <div class="card-flags spot-check-card" data-spot-id="${escapeHtml(spot.id)}">
+        <label class="card-flag-label"><input type="checkbox" data-card-spot-flag="caught" ${saved.caught ? "checked" : ""}><span>釣れた</span></label>
+        <button class="card-species-button ${saved.species ? "on" : ""}" type="button" data-card-spot-species="${escapeHtml(spot.id)}"><small>魚種</small><strong>${escapeHtml(spotSpeciesSummary(saved.species, "未設定"))}</strong></button>
+        <label class="card-flag-label"><input type="checkbox" data-card-spot-flag="noFishing" ${saved.noFishing ? "checked" : ""}><span>禁止/注意</span></label>
+        <label class="card-flag-label"><input type="checkbox" data-card-spot-flag="parking" ${saved.parking ? "checked" : ""}><span>駐車</span></label>
+      </div>
+      ${spot.custom ? '<div class="card-actions spot-custom-actions"><button type="button" data-action="adjust-position">位置を調整</button><button type="button" data-action="edit-custom-spot">編集</button><button type="button" class="delete-button" data-action="delete-custom-spot">削除</button></div>' : ""}
+      <div class="card-actions"><button type="button" data-action="close">閉じる</button></div>`;
+    card.querySelector('[data-action="close"]')?.addEventListener("click", hideSpotCard);
+    card.querySelectorAll("[data-card-spot-flag]").forEach((input) => input.addEventListener("change", () => updateSpotFlag(spot.id, input.dataset.cardSpotFlag, input.checked)));
+    card.querySelector("[data-card-spot-species]")?.addEventListener("click", () => editSpotSpecies(spot.id));
+    card.querySelector('[data-action="adjust-position"]')?.addEventListener("click", () => startSpotPositionAdjust(spot.id));
+    card.querySelector('[data-action="edit-custom-spot"]')?.addEventListener("click", () => openSpotPanel({ lat: spot.lat, lng: spot.lng }, spot));
+    card.querySelector('[data-action="delete-custom-spot"]')?.addEventListener("click", () => { if (window.confirm(`釣り場「${spot.name}」を削除しますか？`)) deleteCustomSpotByIdV182(spot.id); });
+  }
+
+  function closeSpotPanel() { clearPendingSpotMarkerV182(); setPanelOpen($("spotPanel"), false); state.spotMode = false; $("addSpotMode")?.classList.remove("is-active"); }
+
+  function openSpotPanel(latlng = null, options = {}) {
+    const panel = $("spotPanel"); if (!panel) return;
+    const pos = latlng || currentMapLatLng(); closeMobileMenu(); try { map?.closePopup?.(); } catch (error) {} hideSpotCard();
+    state.spotMode = false; $("addSpotMode")?.classList.remove("is-active");
+    if ($("spotIdInput")) $("spotIdInput").value = options.id || "";
+    setSpotCoordinatesV182(pos);
+    if ($("spotNameInput")) $("spotNameInput").value = options.name || "";
+    if ($("spotTypeInput")) $("spotTypeInput").value = options.type || "池";
+    if ($("spotAreaInput")) $("spotAreaInput").value = options.area || "";
+    if ($("spotMemoInput")) $("spotMemoInput").value = options.memo || "";
+    $("deleteSpot")?.classList.toggle("is-hidden", !options.custom && !options.id);
+    clearPendingSpotMarkerV182(); if (options.id) showPendingSpotMarkerV182(pos);
+    setPanelOpen(panel, true);
+    setSpotLocationStatusV182(options.id ? "登録済みの位置です。現在地または地図中央に変更できます。" : "地図中央の位置で追加します。現在地を使う場合はボタンを押してください。");
+    setTimeout(() => $("spotNameInput")?.focus?.(), 80);
+  }
+
+  function saveSpot(event) {
+    event?.preventDefault?.(); const lat = Number($("spotLat")?.value || currentMapLatLng().lat); const lng = Number($("spotLng")?.value || currentMapLatLng().lng);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) { setSpotLocationStatusV182("釣り場の位置を取得できませんでした。地図中央を表示してからもう一度試してください。"); return; }
+    const id = $("spotIdInput")?.value || `custom-spot-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`; const previous = state.customSpots.find((item) => item.id === id);
+    const spot = cleanCustomSpotForStorage({ ...(previous || {}), id, name: $("spotNameInput")?.value || "未命名の釣り場", type: $("spotTypeInput")?.value || "池", area: $("spotAreaInput")?.value || "", memo: $("spotMemoInput")?.value || "", lat, lng, zoom: Math.max(Number(map?.getZoom?.() || 16), 13), createdAt: previous?.createdAt, updatedAt: new Date().toISOString() });
+    const index = state.customSpots.findIndex((item) => item.id === id); if (index >= 0) state.customSpots[index] = spot; else state.customSpots.unshift(spot);
+    saveCustomSpotsToStorage(); rebuildSpotsFromState(); render(); closeSpotPanel(); switchList("spots"); showSpot(state.spots.find((item) => item.id === id) || spot);
+    const status = $("dataStatus"); if (status) status.textContent = `釣り場「${spot.name}」を${previous ? "更新" : "追加"}しました。`; notifyNyanMotion("happy", previous ? "釣り場を更新したにゃ。" : "釣り場を追加したにゃ。");
+  }
+
+  function deleteCustomSpotByIdV182(id) { const spot = state.customSpots.find((item) => item.id === id); if (!spot) return; state.customSpots = state.customSpots.filter((item) => item.id !== id); saveCustomSpotsToStorage(); rebuildSpotsFromState(); render(); hideSpotCard(); const status = $("dataStatus"); if (status) status.textContent = `釣り場「${spot.name}」を削除しました。`; }
+
+  function updatePendingSpotPosition(latlng) {
+    const lat = Number(latlng?.lat); const lng = Number(latlng?.lng); if (!Number.isFinite(lat) || !Number.isFinite(lng) || !state.positionAdjustSpotId) return;
+    state.positionAdjustPending = { lat, lng }; markers.get(state.positionAdjustSpotId)?.setLatLng?.([lat, lng]); const text = $("positionAdjustText"); if (text) text.textContent = "新しい位置を選びました。「この位置に保存」を押してください。";
+  }
+
+  function finishSpotPositionAdjust(options = {}) {
+    const marker = markers.get(state.positionAdjustSpotId); const original = state.positionAdjustOriginal;
+    if (options.restoreOriginal && marker && original) marker.setLatLng([original.lat, original.lng]);
+    try { marker?.dragging?.disable?.(); marker?.setZIndexOffset?.(0); } catch (error) {}
+    state.positionAdjustSpotId = ""; state.positionAdjustOriginal = null; state.positionAdjustPending = null; $("positionAdjustBanner")?.classList.add("is-hidden"); document.body.classList.remove("position-adjusting"); setTimeout(() => map?.invalidateSize?.({ animate: false }), 0);
+  }
+
+  function startSpotPositionAdjust(spotId) {
+    const spot = state.customSpots.find((item) => item.id === spotId); const marker = markers.get(spotId); if (!spot || !marker || !map) return;
+    finishSpotPositionAdjust(); closeMobileMenu(); hideSpotCard(); try { map.closePopup(); } catch (error) {}
+    state.positionAdjustSpotId = spot.id; state.positionAdjustOriginal = { lat: Number(spot.lat), lng: Number(spot.lng) }; state.positionAdjustPending = { ...state.positionAdjustOriginal };
+    marker.setIcon(makeIcon(spot)); marker.dragging?.enable?.(); marker.setZIndexOffset?.(1000); document.body.classList.add("position-adjusting"); $("positionAdjustBanner")?.classList.remove("is-hidden");
+    const text = $("positionAdjustText"); if (text) text.textContent = "位置調整中です。ピンをドラッグするか、新しい場所を地図上でタップしてください。";
+    map.setView([spot.lat, spot.lng], Math.max(Number(spot.zoom || 16), 15), { animate: true }); notifyNyanMotion("guide", "ピンを正しい場所へ動かすにゃ！");
+  }
+
+  function saveSpotPositionAdjust() {
+    const id = state.positionAdjustSpotId; const pending = state.positionAdjustPending; const index = state.customSpots.findIndex((item) => item.id === id);
+    if (!id || index < 0 || !pending) { finishSpotPositionAdjust({ restoreOriginal: true }); return; }
+    const updated = { ...state.customSpots[index], lat: pending.lat, lng: pending.lng, zoom: Number(map?.getZoom?.() || state.customSpots[index].zoom || 16), updatedAt: new Date().toISOString() };
+    state.customSpots[index] = cleanCustomSpotForStorage(updated); saveCustomSpotsToStorage(); rebuildSpotsFromState(); finishSpotPositionAdjust(); render(); const spot = state.spots.find((item) => item.id === id); if (spot) showSpot(spot);
+    const status = $("dataStatus"); if (status) status.textContent = `釣り場「${updated.name}」の位置を更新しました。`; notifyNyanMotion("happy", "ピンの位置を保存したにゃ！");
+  }
+
+  function cancelSpotPositionAdjust() { finishSpotPositionAdjust({ restoreOriginal: true }); render(); const status = $("dataStatus"); if (status) status.textContent = "釣り場の位置調整をキャンセルしました。"; }
+
+  function installV182SpotControls() {
+    $("useCurrentLocationForSpot")?.addEventListener("click", useCurrentLocationForSpot);
+    $("useMapCenterForSpot")?.addEventListener("click", useMapCenterForSpot);
+    $("savePositionAdjustButton")?.addEventListener("click", saveSpotPositionAdjust);
+    $("cancelPositionAdjustButton")?.addEventListener("click", cancelSpotPositionAdjust);
+    map?.on?.("click", (event) => { if (state.positionAdjustSpotId) { updatePendingSpotPosition(event.latlng); return; } });
+  }
+  setTimeout(installV182SpotControls, 0);
+
+
+  function deleteSelectedSpot() {
+    const id = $("spotIdInput")?.value;
+    const spot = state.customSpots.find((item) => item.id === id);
+    if (!spot) { closeSpotPanel(); return; }
+    if (!window.confirm(`釣り場「${spot.name}」を削除しますか？`)) return;
+    deleteCustomSpotByIdV182(id);
+    closeSpotPanel();
+  }
+
 })();
