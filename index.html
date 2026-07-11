@@ -8,11 +8,11 @@
     <meta name="apple-mobile-web-app-title" content="釣りマップ">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>三重県釣りマップ</title>
-    <link rel="manifest" href="manifest.json?v=v181-catch-detail-delete">
+    <link rel="manifest" href="manifest.json?v=v182-spot-current-location-position-adjust">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon-v103.png">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQDP4nD8xQV9qVtAkM5M5OgFHJt0f9I=" crossorigin="">
-    <link rel="stylesheet" href="style.css?v=v181-catch-detail-delete">
-    <style id="v181-catch-detail-delete-fix">
+    <link rel="stylesheet" href="style.css?v=v182-spot-current-location-position-adjust">
+    <style id="v182-spot-current-location-position-adjust-fix">
       @media (max-width: 920px) {
         #menuToggle.mobile-menu-button { display: inline-flex !important; position: fixed !important; top: calc(12px + env(safe-area-inset-top)) !important; left: calc(12px + env(safe-area-inset-left)) !important; z-index: 2147483600 !important; pointer-events: auto !important; touch-action: manipulation !important; background: rgba(255,255,255,.99) !important; color: #073f33 !important; -webkit-text-fill-color: #073f33 !important; }
         .map-tools { position: fixed !important; top: calc(68px + env(safe-area-inset-top)) !important; right: calc(10px + env(safe-area-inset-right)) !important; z-index: 2147483400 !important; pointer-events: none !important; }
@@ -244,6 +244,7 @@
   align-items: center;
 }
 .record-filter-row {
+
   margin-top: 10px;
 }
 .record-filter-chip,
@@ -274,7 +275,6 @@
   background: rgba(15, 111, 95, .08);
   border: 1px solid rgba(15,111,95,.14);
 }
-
 .quick-record-hint {
   color: rgba(25, 71, 63, .78);
   font-size: .82rem;
@@ -419,7 +419,6 @@
     font-size: .92rem;
   }
   .species-search-status {
-
     font-size: .76rem;
   }
 }
@@ -443,7 +442,6 @@
     bottom: calc(12px + env(safe-area-inset-bottom)) !important;
     max-height: min(74dvh, calc(100dvh - 88px - env(safe-area-inset-top) - env(safe-area-inset-bottom))) !important;
     padding: 14px !important;
-
     overflow-y: auto !important;
     overscroll-behavior: contain !important;
     -webkit-overflow-scrolling: touch !important;
@@ -652,7 +650,6 @@
 .catch-spot-native-list,
 #catchSpot.catch-spot-native-list {
   display: block !important;
-
   width: 100% !important;
   box-sizing: border-box !important;
   height: 310px !important;
@@ -1877,7 +1874,6 @@ button,
   }
   .spot-species-panel .spot-species-form {
     width: min(100%, 720px) !important;
-
   }
   .spot-species-choice-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
@@ -1966,13 +1962,14 @@ button,
     <button id="menuBackdrop" class="menu-backdrop" type="button" aria-label="メニューを閉じる"></button>
     <button id="menuToggle" class="mobile-menu-button" type="button" aria-controls="mobileMenu" aria-expanded="false">☰ メニュー</button>
     <div class="map-tools" aria-label="地図操作">
+
       <button id="locateCatchButton" class="locate-button" type="button">現在地メモ登録</button>
       <button id="addSpotMode" class="spot-mode-button" type="button">釣り場追加</button>
       <button id="addCatchMode" class="catch-mode-button" type="button">記録ピン追加</button>
     </div>
     <div id="positionAdjustBanner" class="position-adjust-banner is-hidden" role="status" aria-live="polite">
-      <span id="positionAdjustText">位置調整中です。新しい場所を地図上でタップしてください。</span>
-      <button id="cancelPositionAdjustButton" type="button">キャンセル</button>
+      <span id="positionAdjustText">位置調整中です。ピンをドラッグするか、新しい場所を地図上でタップしてください。</span>
+      <div class="position-adjust-actions"><button id="savePositionAdjustButton" type="button">この位置に保存</button><button id="cancelPositionAdjustButton" type="button">キャンセル</button></div>
     </div>
     <main class="app-shell">
       <aside id="mobileMenu" class="sidebar" aria-label="釣り場リスト">
@@ -2061,6 +2058,10 @@ button,
           <button id="closeSpotPanel" class="icon-button" type="button" title="閉じる" aria-label="閉じる">×</button>
         </header>
         <input id="spotLat" type="hidden"><input id="spotLng" type="hidden"><input id="spotIdInput" type="hidden">
+        <div class="spot-location-box">
+          <p id="spotLocationStatus" class="catch-location-status" aria-live="polite">地図中央の位置で追加します。現在地を使う場合はボタンを押してください。</p>
+          <div class="spot-location-actions"><button id="useCurrentLocationForSpot" class="location-inline-button" type="button">現在地を追加</button><button id="useMapCenterForSpot" class="secondary-button" type="button">地図中央を使う</button></div>
+        </div>
         <p class="panel-warning">掲載されている場所でも、釣り禁止・立入禁止・私有地の場合があります。登録前と釣行前に現地の看板や管理者情報を確認してください。</p>
         <div class="form-grid">
           <label><span>名称</span><input id="spotNameInput" type="text" placeholder="例: 未命名の池、〇〇池" required></label>
@@ -2241,7 +2242,7 @@ button,
     </section>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="pwa-install.js?v=v181-catch-detail-delete"></script>
-    <script src="app.js?v=v181-catch-detail-delete"></script>
+    <script src="pwa-install.js?v=v182-spot-current-location-position-adjust"></script>
+    <script src="app.js?v=v182-spot-current-location-position-adjust"></script>
   </body>
 </html>
