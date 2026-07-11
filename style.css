@@ -3880,3 +3880,21 @@ body.catch-detail-open { overflow: hidden !important; touch-action: none !import
   .catch-detail-actions { grid-template-columns: 1fr 1fr !important; }
   .catch-detail-actions #deleteCatchFromDetail { grid-column: 1 / -1; }
 }
+
+
+/* v182: 現在地からの釣り場追加と追加ピンの位置調整。 */
+.spot-location-box { margin: 10px 0 14px; padding: 11px; border: 1px solid rgba(15,123,99,.2); border-radius: 12px; background: rgba(237,244,240,.82); }
+.spot-location-actions, .position-adjust-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.spot-location-actions button, .position-adjust-actions button { min-height: 44px; touch-action: manipulation; }
+.pending-spot-pin { background: transparent !important; border: 0 !important; }
+.pending-spot-pin span { display: grid; place-items: center; width: 76px; min-height: 38px; padding: 0 9px; border: 3px solid #fff; border-radius: 999px; background: #f97316; color: #fff; box-shadow: 0 4px 16px rgba(0,0,0,.32); font-size: .76rem; font-weight: 900; animation: pending-spot-pulse 1.5s ease-in-out infinite; }
+@keyframes pending-spot-pulse { 50% { transform: scale(1.06); box-shadow: 0 0 0 7px rgba(249,115,22,.18), 0 4px 16px rgba(0,0,0,.32); } }
+.position-adjust-banner { position: fixed; z-index: 2147483550; right: max(12px, env(safe-area-inset-right)); bottom: max(14px, env(safe-area-inset-bottom)); max-width: min(390px, calc(100vw - 24px)); padding: 12px; border-radius: 12px; background: rgba(15,32,27,.96); color: #fff; box-shadow: 0 10px 28px rgba(0,0,0,.34); }
+.position-adjust-banner.is-hidden { display: none !important; }
+.position-adjust-banner > span { display: block; line-height: 1.4; font-weight: 800; }
+.position-adjust-actions button:first-child { background: #f59e0b; color: #241600; }
+.position-adjust-actions button:last-child { background: #e5ece8; color: #073f33; }
+body.position-adjusting .spot-pin.is-adjusting span { background: #ff9b3f; transform: scale(1.18); box-shadow: 0 0 0 5px rgba(255,155,63,.22), 0 6px 18px rgba(0,0,0,.32); }
+.spot-custom-actions { grid-template-columns: repeat(3, minmax(0,1fr)); }
+.spot-custom-actions button { min-height: 44px; touch-action: manipulation; }
+@media (max-width: 520px) { .position-adjust-banner { left: 10px; right: 10px; bottom: max(12px, env(safe-area-inset-bottom)); } .position-adjust-actions { display: grid; grid-template-columns: 1fr 1fr; } .spot-location-actions { display: grid; grid-template-columns: 1fr 1fr; } .spot-custom-actions { grid-template-columns: 1fr; } }
