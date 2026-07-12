@@ -3900,3 +3900,6 @@ body.position-adjusting .spot-pin.is-adjusting span { background: #ff9b3f; trans
 @media (max-width: 520px) { .position-adjust-banner { left: 10px; right: 10px; bottom: max(12px, env(safe-area-inset-bottom)); } .position-adjust-actions { display: grid; grid-template-columns: 1fr 1fr; } .spot-location-actions { display: grid; grid-template-columns: 1fr 1fr; } .spot-custom-actions { grid-template-columns: 1fr; } }
 
 #savePositionAdjustButton, #cancelPositionAdjustButton { min-height: 48px !important; touch-action: manipulation !important; }
+
+/* v183: 位置調整は説明パネルではなく小さな操作バーで表示。 */
+.position-adjust-banner #positionAdjustText { display: none !important; }
