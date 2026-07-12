@@ -8,11 +8,11 @@
     <meta name="apple-mobile-web-app-title" content="釣りマップ">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>三重県釣りマップ</title>
-    <link rel="manifest" href="manifest.json?v=v183-position-adjust-compact">
+    <link rel="manifest" href="manifest.json?v=v184-position-adjust-banner-hidden">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon-v103.png">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQDP4nD8xQV9qVtAkM5M5OgFHJt0f9I=" crossorigin="">
-    <link rel="stylesheet" href="style.css?v=v183-position-adjust-compact">
-    <style id="v183-position-adjust-compact-fix">
+    <link rel="stylesheet" href="style.css?v=v184-position-adjust-banner-hidden">
+    <style id="v184-position-adjust-banner-hidden-fix">
       @media (max-width: 920px) {
         #menuToggle.mobile-menu-button { display: inline-flex !important; position: fixed !important; top: calc(12px + env(safe-area-inset-top)) !important; left: calc(12px + env(safe-area-inset-left)) !important; z-index: 2147483600 !important; pointer-events: auto !important; touch-action: manipulation !important; background: rgba(255,255,255,.99) !important; color: #073f33 !important; -webkit-text-fill-color: #073f33 !important; }
         .map-tools { position: fixed !important; top: calc(68px + env(safe-area-inset-top)) !important; right: calc(10px + env(safe-area-inset-right)) !important; z-index: 2147483400 !important; pointer-events: none !important; }
@@ -124,6 +124,7 @@
 
       /* v79: スマホで詳細カードを操作ボタンより上へ移動 */
       @media (max-width: 920px) {
+
         #spotCard.spot-card, .spot-card {
           position: fixed !important;
           left: calc(10px + env(safe-area-inset-left)) !important;
@@ -246,6 +247,7 @@
 .record-filter-row {
   margin-top: 10px;
 }
+
 .record-filter-chip,
 .species-category-chip,
 .record-entry-mode-button {
@@ -648,6 +650,7 @@
 }
 .catch-spot-native-list,
 #catchSpot.catch-spot-native-list {
+
   display: block !important;
   width: 100% !important;
   box-sizing: border-box !important;
@@ -695,6 +698,7 @@
 }
 
 /* v102: 「近くの釣り場」名称スクロール欄を大きく表示 */
+
 .catch-spot-hidden-select {
   position: absolute !important;
   width: 1px !important;
@@ -732,6 +736,7 @@
   gap: 8px !important;
   width: 100% !important;
   height: var(--spot-picker-row-height) !important;
+
   min-height: var(--spot-picker-row-height) !important;
   margin: 0 0 5px !important;
   padding: 10px 12px !important;
@@ -1068,6 +1073,7 @@ label span {
 }
 @media (max-width: 520px) {
   .spot-item {
+
     grid-template-columns: minmax(0, 1fr) 34px minmax(70px, 86px) 34px 34px !important;
     min-height: 54px !important;
     padding: 7px !important;
@@ -1199,6 +1205,7 @@ body {
 .controls,
 .spot-list,
 .catch-list,
+
 .spot-card,
 .catch-form,
 .record-info-popup .leaflet-popup-content {
@@ -1483,7 +1490,6 @@ button,
 }
 .app-start-title {
   display: grid !important;
-
   gap: 2px !important;
   margin: 0 !important;
   font-size: clamp(2.55rem, 12vw, 4.55rem) !important;
@@ -1943,7 +1949,9 @@ button,
 
 </style>
   <style id="v182-position-adjust-touch-fix">#savePositionAdjustButton,#cancelPositionAdjustButton{min-height:48px!important;touch-action:manipulation!important}</style>
-  <style id="v183-position-adjust-compact-style">#positionAdjustBanner.position-adjust-banner{top:auto!important;bottom:max(12px,env(safe-area-inset-bottom))!important;left:50%!important;right:auto!important;transform:translateX(-50%)!important;width:auto!important;max-width:calc(100vw - 24px)!important;max-height:none!important;min-height:0!important;padding:8px!important;border-radius:999px!important;display:flex!important;align-items:center!important;background:rgba(15,32,27,.96)!important;overflow:visible!important}#positionAdjustBanner #positionAdjustText{display:none!important}#positionAdjustBanner .position-adjust-actions{display:flex!important;grid-template-columns:none!important;gap:8px!important;margin:0!important}#positionAdjustBanner .position-adjust-actions button{min-height:44px!important;padding:8px 13px!important;white-space:nowrap!important}@media(max-width:520px){#positionAdjustBanner.position-adjust-banner{bottom:max(10px,env(safe-area-inset-bottom))!important}}</style>
+  <style id="v184-position-adjust-banner-hidden-style">#positionAdjustBanner.position-adjust-banner{top:auto!important;bottom:max(12px,env(safe-area-inset-bottom))!important;left:50%!important;right:auto!important;transform:translateX(-50%)!important;width:auto!important;max-width:calc(100vw - 24px)!important;max-height:none!important;min-height:0!important;padding:8px!important;border-radius:999px!important;display:flex!important;align-items:center!important;background:rgba(15,32,27,.96)!important;overflow:visible!important}#positionAdjustBanner #positionAdjustText{display:none!important}#positionAdjustBanner .position-adjust-actions{display:flex!important;grid-template-columns:none!important;gap:8px!important;margin:0!important}#positionAdjustBanner .position-adjust-actions button{min-height:44px!important;padding:8px 13px!important;white-space:nowrap!important}@media(max-width:520px){#positionAdjustBanner.position-adjust-banner{bottom:max(10px,env(safe-area-inset-bottom))!important}}
+#positionAdjustBanner.position-adjust-banner.is-hidden{display:none!important}
+</style>
   </head>
   <body>
     <div id="appStartScreen" class="app-start-screen" aria-live="polite">
@@ -1980,7 +1988,6 @@ button,
             <h1>三重県釣りマップ</h1>
           </div>
           <div class="sidebar-header-actions">
-
             <button id="resetView" class="icon-button" type="button" title="初期表示に戻す" aria-label="初期表示に戻す">⌂</button>
             <button id="closeMenuButton" class="icon-button mobile-close-button" type="button" title="メニューを閉じる" aria-label="メニューを閉じる">×</button>
           </div>
@@ -2244,7 +2251,7 @@ button,
     </section>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="pwa-install.js?v=v183-position-adjust-compact"></script>
-    <script src="app.js?v=v183-position-adjust-compact"></script>
+    <script src="pwa-install.js?v=v184-position-adjust-banner-hidden"></script>
+    <script src="app.js?v=v184-position-adjust-banner-hidden"></script>
   </body>
 </html>
