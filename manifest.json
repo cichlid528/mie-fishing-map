@@ -2,7 +2,7 @@
   "name": "三重県釣りMAP",
   "short_name": "三重釣りMAP",
   "description": "三重県の釣り場と釣果を記録できる地図アプリ",
-  "start_url": "./index.html?v=v183-position-adjust-compact",
+  "start_url": "./index.html?v=v184-position-adjust-banner-hidden",
   "scope": "./",
   "display": "standalone",
   "background_color": "#e8f4ef",
