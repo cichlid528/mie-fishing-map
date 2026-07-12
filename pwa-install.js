@@ -1,7 +1,7 @@
 (() => {
   "use strict";
   window.__MIE_PWA_INSTALL_MANAGED__ = true;
-  const APP_VERSION = "v182-spot-current-location-position-adjust";
+  const APP_VERSION = "v183-position-adjust-compact";
   const PET_NAME = "爆釣にゃん師匠";
   const PET_MOTION_NAMES = ["idle", "kiriri", "wink", "happy", "surprise", "think", "angry", "sleepy", "doya", "guide", "smile", "sad", "dreamy", "focus", "side", "back"];
   const PET_MOTION_IMAGES = PET_MOTION_NAMES.map((name) => `assets/nyan-motion-${name}-v177.png?v=${APP_VERSION}`);
