@@ -3903,3 +3903,6 @@ body.position-adjusting .spot-pin.is-adjusting span { background: #ff9b3f; trans
 
 /* v183: 位置調整は説明パネルではなく小さな操作バーで表示。 */
 .position-adjust-banner #positionAdjustText { display: none !important; }
+
+/* v184: 位置調整バーは調整中だけ表示する。 */
+#positionAdjustBanner.position-adjust-banner.is-hidden { display: none !important; }
