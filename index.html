@@ -8,11 +8,11 @@
     <meta name="apple-mobile-web-app-title" content="釣りマップ">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>三重県釣りマップ</title>
-    <link rel="manifest" href="manifest.json?v=v182-spot-current-location-position-adjust">
+    <link rel="manifest" href="manifest.json?v=v183-position-adjust-compact">
     <link rel="apple-touch-icon" href="icons/apple-touch-icon-v103.png">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQDP4nD8xQV9qVtAkM5M5OgFHJt0f9I=" crossorigin="">
-    <link rel="stylesheet" href="style.css?v=v182-spot-current-location-position-adjust">
-    <style id="v182-spot-current-location-position-adjust-fix">
+    <link rel="stylesheet" href="style.css?v=v183-position-adjust-compact">
+    <style id="v183-position-adjust-compact-fix">
       @media (max-width: 920px) {
         #menuToggle.mobile-menu-button { display: inline-flex !important; position: fixed !important; top: calc(12px + env(safe-area-inset-top)) !important; left: calc(12px + env(safe-area-inset-left)) !important; z-index: 2147483600 !important; pointer-events: auto !important; touch-action: manipulation !important; background: rgba(255,255,255,.99) !important; color: #073f33 !important; -webkit-text-fill-color: #073f33 !important; }
         .map-tools { position: fixed !important; top: calc(68px + env(safe-area-inset-top)) !important; right: calc(10px + env(safe-area-inset-right)) !important; z-index: 2147483400 !important; pointer-events: none !important; }
@@ -244,7 +244,6 @@
   align-items: center;
 }
 .record-filter-row {
-
   margin-top: 10px;
 }
 .record-filter-chip,
@@ -1484,6 +1483,7 @@ button,
 }
 .app-start-title {
   display: grid !important;
+
   gap: 2px !important;
   margin: 0 !important;
   font-size: clamp(2.55rem, 12vw, 4.55rem) !important;
@@ -1943,6 +1943,7 @@ button,
 
 </style>
   <style id="v182-position-adjust-touch-fix">#savePositionAdjustButton,#cancelPositionAdjustButton{min-height:48px!important;touch-action:manipulation!important}</style>
+  <style id="v183-position-adjust-compact-style">#positionAdjustBanner.position-adjust-banner{top:auto!important;bottom:max(12px,env(safe-area-inset-bottom))!important;left:50%!important;right:auto!important;transform:translateX(-50%)!important;width:auto!important;max-width:calc(100vw - 24px)!important;max-height:none!important;min-height:0!important;padding:8px!important;border-radius:999px!important;display:flex!important;align-items:center!important;background:rgba(15,32,27,.96)!important;overflow:visible!important}#positionAdjustBanner #positionAdjustText{display:none!important}#positionAdjustBanner .position-adjust-actions{display:flex!important;grid-template-columns:none!important;gap:8px!important;margin:0!important}#positionAdjustBanner .position-adjust-actions button{min-height:44px!important;padding:8px 13px!important;white-space:nowrap!important}@media(max-width:520px){#positionAdjustBanner.position-adjust-banner{bottom:max(10px,env(safe-area-inset-bottom))!important}}</style>
   </head>
   <body>
     <div id="appStartScreen" class="app-start-screen" aria-live="polite">
@@ -1968,7 +1969,7 @@ button,
       <button id="addCatchMode" class="catch-mode-button" type="button">記録ピン追加</button>
     </div>
     <div id="positionAdjustBanner" class="position-adjust-banner is-hidden" role="status" aria-live="polite">
-      <span id="positionAdjustText">位置調整中です。ピンをドラッグするか、新しい場所を地図上でタップしてください。</span>
+      <span id="positionAdjustText" class="visually-hidden">位置調整中です。</span>
       <div class="position-adjust-actions"><button id="savePositionAdjustButton" type="button">この位置に保存</button><button id="cancelPositionAdjustButton" type="button">キャンセル</button></div>
     </div>
     <main class="app-shell">
@@ -1979,6 +1980,7 @@ button,
             <h1>三重県釣りマップ</h1>
           </div>
           <div class="sidebar-header-actions">
+
             <button id="resetView" class="icon-button" type="button" title="初期表示に戻す" aria-label="初期表示に戻す">⌂</button>
             <button id="closeMenuButton" class="icon-button mobile-close-button" type="button" title="メニューを閉じる" aria-label="メニューを閉じる">×</button>
           </div>
@@ -2242,7 +2244,7 @@ button,
     </section>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="pwa-install.js?v=v182-spot-current-location-position-adjust"></script>
-    <script src="app.js?v=v182-spot-current-location-position-adjust"></script>
+    <script src="pwa-install.js?v=v183-position-adjust-compact"></script>
+    <script src="app.js?v=v183-position-adjust-compact"></script>
   </body>
 </html>
