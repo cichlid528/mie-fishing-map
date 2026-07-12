@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v182-spot-current-location-position-adjust";
-  const APP_STATUS_LABEL = "v182・現在地釣り場追加とピン位置調整版";
+  const APP_VERSION = "v183-position-adjust-compact";
+  const APP_STATUS_LABEL = "v183・位置調整表示をコンパクト化";
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
   const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
