@@ -1,8 +1,8 @@
 (() => {
   "use strict";
 
-  const APP_VERSION = "v184-position-adjust-banner-hidden";
-  const APP_STATUS_LABEL = "v184・位置調整バー通常時非表示版";
+  const APP_VERSION = "v185-free-install-guide";
+  const APP_STATUS_LABEL = "v185・無料公開とインストール案内版";
   const STORAGE_KEY = "mie-bass-map-v1";
   const CATCH_STORAGE_KEY = "mie-bass-catches-v1";
   const CUSTOM_SPOT_STORAGE_KEY = "mie-bass-custom-spots-v1";
