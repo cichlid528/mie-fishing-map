@@ -1,0 +1,28 @@
+{
+  "name": "三重県釣りマップ",
+  "short_name": "三重釣りMAP",
+  "description": "三重県の釣り場、釣果、写真、メモを端末内に記録できる無料の地図アプリ",
+  "start_url": "./?v=v185-free-install-guide",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#e8f4ef",
+  "theme_color": "#0f7b63",
+  "icons": [
+    {
+      "src": "icons/icon-192-v103.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512-v103.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-maskable-512-v103.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
