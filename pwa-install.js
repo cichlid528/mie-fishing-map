@@ -311,6 +311,7 @@
       $("mobileMenu")?.classList.remove("is-open");
       $("menuBackdrop")?.classList.remove("is-open");
       $("menuToggle")?.setAttribute("aria-expanded", "false");
+      document.body.classList.remove("menu-open");
     };
     const closeInfo = () => {
       const panel = $("infoPanel");
