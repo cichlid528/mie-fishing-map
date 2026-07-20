@@ -234,12 +234,61 @@
       if (!refreshing) { refreshing = true; location.reload(); }
     });
   }
+
+  // Keep the menu's install button useful on every device. Android Chrome can
+  // show the native prompt; iPhone and unsupported browsers always get the
+  // platform-specific installation guide instead of an unresponsive button.
+  function installDownloadButton() {
+    let deferredPrompt = null;
+    const openGuide = () => {
+      window.location.href = `install.html?v=${APP_VERSION}`;
+    };
+
+    window.addEventListener("beforeinstallprompt", (event) => {
+      event.preventDefault();
+      deferredPrompt = event;
+      const button = document.getElementById("installAppButton");
+      if (button) button.textContent = "アプリをインストール";
+    });
+
+    window.addEventListener("appinstalled", () => {
+      const button = document.getElementById("installAppButton");
+      if (button) {
+        button.textContent = "インストール済み";
+        button.disabled = true;
+      }
+    });
+
+    const bind = () => {
+      const button = document.getElementById("installAppButton");
+      if (!button || button.dataset.pwaInstallBound === "true") return;
+      button.dataset.pwaInstallBound = "true";
+      button.addEventListener("click", async () => {
+        if (!deferredPrompt) {
+          openGuide();
+          return;
+        }
+        try {
+          await deferredPrompt.prompt();
+          await deferredPrompt.userChoice;
+        } catch (error) {
+          openGuide();
+        } finally {
+          deferredPrompt = null;
+        }
+      });
+    };
+
+    bind();
+    window.setTimeout(bind, 250);
+  }
   function init() {
     injectPetStyles();
     patchNode(document.body);
     try { new MutationObserver(() => patchNode(document.body)).observe(document.body, { childList: true, subtree: true, characterData: true }); } catch (error) {}
     installPet();
     installServiceWorkerUpdates();
+    installDownloadButton();
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
   else init();
