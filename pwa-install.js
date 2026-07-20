@@ -1,7 +1,7 @@
 (() => {
   "use strict";
   window.__MIE_PWA_INSTALL_MANAGED__ = true;
-  const APP_VERSION = "v186-backup-controls";
+  const APP_VERSION = "v187-backup-save-fix";
   const PET_NAME = "爆釣にゃん師匠";
   const PET_MOTION_NAMES = ["idle", "kiriri", "wink", "happy", "surprise", "think", "angry", "sleepy", "doya", "guide", "smile", "sad", "dreamy", "focus", "side", "back"];
   const PET_MOTION_IMAGES = PET_MOTION_NAMES.map((name) => `assets/nyan-motion-${name}-v177.png?v=${APP_VERSION}`);
@@ -336,30 +336,40 @@
       return [...result.values()];
     };
     const exportBackup = () => {
-      const backup = {
-        schema: "mie-fishing-map-backup-v2",
-        appVersion: APP_VERSION,
-        exportedAt: new Date().toISOString(),
-        data: {
-          spotsState: readStoredJson(storageKeys.spotsState, {}),
-          catches: readStoredJson(storageKeys.catches, []),
-          customSpots: readStoredJson(storageKeys.customSpots, []),
-          positionOverrides: readStoredJson(storageKeys.positionOverrides, {}),
-          sidebarBackground: localStorage.getItem(storageKeys.sidebarBackground) || ""
-        }
-      };
-      const stamp = new Date().toISOString().slice(0, 10);
-      const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const anchor = document.createElement("a");
-      anchor.href = url;
-      anchor.download = `mie-fishing-map-backup-${stamp}.json`;
-      document.body.appendChild(anchor);
-      anchor.click();
-      anchor.remove();
-      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
       openInfo();
-      setStatus("バックアップを保存しました。ダウンロードされたJSONファイルを大切に保管してください。");
+      try {
+        const backup = {
+          schema: "mie-fishing-map-backup-v2",
+          appVersion: APP_VERSION,
+          exportedAt: new Date().toISOString(),
+          data: {
+            spotsState: readStoredJson(storageKeys.spotsState, {}),
+            catches: readStoredJson(storageKeys.catches, []),
+            customSpots: readStoredJson(storageKeys.customSpots, []),
+            positionOverrides: readStoredJson(storageKeys.positionOverrides, {}),
+            sidebarBackground: localStorage.getItem(storageKeys.sidebarBackground) || ""
+          }
+        };
+        const stamp = new Date().toISOString().slice(0, 10);
+        const json = JSON.stringify(backup, null, 2);
+        const anchor = document.createElement("a");
+        let objectUrl = "";
+        if (typeof Blob === "function" && typeof URL?.createObjectURL === "function") {
+          objectUrl = URL.createObjectURL(new Blob([json], { type: "application/json" }));
+          anchor.href = objectUrl;
+        } else {
+          anchor.href = `data:application/json;charset=utf-8,${encodeURIComponent(json)}`;
+        }
+        anchor.download = `mie-fishing-map-backup-${stamp}.json`;
+        anchor.style.display = "none";
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+        if (objectUrl) window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
+        setStatus("バックアップを保存しました。ダウンロードしたJSONファイルは端末の安全な場所に保管してください。");
+      } catch (error) {
+        setStatus("バックアップを保存できませんでした。ブラウザのダウンロード許可と保存容量を確認して、もう一度お試しください。");
+      }
     };
     const importBackup = (file) => {
       if (!file) return;
